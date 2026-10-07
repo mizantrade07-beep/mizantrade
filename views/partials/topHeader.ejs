@@ -1,0 +1,26 @@
+<!-- ==========================================================
+     TOP HEADER: Marquee + Email + Hotline
+     স্ক্রল করলে এই অংশটি সিলকিভাবে হাইড হয়ে যাবে
+========================================================== -->
+<div class="top-header" id="topHeader">
+    <div class="top-header-inner">
+
+        <!-- Marquee Notice -->
+        <div class="top-marquee">
+            <div class="marquee-track">
+                ⚠️ Official Notice: Mizan Trade is the sole authorized distributor of KingSpec, AITC Kingsman Gaming, Xentrha, Unika, and PowerSync products. To avoid counterfeit products, please verify the "AUTHORIZED PRODUCT – Powered by MIZAN TRADE" sticker at the time of purchase.
+            </div>
+        </div>
+
+        <!-- Email + Hotline -->
+        <div class="top-contact">
+            <a href="mailto:<%= site.email %>" class="email-link">
+                <i class="fa-regular fa-envelope"></i> <%= site.email %>
+            </a>
+            <a href="tel:<%= site.hotline %>">
+                <i class="fa-solid fa-phone"></i> Hotline: <%= site.hotline %>
+            </a>
+        </div>
+
+    </div>
+</div>

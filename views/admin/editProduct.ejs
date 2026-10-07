@@ -1,0 +1,44 @@
+<%- include("partials/head", {
+    title: "Edit Product | MizanTrade"
+}) %>
+
+<%- include("partials/sidebar") %>
+
+<div class="admin-main">
+
+    <%- include("partials/topbar", {
+        title: "Edit Product"
+    }) %>
+
+
+    <main class="admin-content">
+
+        <div class="dashboard-header">
+
+            <div>
+                <h1 class="dashboard-title">
+                    Edit Product
+                </h1>
+
+                <p class="dashboard-subtitle">
+                    <%= product.title %>
+                </p>
+            </div>
+
+            <a href="/admin/products" class="secondary-button">
+                ← Back to Products
+            </a>
+
+        </div>
+
+        <%- include("partials/productForm", {
+            product: product,
+            categories: categories,
+            formAction: "/admin/product/edit/" + product._id
+        }) %>
+
+    </main>
+
+</div>
+
+<%- include("partials/footer") %>

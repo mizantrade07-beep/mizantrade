@@ -1,0 +1,117 @@
+<%- include("partials/head", {
+    title: "Partner Application | MizanTrade Admin"
+}) %>
+
+<%- include("partials/sidebar") %>
+
+<div class="admin-main">
+
+    <%- include("partials/topbar", {
+        title: "Partner Details"
+    }) %>
+
+    <main class="admin-content">
+
+        <div class="dashboard-header">
+            <div>
+                <h1 class="dashboard-title"><%= partner.companyName %></h1>
+                <p class="dashboard-subtitle">
+                    Application date: <%= new Date(partner.createdAt).toLocaleString('en-GB') %>
+                </p>
+            </div>
+
+            <a href="/admin/partners" class="secondary-button">← Back to Partners</a>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:18px; align-items:start;">
+
+            <!-- আবেদনকারীর তথ্য -->
+            <section class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title">Application Information</h2>
+                </div>
+                <div class="card-body" style="font-size:13.5px; line-height:2;">
+                    <strong>Company:</strong> <%= partner.companyName %><br>
+                    <strong>Owner:</strong> <%= partner.ownerName %><br>
+                    <strong>Phone:</strong> <a href="tel:<%= partner.phone %>"><%= partner.phone %></a><br>
+                    <strong>Email:</strong> <a href="mailto:<%= partner.email %>"><%= partner.email %></a><br>
+                    <% if (partner.address) { %>
+                        <strong>Address:</strong> <%= partner.address %><br>
+                    <% } %>
+                    <% if (partner.tradeLicense) { %>
+                        <strong>Trade License:</strong> <%= partner.tradeLicense %><br>
+                    <% } %>
+                    <strong>Business Details:</strong><br>
+                    <div style="background:#f8f9fb; border:1px solid #eee; border-radius:6px; padding:12px; margin-top:6px; white-space:pre-wrap;"><%= partner.businessDetails %></div>
+                </div>
+            </section>
+
+            <!-- ডকুমেন্টস + স্ট্যাটাস -->
+            <section class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title">Documents & Verification</h2>
+                </div>
+                <div class="card-body">
+
+                    <% if (partner.documents && partner.documents.length > 0) { %>
+                        <ul style="list-style:none; margin-bottom:18px;">
+                            <% partner.documents.forEach(function(doc) { %>
+                                <li style="padding:9px 0; border-bottom:1px solid #f0f0f0;">
+                                    <a href="/admin/partners/document/<%= doc.filename %>" target="_blank"
+                                       style="color:#2b6cb0; font-weight:600; font-size:13px;">
+                                        <i class="fa-solid fa-file-arrow-down"></i>
+                                        <%= doc.originalName || doc.filename %>
+                                    </a>
+                                </li>
+                            <% }); %>
+                        </ul>
+                    <% } else { %>
+                        <p style="color:#999; font-size:13px; margin-bottom:18px;">No documents uploaded.</p>
+                    <% } %>
+
+                    <hr style="margin:14px 0; border:none; border-top:1px solid #eee;">
+
+                    <form method="POST" action="/admin/partners/<%= partner._id %>/status">
+                        <div style="margin-bottom:12px;">
+                            <label style="display:block; font-size:12.5px; font-weight:600; margin-bottom:6px;">Admin Note</label>
+                            <textarea name="adminNote" rows="3"
+                                      style="width:100%; padding:9px; border:1px solid #ddd; border-radius:6px; font-family:inherit;"
+                                      placeholder="Verification note..."><%= partner.adminNote || '' %></textarea>
+                        </div>
+
+                        <div style="display:flex; gap:10px;">
+                            <button type="submit" name="status" value="Approved" class="primary-button"
+                                    style="background:#2f855a;">
+                                ✓ Approve
+                            </button>
+                            <button type="submit" name="status" value="Rejected" class="primary-button"
+                                    style="background:#c53030;">
+                                ✕ Reject
+                            </button>
+                            <button type="submit" name="status" value="Pending" class="secondary-button">
+                                Mark Pending
+                            </button>
+                        </div>
+                    </form>
+
+                    <p style="margin-top:14px; font-size:12.5px;">
+                        Current status:
+                        <% if (partner.status === 'Approved') { %>
+                            <span class="badge badge-approved">Approved</span>
+                        <% } else if (partner.status === 'Rejected') { %>
+                            <span class="badge badge-rejected">Rejected</span>
+                        <% } else { %>
+                            <span class="badge badge-pending">Pending</span>
+                        <% } %>
+                    </p>
+
+                </div>
+            </section>
+
+        </div>
+
+    </main>
+
+</div>
+
+<%- include("partials/footer") %>

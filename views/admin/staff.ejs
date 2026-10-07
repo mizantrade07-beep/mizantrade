@@ -1,0 +1,143 @@
+<%- include("partials/head", {
+    title: "Staff | MizanTrade Admin"
+}) %>
+
+<%- include("partials/sidebar") %>
+
+<div class="admin-main">
+
+    <%- include("partials/topbar", {
+        title: "Staff / Admin Users"
+    }) %>
+
+    <main class="admin-content">
+
+        <div class="dashboard-header">
+            <div>
+                <h1 class="dashboard-title">Staff / Admin Users</h1>
+                <p class="dashboard-subtitle">
+                    Create and manage admin, editor and sub-editor accounts. Only Admin can see this page.
+                </p>
+            </div>
+
+            <a href="/admin/staff/add" class="primary-button">
+                <i class="fa-solid fa-user-plus"></i>
+                Add Staff
+            </a>
+        </div>
+
+
+        <section class="stats-grid">
+
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+                <div class="stat-content">
+                    <span>Total Staff</span>
+                    <strong><%= staff.length %></strong>
+                </div>
+            </article>
+
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-user-shield"></i></div>
+                <div class="stat-content">
+                    <span>Admins</span>
+                    <strong><%= staff.filter(function (s) { return s.role === 'admin' || s.role === 'super_admin'; }).length %></strong>
+                </div>
+            </article>
+
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-pen-nib"></i></div>
+                <div class="stat-content">
+                    <span>Editors</span>
+                    <strong><%= staff.filter(function (s) { return s.role === 'editor'; }).length %></strong>
+                </div>
+            </article>
+
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-user-check"></i></div>
+                <div class="stat-content">
+                    <span>Active</span>
+                    <strong><%= staff.filter(function (s) { return s.isActive; }).length %></strong>
+                </div>
+            </article>
+
+        </section>
+
+
+        <section class="dashboard-card">
+
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fa-solid fa-users card-icon"></i>
+                    All Staff
+                </h2>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Last Login</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        <% staff.forEach(function (member) { %>
+                            <tr>
+                                <td>
+                                    <div class="cat-cell">
+                                        <span class="cat-icon"><i class="fa-solid fa-user"></i></span>
+                                        <strong><%= member.name %></strong>
+                                        <% if (String(member._id) === String(currentAdminId)) { %>
+                                            <span class="lvl-tag lvl-sub">You</span>
+                                        <% } %>
+                                    </div>
+                                </td>
+                                <td><a href="mailto:<%= member.email %>"><code class="slug-chip"><%= member.email %></code></a></td>
+                                <td>
+                                    <span class="badge <%= member.role === 'sub_editor' ? 'badge-pending' : 'badge-approved' %>">
+                                        <%= roleLabels[member.role] || member.role %>
+                                    </span>
+                                </td>
+                                <td>
+                                    <% if (member.isActive) { %>
+                                        <span class="badge badge-approved">Active</span>
+                                    <% } else { %>
+                                        <span class="badge badge-rejected">Inactive</span>
+                                    <% } %>
+                                </td>
+                                <td style="font-size:12px; color:#64748b;">
+                                    <%= member.lastLoginAt ? new Date(member.lastLoginAt).toLocaleString() : '— never —' %>
+                                </td>
+                                <td>
+                                    <div class="product-actions">
+                                        <a href="/admin/staff/edit/<%= member._id %>" class="action-edit" title="Edit">
+                                            <i class="fa-solid fa-pen"></i>
+                                        </a>
+                                        <% if (String(member._id) !== String(currentAdminId)) { %>
+                                            <a href="/admin/staff/delete/<%= member._id %>" class="action-delete" title="Delete"
+                                               onclick="return confirm('<%= member.name %> — delete this?');">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </a>
+                                        <% } %>
+                                    </div>
+                                </td>
+                            </tr>
+                        <% }); %>
+
+                    </tbody>
+                </table>
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+<%- include("partials/footer") %>

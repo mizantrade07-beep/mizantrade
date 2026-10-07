@@ -1,0 +1,68 @@
+<!-- ==========================================================
+     MEGA MENU PANEL (একটি Main ক্যাটাগরির জন্য)
+     লোকাল ভেরিয়েবল: cat = { name, slug, icon, brands, children:[ {.., children:[..]} ] }
+========================================================== -->
+<%
+    // সব ব্র্যান্ড একত্র (নিজের + সাব + চাইল্ড)
+    var allBrands = (cat.brands || []).slice();
+    (cat.children || []).forEach(function (sub) {
+        (sub.brands || []).forEach(function (b) {
+            if (allBrands.indexOf(b) === -1) allBrands.push(b);
+        });
+        (sub.children || []).forEach(function (child) {
+            (child.brands || []).forEach(function (b) {
+                if (allBrands.indexOf(b) === -1) allBrands.push(b);
+            });
+        });
+    });
+%>
+<div class="mega-panel">
+
+    <!-- কলাম ১: সাব-ক্যাটাগরি (+ চাইল্ড) লিস্ট -->
+    <div class="mega-col">
+        <h5>
+            <a href="/category/<%= cat.slug %>">
+                <i class="<%= cat.icon %>" style="color:#ef4a23; margin-right:5px;"></i>
+                All <%= cat.name %>
+            </a>
+        </h5>
+        <ul>
+            <% (cat.children || []).forEach(function (sub) { %>
+                <li class="mega-sub-item">
+                    <a href="/category/<%= sub.slug %>">
+                        <i class="fa-solid fa-angle-right" style="font-size:9px; color:#bbb; margin-right:5px;"></i>
+                        <%= sub.name %>
+                    </a>
+
+                    <% if ((sub.children || []).length) { %>
+                        <ul class="mega-child-list">
+                            <% sub.children.forEach(function (child) { %>
+                                <li>
+                                    <a href="/category/<%= child.slug %>">
+                                        <i class="fa-solid fa-minus" style="font-size:8px; color:#ccc; margin-right:5px;"></i>
+                                        <%= child.name %>
+                                    </a>
+                                </li>
+                            <% }); %>
+                        </ul>
+                    <% } %>
+                </li>
+            <% }); %>
+        </ul>
+    </div>
+
+    <!-- কলাম ২: ব্র্যান্ড -->
+    <% if (allBrands.length > 0) { %>
+    <div class="mega-col">
+        <h5><i class="fa-solid fa-certificate" style="color:#ef4a23; margin-right:5px;"></i> Brands</h5>
+        <div class="brand-chips">
+            <% allBrands.forEach(function (brand) { %>
+                <a class="brand-chip" href="/shop?cat=<%= cat.slug %>&brand=<%= encodeURIComponent(brand) %>">
+                    <%= brand %>
+                </a>
+            <% }); %>
+        </div>
+    </div>
+    <% } %>
+
+</div>

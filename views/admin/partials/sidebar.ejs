@@ -1,0 +1,222 @@
+<aside class="admin-sidebar" id="adminSidebar">
+
+    <div class="sidebar-brand">
+        <a href="/admin/dashboard">
+            <span class="brand-mark">M</span>
+
+            <span class="brand-text">
+                MizanTrade
+            </span>
+        </a>
+    </div>
+
+    <div class="sidebar-section">
+        <span class="sidebar-label">
+            MAIN
+        </span>
+
+        <nav class="sidebar-nav">
+
+            <a
+                href="/admin/dashboard"
+                class="sidebar-link active"
+            >
+                <span class="nav-icon"><i class="fa-solid fa-gauge-high"></i></span>
+                <span>Dashboard</span>
+            </a>
+
+            <% if (can('analytics.view')) { %>
+                <a
+                    href="/admin/analytics"
+                    class="sidebar-link"
+                >
+                    <span class="nav-icon"><i class="fa-solid fa-chart-line"></i></span>
+                    <span>Analytics</span>
+                </a>
+            <% } %>
+
+        </nav>
+    </div>
+
+    <div class="sidebar-section">
+
+        <span class="sidebar-label">
+            CATALOG
+        </span>
+
+        <nav class="sidebar-nav">
+
+            <a
+                href="/admin/products"
+                class="sidebar-link"
+            >
+                <span class="nav-icon"><i class="fa-solid fa-box-open"></i></span>
+                <span>Products</span>
+            </a>
+
+            <a
+                href="/admin/products/add"
+                class="sidebar-link"
+            >
+                <span class="nav-icon"><i class="fa-solid fa-circle-plus"></i></span>
+                <span>Add Product</span>
+            </a>
+
+            <a
+                href="/admin/categories"
+                class="sidebar-link"
+            >
+                <span class="nav-icon"><i class="fa-solid fa-layer-group"></i></span>
+                <span>Categories</span>
+            </a>
+
+        </nav>
+    </div>
+
+    <% if (can('content.edit') || can('moderate')) { %>
+        <div class="sidebar-section">
+
+            <span class="sidebar-label">
+                CONTENT
+            </span>
+
+            <nav class="sidebar-nav">
+
+                <% if (can('content.edit')) { %>
+                    <a
+                        href="/admin/pages"
+                        class="sidebar-link"
+                    >
+                        <span class="nav-icon"><i class="fa-solid fa-file-lines"></i></span>
+                        <span>Pages</span>
+                    </a>
+
+                    <a
+                        href="/admin/posts"
+                        class="sidebar-link"
+                    >
+                        <span class="nav-icon"><i class="fa-solid fa-newspaper"></i></span>
+                        <span>Posts / Blog</span>
+                    </a>
+                <% } %>
+
+                <% if (can('moderate')) { %>
+                    <a
+                        href="/admin/comments"
+                        class="sidebar-link"
+                    >
+                        <span class="nav-icon"><i class="fa-solid fa-comments"></i></span>
+                        <span>Comments</span>
+                    </a>
+
+                    <a
+                        href="/admin/reviews"
+                        class="sidebar-link"
+                    >
+                        <span class="nav-icon"><i class="fa-solid fa-star"></i></span>
+                        <span>Product Reviews</span>
+                    </a>
+
+                    <a
+                        href="/admin/questions"
+                        class="sidebar-link"
+                    >
+                        <span class="nav-icon"><i class="fa-solid fa-circle-question"></i></span>
+                        <span>Customer Questions</span>
+                    </a>
+                <% } %>
+
+            </nav>
+        </div>
+    <% } %>
+
+    <div class="sidebar-section">
+
+        <span class="sidebar-label">
+            BUSINESS
+        </span>
+
+        <nav class="sidebar-nav">
+
+            <a
+                href="/admin/partners"
+                class="sidebar-link"
+            >
+                <span class="nav-icon"><i class="fa-solid fa-handshake"></i></span>
+                <span>Partners</span>
+            </a>
+
+            <a
+                href="/admin/orders"
+                class="sidebar-link"
+            >
+                <span class="nav-icon"><i class="fa-solid fa-cart-shopping"></i></span>
+                <span>Orders</span>
+            </a>
+
+            <% if (can('customers.view')) { %>
+                <a
+                    href="/admin/customers"
+                    class="sidebar-link"
+                >
+                    <span class="nav-icon"><i class="fa-solid fa-users"></i></span>
+                    <span>Customers</span>
+                </a>
+            <% } %>
+
+            <% if (can('coupons.manage')) { %>
+                <a
+                    href="/admin/coupons"
+                    class="sidebar-link"
+                >
+                    <span class="nav-icon"><i class="fa-solid fa-tags"></i></span>
+                    <span>Coupons</span>
+                </a>
+            <% } %>
+
+        </nav>
+    </div>
+
+    <% if (can('staff.manage')) { %>
+        <div class="sidebar-section">
+
+            <span class="sidebar-label">
+                TEAM
+            </span>
+
+            <nav class="sidebar-nav">
+
+                <a
+                    href="/admin/staff"
+                    class="sidebar-link"
+                >
+                    <span class="nav-icon"><i class="fa-solid fa-user-shield"></i></span>
+                    <span>Staff / Roles</span>
+                </a>
+
+            </nav>
+        </div>
+    <% } %>
+
+    <div class="sidebar-section">
+
+        <span class="sidebar-label">
+            WEBSITE
+        </span>
+
+        <nav class="sidebar-nav">
+
+            <a
+                href="#"
+                class="sidebar-link disabled"
+                title="Coming in a future phase"
+            >
+                <span class="nav-icon"><i class="fa-solid fa-gear"></i></span>
+                <span>Settings</span>
+                <span class="later-pill">Soon</span>
+            </a>
+
+        </nav>
+    </div>
+
+</aside>

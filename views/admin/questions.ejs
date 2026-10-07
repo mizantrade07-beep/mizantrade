@@ -1,0 +1,80 @@
+<%- include("partials/head", {
+    title: "Customer Questions | MizanTrade Admin"
+}) %>
+
+<%- include("partials/sidebar") %>
+
+<div class="admin-main">
+
+    <%- include("partials/topbar", {
+        title: "Customer Questions"
+    }) %>
+
+    <main class="admin-content">
+
+        <div class="dashboard-header">
+            <div>
+                <h1 class="dashboard-title">Customer Questions</h1>
+                <p class="dashboard-subtitle">
+                    Questions customers asked on product pages. Answer them below; answered questions are published on the product page.
+                </p>
+            </div>
+        </div>
+
+        <% if (rows.length === 0) { %>
+            <div class="content-card" style="text-align:center; padding:40px 20px;">
+                <i class="fa-solid fa-comments" style="font-size:34px; color:#c8d0d8;"></i>
+                <p style="color:#64748b; margin-top:12px;">No customer questions yet.</p>
+            </div>
+        <% } else { %>
+            <% rows.forEach(function (r) { %>
+                <div class="content-card" style="margin-bottom:16px; padding:18px 20px;">
+                    <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; margin-bottom:10px;">
+                        <div>
+                            <strong style="color:#081621;"><%= r.name %></strong>
+                            <span style="font-size:12px; color:#8892a0; margin-left:8px;">
+                                <%= new Date(r.createdAt).toLocaleString() %>
+                            </span>
+                        </div>
+                        <div style="display:flex; gap:8px; align-items:center;">
+                            <% if (r.isApproved) { %>
+                                <span class="badge badge-approved">Published</span>
+                            <% } else { %>
+                                <span class="badge badge-pending">Pending</span>
+                            <% } %>
+                            <a href="/admin/product/edit/<%= r.productId %>" class="btn btn-outline" style="font-size:12px; padding:5px 10px;">
+                                <%= r.productTitle %>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div style="background:#f6f8fa; border-radius:8px; padding:12px 14px; font-size:14px; color:#334;">
+                        <strong>Q:</strong> <%= r.question %>
+                    </div>
+
+                    <form action="/admin/questions/<%= r.productId %>/<%= r.questionId %>/answer" method="POST" style="margin-top:12px;">
+                        <label style="font-size:13px; font-weight:600; color:#33495a; display:block; margin-bottom:6px;">Your Answer</label>
+                        <textarea name="answer" rows="3" class="form-control" style="min-height:70px;" placeholder="Write the answer that will be published on the product page..."><%= r.answer %></textarea>
+                        <div style="display:flex; gap:8px; margin-top:10px; flex-wrap:wrap;">
+                            <button type="submit" class="btn btn-primary" style="font-size:12px; padding:7px 14px;">
+                                <i class="fa-solid fa-paper-plane"></i> Save Answer &amp; Publish
+                            </button>
+                            <a href="/admin/questions/<%= r.productId %>/<%= r.questionId %>/approve" class="btn btn-outline" style="font-size:12px; padding:7px 14px;">
+                                <i class="fa-solid fa-<%= r.isApproved ? 'eye-slash' : 'eye' %>"></i>
+                                <%= r.isApproved ? 'Unpublish' : 'Publish without answer' %>
+                            </a>
+                            <a href="/admin/questions/<%= r.productId %>/<%= r.questionId %>/delete"
+                               onclick="return confirm('Delete this question?');"
+                               class="btn btn-outline" style="font-size:12px; padding:7px 14px; color:#c0392b; border-color:#e6b3ad;">
+                                <i class="fa-solid fa-trash"></i> Delete
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            <% }); %>
+        <% } %>
+
+    </main>
+</div>
+
+<%- include("partials/footer") %>

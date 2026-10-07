@@ -1,0 +1,150 @@
+<%- include("partials/head", {
+    title: "Order " + order.orderNumber + " | MizanTrade Admin"
+}) %>
+
+<%- include("partials/sidebar") %>
+
+<div class="admin-main">
+
+    <%- include("partials/topbar", {
+        title: "Order Details"
+    }) %>
+
+    <main class="admin-content">
+
+        <div class="dashboard-header">
+            <div>
+                <h1 class="dashboard-title">Order <%= order.orderNumber %></h1>
+                <p class="dashboard-subtitle">
+                    <%= new Date(order.createdAt).toLocaleString('en-GB') %>
+                </p>
+            </div>
+
+            <a href="/admin/orders" class="secondary-button">← Back to Orders</a>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:18px; align-items:start;">
+
+            <!-- কাস্টমার ইনফো -->
+            <section class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title">Customer Information</h2>
+                </div>
+                <div class="card-body" style="font-size:13.5px; line-height:2;">
+                    <strong>Name:</strong> <%= order.customer.name %><br>
+                    <strong>Phone:</strong> <a href="tel:<%= order.customer.phone %>"><%= order.customer.phone %></a><br>
+                    <% if (order.customer.email) { %>
+                        <strong>Email:</strong> <a href="mailto:<%= order.customer.email %>"><%= order.customer.email %></a><br>
+                    <% } %>
+                    <strong>Address:</strong> <%= order.customer.address %><br>
+                    <strong>Delivery Area:</strong> <%= order.customer.city %><br>
+                    <% if (order.customer.note) { %>
+                        <strong>Note:</strong> <%= order.customer.note %>
+                    <% } %>
+                </div>
+            </section>
+
+            <!-- পেমেন্ট ইনফো + স্ট্যাটাস -->
+            <section class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title">Payment & Status</h2>
+                </div>
+                <div class="card-body" style="font-size:13.5px; line-height:2;">
+                    <strong>Method:</strong>
+                    <%= order.paymentMethod === 'bkash' ? 'bKash (Send Money)' : (order.paymentMethod === 'cod' ? 'Cash on Delivery' : 'Bank Transfer') %><br>
+
+                    <% if (order.paymentInfo.trxId) { %>
+                        <strong>TrxID:</strong> <%= order.paymentInfo.trxId %><br>
+                    <% } %>
+                    <% if (order.paymentInfo.senderNumber) { %>
+                        <strong>Sender Number:</strong> <%= order.paymentInfo.senderNumber %><br>
+                    <% } %>
+                    <% if (order.paymentInfo.bankName) { %>
+                        <strong>Bank:</strong> <%= order.paymentInfo.bankName %><br>
+                    <% } %>
+                    <% if (order.paymentInfo.accountNumber) { %>
+                        <strong>Customer Account:</strong> <%= order.paymentInfo.accountNumber %>
+                    <% } %>
+
+                    <hr style="margin:14px 0; border:none; border-top:1px solid #eee;">
+
+                    <form method="POST" action="/admin/order/<%= order._id %>/status" style="display:flex; gap:10px; align-items:center;">
+                        <select name="status" style="padding:9px; border:1px solid #ddd; border-radius:6px; flex:1;">
+                            <% ['Pending','Confirmed','Processing','Shipped','Delivered','Cancelled'].forEach(function(s) { %>
+                                <option value="<%= s %>" <%= order.status === s ? 'selected' : '' %>><%= s %></option>
+                            <% }); %>
+                        </select>
+                        <button type="submit" class="primary-button">Update Status</button>
+                    </form>
+                </div>
+            </section>
+
+        </div>
+
+        <!-- অর্ডার আইটেম -->
+        <section class="dashboard-card" style="margin-top:18px;">
+            <div class="card-header">
+                <h2 class="card-title">Order Items</h2>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Price</th>
+                            <th>Qty</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% order.items.forEach(function(item) { %>
+                            <tr>
+                                <td>
+                                    <% if (item.slug) { %>
+                                        <a href="/product/<%= item.slug %>" target="_blank"><%= item.title %></a>
+                                    <% } else { %>
+                                        <%= item.title %>
+                                    <% } %>
+                                </td>
+                                <td>৳ <%= item.price.toLocaleString('en-US') %></td>
+                                <td><%= item.quantity %></td>
+                                <td><strong>৳ <%= (item.price * item.quantity).toLocaleString('en-US') %></strong></td>
+                            </tr>
+                        <% }); %>
+
+                        <tr>
+                            <td colspan="3" style="text-align:right;">Shipping Fee (<%= order.customer.city %>)</td>
+                            <td><strong>৳ <%= order.shippingFee.toLocaleString('en-US') %></strong></td>
+                        </tr>
+                        <% if (order.discount && order.discount > 0) { %>
+                        <tr>
+                            <td colspan="3" style="text-align:right; color:#1f8a3b;">
+                                Discount
+                                <% if (order.couponCode) { %>(coupon: <code><%= order.couponCode %></code>)<% } %>
+                            </td>
+                            <td style="color:#1f8a3b;"><strong>− ৳ <%= order.discount.toLocaleString('en-US') %></strong></td>
+                        </tr>
+                        <% } %>
+                        <% if (order.paymentCharge && order.paymentCharge > 0) { %>
+                        <tr>
+                            <td colspan="3" style="text-align:right; color:#c0392b;">
+                                Payment Charge (bKash)
+                            </td>
+                            <td style="color:#c0392b;"><strong>৳ <%= Number(order.paymentCharge).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 }) %></strong></td>
+                        </tr>
+                        <% } %>
+                        <tr>
+                            <td colspan="3" style="text-align:right; font-size:15px;">Grand Total</td>
+                            <td style="font-size:16px; color:#ef4a23;"><strong>৳ <%= order.total.toLocaleString('en-US') %></strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+</div>
+
+<%- include("partials/footer") %>

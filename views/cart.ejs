@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Cart - Mizan Trade</title>
+    <link rel="icon" href="/images/logo.svg">
+</head>
+<body>
+
+    <%- include('partials/header') %>
+
+    <div class="container">
+
+        <div class="breadcrumb">
+            <a href="/">Home</a>
+            <i class="fa-solid fa-angle-right" style="margin:0 6px; font-size:10px;"></i>
+            <span>Shopping Cart</span>
+        </div>
+
+        <h1 class="page-title"><i class="fa-solid fa-cart-shopping"></i> Shopping Cart</h1>
+
+        <% if (items.length === 0) { %>
+
+            <div class="empty-box">
+                <i class="fa-solid fa-cart-shopping"></i>
+                <h3 style="color:#081621; margin-bottom:8px;">Your cart is empty</h3>
+                <p>Add your favorite products to the cart.</p>
+                <a href="/shop" class="btn btn-primary" style="margin-top:16px;">
+                    <i class="fa-solid fa-store"></i> Start Shopping
+                </a>
+            </div>
+
+        <% } else { %>
+
+            <div class="cart-layout">
+
+                <!-- কার্ট টেবিল -->
+                <div>
+                    <table class="cart-table">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Name</th>
+                                <th>Price</th>
+                                <th>Quantity</th>
+                                <th>Total</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% items.forEach(function(item) { %>
+                                <tr>
+                                    <td data-label="">
+                                        <img src="<%= item.image || '/images/logo.svg' %>" alt="<%= item.title %>">
+                                    </td>
+                                    <td data-label="Product" class="ct-name">
+                                        <a href="/product/<%= item.slug %>"><%= item.title %></a>
+                                    </td>
+                                    <td data-label="Price">৳ <%= Number(item.price).toLocaleString('en-US') %></td>
+                                    <td data-label="Quantity">
+                                        <form action="/cart/update" method="POST" style="display:flex; gap:6px; align-items:center;" id="qty-form-<%= item.productId %>">
+                                            <input type="hidden" name="productId" value="<%= item.productId %>">
+                                            <input type="number" name="quantity" class="qty-input" value="<%= item.quantity %>" min="1" max="99">
+                                        </form>
+                                    </td>
+                                    <td data-label="Total">
+                                        <strong style="color:#ef4a23;">৳ <%= (item.price * item.quantity).toLocaleString('en-US') %></strong>
+                                    </td>
+                                    <td data-label="" style="white-space:nowrap;">
+                                        <button type="submit" form="qty-form-<%= item.productId %>" class="btn btn-outline" style="padding:6px 12px; font-size:12px; margin-right:6px;" title="Update">
+                                            <i class="fa-solid fa-rotate"></i>
+                                        </button>
+                                        <form action="/cart/remove" method="POST" style="display:inline;">
+                                            <input type="hidden" name="productId" value="<%= item.productId %>">
+                                            <button type="submit" class="icon-btn" title="Remove">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+
+                    <div style="display:flex; justify-content:space-between; margin-top:16px; flex-wrap:wrap; gap:10px;">
+                        <a href="/shop" class="btn btn-outline">
+                            <i class="fa-solid fa-angle-left"></i> Continue Shopping
+                        </a>
+                        <form action="/cart/clear" method="POST" onsubmit="return confirm('Empty the entire cart?');">
+                            <button type="submit" class="btn btn-outline" style="color:#c0392b; border-color:#e5b8b0;">
+                                <i class="fa-solid fa-trash"></i> Clear Cart
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- অর্ডার সামারি -->
+                <div class="summary-card">
+                    <h3>Order Summary</h3>
+
+                    <div class="summary-row">
+                        <span>Subtotal (<%= items.length %> items)</span>
+                        <span>৳ <%= subtotal.toLocaleString('en-US') %></span>
+                    </div>
+
+                    <div class="summary-row">
+                        <span>Delivery Charge</span>
+                        <span>Calculated at Checkout</span>
+                    </div>
+
+                    <div class="summary-row total">
+                        <span>Total</span>
+                        <span>৳ <%= subtotal.toLocaleString('en-US') %></span>
+                    </div>
+
+                    <a href="/checkout" class="btn btn-primary" style="width:100%; margin-top:16px; padding:13px;">
+                        <i class="fa-solid fa-lock"></i> Proceed to Checkout
+                    </a>
+
+                    <div class="info-box" style="margin-top:16px; margin-bottom:0;">
+                        <i class="fa-solid fa-circle-info"></i>
+                        Delivery inside Dhaka ৳<%= site.shipping.insideDhaka %>, outside Dhaka ৳<%= site.shipping.outsideDhaka %>
+                    </div>
+                </div>
+
+            </div>
+
+        <% } %>
+
+    </div>
+
+    <%- include('partials/footer') %>
+
+    <script src="/js/main.js?v=2"></script>
+</body>
+</html>

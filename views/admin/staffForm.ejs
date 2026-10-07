@@ -1,0 +1,129 @@
+<%- include("partials/head", {
+    title: (staffMember ? "Edit Staff" : "Add Staff") + " | MizanTrade Admin"
+}) %>
+
+<%- include("partials/sidebar") %>
+
+<div class="admin-main">
+
+    <%- include("partials/topbar", {
+        title: staffMember ? "Edit Staff" : "Add Staff"
+    }) %>
+
+    <main class="admin-content">
+
+        <div class="dashboard-header">
+            <div>
+                <h1 class="dashboard-title"><%= staffMember ? "Edit Staff" : "Add Staff" %></h1>
+                <p class="dashboard-subtitle">
+                    Access for this user is determined by their role.
+                </p>
+            </div>
+
+            <a href="/admin/staff" class="secondary-button">← Back to Staff</a>
+        </div>
+
+        <form
+            class="product-form"
+            method="POST"
+            action="<%= staffMember ? '/admin/staff/edit/' + staffMember._id : '/admin/staff/add' %>"
+        >
+
+            <section class="dashboard-card">
+
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fa-solid fa-user-gear card-icon"></i>
+                        Staff Information
+                    </h2>
+                </div>
+
+                <div class="form-grid">
+
+                    <div class="form-group">
+                        <label for="staffName">Full Name *</label>
+                        <input
+                            type="text"
+                            id="staffName"
+                            name="name"
+                            required
+                            value="<%= staffMember ? staffMember.name : '' %>"
+                            placeholder="e.g. Rahim Uddin"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="staffEmail">Email *</label>
+                        <input
+                            type="email"
+                            id="staffEmail"
+                            name="email"
+                            required
+                            value="<%= staffMember ? staffMember.email : '' %>"
+                            placeholder="name@mizantrade.com"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="staffPassword">
+                            Password
+                            <span class="label-hint">
+                                <%= staffMember ? '— leave empty to keep unchanged' : '* (at least 6 characters)' %>
+                            </span>
+                        </label>
+                        <input
+                            type="password"
+                            id="staffPassword"
+                            name="password"
+                            <%= staffMember ? '' : 'required' %>
+                            minlength="6"
+                            placeholder="••••••••"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="staffRole">Role *</label>
+                        <select id="staffRole" name="role" required>
+                            <% roles.forEach(function (r) { %>
+                                <option
+                                    value="<%= r %>"
+                                    <%= staffMember && staffMember.role === r ? 'selected' : '' %>
+                                ><%= roleLabels[r] || r %></option>
+                            <% }) %>
+                        </select>
+                        <small>
+                            <strong>Admin</strong> = everything · <strong>Editor</strong> = publish or delete content, moderation and coupons ·
+                            <strong>Sub-editor</strong> = create or edit only (not publish or delete).
+                        </small>
+                    </div>
+
+                    <div class="form-group checkbox-group">
+                        <label>
+                            <input
+                                type="checkbox"
+                                name="isActive"
+                                <%= !staffMember || staffMember.isActive ? 'checked' : '' %>
+                            >
+                            Active (can log in)
+                        </label>
+                    </div>
+
+                </div>
+
+            </section>
+
+            <div class="form-actions">
+                <a href="/admin/staff" class="secondary-button">Cancel</a>
+                <button type="submit" class="primary-button">
+                    <i class="fa-solid fa-floppy-disk"></i>
+                    <%= staffMember ? 'Update Staff' : 'Create Staff' %>
+                </button>
+            </div>
+
+        </form>
+
+    </main>
+
+</div>
+
+<%- include("partials/footer") %>

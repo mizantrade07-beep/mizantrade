@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout - Mizan Trade</title>
+    <link rel="icon" href="/images/logo.svg">
+</head>
+<body>
+
+    <%- include('partials/header') %>
+
+    <div class="container">
+
+        <div class="breadcrumb">
+            <a href="/">Home</a>
+            <i class="fa-solid fa-angle-right" style="margin:0 6px; font-size:10px;"></i>
+            <a href="/cart">Cart</a>
+            <i class="fa-solid fa-angle-right" style="margin:0 6px; font-size:10px;"></i>
+            <span>Checkout</span>
+        </div>
+
+        <h1 class="page-title"><i class="fa-solid fa-lock"></i> Checkout</h1>
+
+        <form action="/checkout" method="POST">
+
+            <div class="cart-layout">
+
+                <!-- ========== Left: Shipping + Payment ========== -->
+                <div>
+
+                    <!-- Shipping Information -->
+                    <div class="content-card">
+                        <h3 style="color:#081621; margin-bottom:18px; font-size:16px;">
+                            <i class="fa-solid fa-truck" style="color:#ef4a23;"></i> Shipping Information
+                        </h3>
+
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Your Name <span class="req">*</span></label>
+                                <input type="text" name="name" class="form-control" placeholder="Full name"
+                                       value="<%= customer ? customer.name : '' %>" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Mobile Number <span class="req">*</span></label>
+                                <input type="tel" name="phone" class="form-control" placeholder="01XXXXXXXXX" pattern="01[0-9]{9}"
+                                       value="<%= customer ? customer.phone : '' %>" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Email (optional)</label>
+                                <input type="email" name="email" class="form-control" placeholder="you@example.com"
+                                       value="<%= customer ? customer.email : '' %>">
+                            </div>
+
+                            <div class="form-group">
+                                <label>Delivery Area <span class="req">*</span></label>
+                                <select name="city" id="citySelect" class="form-control" required
+                                        data-inside="<%= shipping.insideDhaka %>" data-outside="<%= shipping.outsideDhaka %>">
+                                    <option value="dhaka">Inside Dhaka (Delivery &#2547;<%= shipping.insideDhaka %>)</option>
+                                    <option value="outside">Outside Dhaka (Delivery &#2547;<%= shipping.outsideDhaka %>)</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group full">
+                                <label>Full Address <span class="req">*</span></label>
+                                <textarea name="address" class="form-control" placeholder="House/Holding, Road, Area, Thana, District" required style="min-height:80px;"></textarea>
+                            </div>
+
+                            <div class="form-group full">
+                                <label>Additional Note (optional)</label>
+                                <input type="text" name="note" class="form-control" placeholder="Any delivery instructions">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Method -->
+                    <div class="content-card">
+                        <h3 style="color:#081621; margin-bottom:18px; font-size:16px;">
+                            <i class="fa-solid fa-credit-card" style="color:#ef4a23;"></i> Payment Method
+                        </h3>
+
+                        <div class="payment-options">
+
+                            <!-- bKash -->
+                            <div class="payment-option selected">
+                                <label class="payment-option-head">
+                                    <input type="radio" name="paymentMethod" value="bkash" checked>
+                                    <i class="fa-solid fa-mobile-screen-button main-icon" style="color:#e2136e;"></i>
+                                    <span>
+                                        <span class="po-title">bKash (Send Money)</span><br>
+                                        <span class="po-sub">Send Money to <%= bkash.number %> (<%= bkash.type %>)</span>
+                                    </span>
+                                </label>
+                                <div class="payment-option-body">
+                                    <div class="info-box">
+                                        <strong>Instructions:</strong> From your bKash app or by dialing
+                                        <strong>*247#</strong>, send <strong>Send Money</strong> to
+                                        <strong><%= bkash.number %></strong>.
+                                        After payment, enter the <strong>Transaction ID (TrxID)</strong> below.
+                                        <br><span style="color:#c0392b;">A payment charge of <%= bkashChargePercent %>% applies to bKash orders.</span>
+                                    </div>
+                                    <div class="form-grid">
+                                        <div class="form-group">
+                                            <label>Transaction ID (TrxID) <span class="req">*</span></label>
+                                            <input type="text" name="trxId" class="form-control" placeholder="e.g. 8HK4A21XT">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>The number you sent from</label>
+                                            <input type="tel" name="senderNumber" class="form-control" placeholder="01XXXXXXXXX">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Cash on Delivery -->
+                            <div class="payment-option">
+                                <label class="payment-option-head">
+                                    <input type="radio" name="paymentMethod" value="cod">
+                                    <i class="fa-solid fa-money-bill-wave main-icon" style="color:#82b440;"></i>
+                                    <span>
+                                        <span class="po-title">Cash on Delivery</span><br>
+                                        <span class="po-sub">Pay when you receive the product</span>
+                                    </span>
+                                </label>
+                                <div class="payment-option-body">
+                                    <div class="info-box" style="margin-bottom:0;">
+                                        Pay the courier directly at the time of delivery.
+                                        We will call you to confirm the order.
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Bank Transfer -->
+                            <div class="payment-option">
+                                <label class="payment-option-head">
+                                    <input type="radio" name="paymentMethod" value="bank">
+                                    <i class="fa-solid fa-building-columns main-icon" style="color:#374957;"></i>
+                                    <span>
+                                        <span class="po-title">Bank Transfer</span><br>
+                                        <span class="po-sub"><%= bank.bankName %> — <%= bank.accountName %></span>
+                                    </span>
+                                </label>
+                                <div class="payment-option-body">
+                                    <div class="info-box">
+                                        <strong>Bank:</strong> <%= bank.bankName %><br>
+                                        <strong>Branch:</strong> <%= bank.branch %><br>
+                                        <strong>Account Name:</strong> <%= bank.accountName %><br>
+                                        <strong>Account Number:</strong> <%= bank.accountNumber %><br>
+                                        <strong>Routing Number:</strong> <%= bank.routingNumber %>
+                                    </div>
+                                    <div class="form-grid">
+                                        <div class="form-group">
+                                            <label>Transaction ID / Slip Number</label>
+                                            <input type="text" name="trxId" class="form-control" placeholder="TrxID after the transfer">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Your bank / account number</label>
+                                            <input type="text" name="accountNumber" class="form-control" placeholder="The account you sent from">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- ========== Right: Order Summary ========== -->
+                <div class="summary-card">
+                    <h3>Your Order</h3>
+
+                    <% items.forEach(function(item) { %>
+                        <div class="summary-row">
+                            <span style="flex:1;"><%= item.title %> <strong>× <%= item.quantity %></strong></span>
+                            <span>&#2547; <%= (item.price * item.quantity).toLocaleString('en-US') %></span>
+                        </div>
+                    <% }); %>
+
+                    <div class="summary-row" style="border-top:1px solid #e5e5e5; margin-top:8px; padding-top:12px;">
+                        <span>Subtotal</span>
+                        <span id="summarySubtotal" data-value="<%= subtotal %>">&#2547; <%= subtotal.toLocaleString('en-US') %></span>
+                    </div>
+
+                    <div class="summary-row">
+                        <span>Delivery Charge</span>
+                        <span id="summaryShipping">&#2547; <%= shipping.insideDhaka %></span>
+                    </div>
+
+                    <!-- Coupon -->
+                    <div style="margin:14px 0; padding-top:12px; border-top:1px solid #e5e5e5;">
+                        <% if (coupon) { %>
+                            <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
+                                <span style="font-size:13px; color:#1f8a3b; font-weight:600;">
+                                    <i class="fa-solid fa-tag"></i> <%= coupon.code %> applied
+                                </span>
+                                <button type="submit" form="removeCouponForm" class="btn-link-danger" style="background:none; border:none; color:#c0392b; cursor:pointer; font-size:12px; text-decoration:underline;">
+                                    Remove
+                                </button>
+                            </div>
+                        <% } else { %>
+                            <label style="display:block; font-size:12.5px; color:#555; margin-bottom:6px;">Have a coupon code?</label>
+                            <div style="display:flex; gap:8px;">
+                                <input type="text" name="code" form="applyCouponForm" class="form-control" placeholder="Coupon code" style="flex:1; padding:9px 10px;">
+                                <button type="submit" form="applyCouponForm" class="btn btn-outline" style="white-space:nowrap; padding:9px 14px;">Apply</button>
+                            </div>
+                        <% } %>
+
+                        <% if (couponState === 'error' && couponMessage) { %>
+                            <div style="margin-top:8px; font-size:12.5px; color:#c0392b;"><%= couponMessage %></div>
+                        <% } else if (couponState === 'applied') { %>
+                            <div style="margin-top:8px; font-size:12.5px; color:#1f8a3b;">Coupon applied successfully.</div>
+                        <% } else if (couponState === 'empty') { %>
+                            <div style="margin-top:8px; font-size:12.5px; color:#c0392b;">Your cart is empty.</div>
+                        <% } %>
+                    </div>
+
+                    <% if (discount > 0) { %>
+                    <div class="summary-row" style="color:#1f8a3b;">
+                        <span>Discount (Coupon)</span>
+                        <span id="summaryDiscount" data-value="<%= discount %>">− &#2547; <%= discount.toLocaleString('en-US') %></span>
+                    </div>
+                    <% } else { %>
+                    <span id="summaryDiscount" data-value="0" style="display:none;"></span>
+                    <% } %>
+
+                    <div class="summary-row" id="summaryChargeRow" style="color:#c0392b;">
+                        <span>Payment Charge (bKash <span id="chargePercentLabel"><%= bkashChargePercent %>%</span>)</span>
+                        <span id="summaryCharge" data-percent="<%= bkashChargePercent %>">&#2547; <%= Number(paymentCharge).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 }) %></span>
+                    </div>
+
+                    <div class="summary-row total">
+                        <span>Total</span>
+                        <span id="summaryTotal" data-discount="<%= discount %>">&#2547; <%= (subtotal + shipping.insideDhaka - discount + paymentCharge).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 }) %></span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="width:100%; margin-top:16px; padding:13px;">
+                        <i class="fa-solid fa-check"></i> Confirm Order
+                    </button>
+
+                    <a href="/cart" style="display:block; text-align:center; margin-top:12px; color:#777; font-size:12.5px;">
+                        <i class="fa-solid fa-angle-left"></i> Back to Cart
+                    </a>
+                </div>
+
+            </div>
+
+        </form>
+
+        <!-- Coupon forms (outside the main order form, linked via form= attribute) -->
+        <form id="applyCouponForm" action="/checkout/apply-coupon" method="POST"></form>
+        <form id="removeCouponForm" action="/checkout/remove-coupon" method="POST"></form>
+
+    </div>
+
+    <%- include('partials/footer') %>
+
+    <script src="/js/main.js?v=2"></script>
+</body>
+</html>

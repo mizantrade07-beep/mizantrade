@@ -1,0 +1,190 @@
+<%
+    const cp = coupon || {};
+    const formAction = coupon ? "/admin/coupons/edit/" + coupon._id : "/admin/coupons/add";
+
+    function toDateInput(d) {
+        if (!d) return "";
+        var dt = new Date(d);
+        if (isNaN(dt.getTime())) return "";
+        return dt.toISOString().slice(0, 10);
+    }
+
+    const selectedProducts = (cp.applicableProducts || []).map(String);
+    const selectedCustomers = (cp.applicableCustomers || []).map(String);
+%>
+
+<%- include("partials/head", {
+    title: (coupon ? "Edit Coupon" : "Add Coupon") + " | MizanTrade Admin"
+}) %>
+
+<%- include("partials/sidebar") %>
+
+<div class="admin-main">
+
+    <%- include("partials/topbar", {
+        title: coupon ? "Edit Coupon" : "Add Coupon"
+    }) %>
+
+    <main class="admin-content">
+
+        <div class="dashboard-header">
+            <div>
+                <h1 class="dashboard-title"><%= coupon ? "Edit Coupon" : "Add New Coupon" %></h1>
+                <p class="dashboard-subtitle">
+                    Set the discount, applicable products or customers, validity and usage limit.
+                </p>
+            </div>
+
+            <a href="/admin/coupons" class="secondary-button">
+                <i class="fa-solid fa-arrow-left"></i>
+                Back to Coupons
+            </a>
+        </div>
+
+        <form action="<%= formAction %>" method="POST">
+
+            <div class="cms-two-col">
+
+                <!-- ===== বাম কলাম ===== -->
+                <div class="side-stack">
+
+                    <section class="dashboard-card">
+                        <div class="card-header">
+                            <h2 class="card-title"><i class="fa-solid fa-tag card-icon"></i> Coupon Details</h2>
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="codeInput">Coupon Code *</label>
+                                <input type="text" id="codeInput" name="code" required
+                                       value="<%= cp.code || '' %>" placeholder="e.g. EID25"
+                                       style="text-transform:uppercase;">
+                                <div class="tag-input-hint">Will be saved in uppercase.</div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="discountType">Discount Type *</label>
+                                <select id="discountType" name="discountType">
+                                    <option value="percent" <%= cp.discountType === 'percent' || !coupon ? 'selected' : '' %>>Percent (%)</option>
+                                    <option value="fixed" <%= cp.discountType === 'fixed' ? 'selected' : '' %>>Fixed Amount (৳)</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="discountValue">Discount Value *</label>
+                                <input type="number" id="discountValue" name="discountValue" min="0" step="1" required
+                                       value="<%= cp.discountValue != null ? cp.discountValue : '' %>" placeholder="e.g. 10">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="maxDiscount">Max Discount (৳)</label>
+                                <input type="number" id="maxDiscount" name="maxDiscount" min="0" step="1"
+                                       value="<%= cp.maxDiscount || '' %>" placeholder="0 = no limit">
+                                <div class="tag-input-hint">Applies to Percent type only.</div>
+                            </div>
+
+                            <div class="form-group form-full">
+                                <label for="description">Description</label>
+                                <input type="text" id="description" name="description"
+                                       value="<%= cp.description || '' %>" placeholder="Internal note (shown in the admin panel)">
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="dashboard-card">
+                        <div class="card-header">
+                            <h2 class="card-title"><i class="fa-solid fa-bullseye card-icon"></i> Applies To</h2>
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="form-group form-full">
+                                <label for="productSelect">
+                                    Specific products
+                                    <span class="label-hint">— leave empty to apply to all products</span>
+                                </label>
+                                <select id="productSelect" name="applicableProducts" multiple size="8">
+                                    <% products.forEach(function (p) { %>
+                                        <option value="<%= p._id %>"
+                                            <%= selectedProducts.indexOf(String(p._id)) !== -1 ? 'selected' : '' %>>
+                                            <%= p.title %><%= p.sku ? ' (' + p.sku + ')' : '' %>
+                                        </option>
+                                    <% }); %>
+                                </select>
+                                <div class="tag-input-hint">Hold Ctrl or Cmd to select multiple.</div>
+                            </div>
+
+                            <div class="form-group form-full">
+                                <label for="customerSelect">
+                                    Specific customers
+                                    <span class="label-hint">— leave empty so everyone (including guests) can use it</span>
+                                </label>
+                                <select id="customerSelect" name="applicableCustomers" multiple size="8">
+                                    <% customers.forEach(function (cu) { %>
+                                        <option value="<%= cu._id %>"
+                                            <%= selectedCustomers.indexOf(String(cu._id)) !== -1 ? 'selected' : '' %>>
+                                            <%= cu.name %> — <%= cu.email %>
+                                        </option>
+                                    <% }); %>
+                                </select>
+                                <div class="tag-input-hint">If selected, only those customers (while logged in) can use the coupon.</div>
+                            </div>
+                        </div>
+                    </section>
+
+                </div>
+
+                <!-- ===== ডান কলাম ===== -->
+                <div class="side-stack">
+
+                    <section class="dashboard-card">
+                        <div class="card-header">
+                            <h2 class="card-title"><i class="fa-solid fa-sliders card-icon"></i> Limits &amp; Validity</h2>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="minOrderAmount">Minimum Order Amount (৳)</label>
+                            <input type="number" id="minOrderAmount" name="minOrderAmount" min="0" step="1"
+                                   value="<%= cp.minOrderAmount || '' %>" placeholder="0 = no minimum">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="usageLimit">Usage Limit (total)</label>
+                            <input type="number" id="usageLimit" name="usageLimit" min="0" step="1"
+                                   value="<%= cp.usageLimit || '' %>" placeholder="0 = unlimited">
+                            <div class="tag-input-hint">Used so far: <%= cp.usedCount || 0 %></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="startDate">Start Date</label>
+                            <input type="date" id="startDate" name="startDate" value="<%= toDateInput(cp.startDate) %>">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="endDate">End Date</label>
+                            <input type="date" id="endDate" name="endDate" value="<%= toDateInput(cp.endDate) %>">
+                        </div>
+
+                        <label class="checkbox-row">
+                            <input type="checkbox" name="isActive" <%= (coupon && !cp.isActive) ? '' : 'checked' %>>
+                            <span>Coupon is Active</span>
+                        </label>
+                    </section>
+
+                    <div class="form-actions">
+                        <button type="submit" class="primary-button">
+                            <i class="fa-solid fa-floppy-disk"></i>
+                            <%= coupon ? "Update Coupon" : "Create Coupon" %>
+                        </button>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </main>
+
+</div>
+
+<%- include("partials/footer") %>

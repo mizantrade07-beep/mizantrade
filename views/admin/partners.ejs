@@ -1,0 +1,93 @@
+<%- include("partials/head", {
+    title: "Partner Applications | MizanTrade Admin"
+}) %>
+
+<%- include("partials/sidebar") %>
+
+<div class="admin-main">
+
+    <%- include("partials/topbar", {
+        title: "Partners"
+    }) %>
+
+    <main class="admin-content">
+
+        <div class="dashboard-header">
+            <div>
+                <h1 class="dashboard-title">Partner Applications</h1>
+                <p class="dashboard-subtitle">
+                    View dealership applications, verify documents and Approve or Reject.
+                </p>
+            </div>
+        </div>
+
+        <section class="dashboard-card">
+
+            <div class="card-header">
+                <h2 class="card-title">All Applications (<%= requests.length %>)</h2>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Company</th>
+                            <th>Owner</th>
+                            <th>Phone</th>
+                            <th>Email</th>
+                            <th>Documents</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        <% if (requests.length === 0) { %>
+                            <tr>
+                                <td colspan="8" class="empty-state">No partner applications yet.</td>
+                            </tr>
+                        <% } %>
+
+                        <% requests.forEach(function(req) { %>
+                            <tr>
+                                <td><strong><%= req.companyName %></strong></td>
+                                <td><%= req.ownerName %></td>
+                                <td><a href="tel:<%= req.phone %>"><%= req.phone %></a></td>
+                                <td><a href="mailto:<%= req.email %>"><%= req.email %></a></td>
+                                <td>
+                                    <% if (req.documents && req.documents.length > 0) { %>
+                                        <span class="badge badge-approved"><%= req.documents.length %> file(s)</span>
+                                    <% } else { %>
+                                        <span class="badge">—</span>
+                                    <% } %>
+                                </td>
+                                <td><%= new Date(req.createdAt).toLocaleDateString('en-GB') %></td>
+                                <td>
+                                    <% if (req.status === 'Approved') { %>
+                                        <span class="badge badge-approved">Approved</span>
+                                    <% } else if (req.status === 'Rejected') { %>
+                                        <span class="badge badge-rejected">Rejected</span>
+                                    <% } else { %>
+                                        <span class="badge badge-pending">Pending</span>
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <a href="/admin/partners/<%= req._id %>" class="action-edit" title="View Details">👁</a>
+                                    <a href="/admin/partners/delete/<%= req._id %>" class="action-delete" title="Delete"
+                                       onclick="return confirm('Delete this partner application permanently?');">🗑</a>
+                                </td>
+                            </tr>
+                        <% }); %>
+
+                    </tbody>
+                </table>
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+<%- include("partials/footer") %>

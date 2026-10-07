@@ -1,0 +1,66 @@
+<!-- ==========================================================
+     PRODUCT CARD (পার্শিয়াল) — লোকাল ভেরিয়েবল: product
+========================================================== -->
+<%
+    var price = null;
+    if (!product.callForPrice) {
+        price = product.salePrice || product.regularPrice || null;
+    }
+    var hasDiscount = !product.callForPrice && product.salePrice && product.regularPrice && product.regularPrice > product.salePrice;
+    var discount = hasDiscount ? Math.round((1 - product.salePrice / product.regularPrice) * 100) : 0;
+    var inStock = product.stockStatus === 'In Stock';
+    var canBuy = price !== null && product.stockStatus !== 'Out of Stock';
+%>
+<div class="product-card">
+
+    <% if (hasDiscount) { %>
+        <span class="pc-badge">-<%= discount %>%</span>
+    <% } else if (product.stockStatus === 'Out of Stock') { %>
+        <span class="pc-badge" style="background:#c0392b;">Out of Stock</span>
+    <% } else if (product.stockStatus === 'Pre Order') { %>
+        <span class="pc-badge" style="background:#8e44ad;">Pre Order</span>
+    <% } %>
+
+    <a href="/product/<%= product.slug %>" class="pc-img-wrap">
+        <img src="<%= product.mainImage || '/images/logo.svg' %>" alt="<%= product.title %>" loading="lazy" decoding="async">
+    </a>
+
+    <a href="/product/<%= product.slug %>" class="pc-title"><%= product.title %></a>
+
+    <% if (price !== null) { %>
+        <div class="pc-price">৳ <%= Number(price).toLocaleString('en-US') %></div>
+        <% if (hasDiscount) { %>
+            <div class="pc-price-old">৳ <%= Number(product.regularPrice).toLocaleString('en-US') %></div>
+        <% } %>
+    <% } else { %>
+        <a href="tel:<%= site.hotline %>" class="pc-call-price">
+            <i class="fa-solid fa-phone-volume"></i> Call for Price
+        </a>
+    <% } %>
+
+    <div class="pc-stock <%= inStock ? 'in' : (product.stockStatus === 'Out of Stock' ? 'out' : '') %>">
+        <% if (inStock) { %><i class="fa-solid fa-circle-check"></i> In Stock<% } else { %><%= product.stockStatus %><% } %>
+    </div>
+
+    <div class="pc-actions">
+        <% if (canBuy) { %>
+            <form action="/cart/add/<%= product._id %>" method="POST" style="flex:1; display:flex;">
+                <input type="hidden" name="quantity" value="1">
+                <button type="submit" class="btn btn-cart js-add-cart" data-id="<%= product._id %>">
+                    <i class="fa-solid fa-cart-plus"></i> Add to Cart
+                </button>
+            </form>
+        <% } else if (price !== null) { %>
+            <a href="/product/<%= product.slug %>" class="btn btn-cart" style="flex:1;">View Details</a>
+        <% } else { %>
+            <a href="tel:<%= site.hotline %>" class="btn btn-cart" style="flex:1; background:#374957;">
+                <i class="fa-solid fa-phone"></i> Call Now
+            </a>
+        <% } %>
+
+        <a href="/wishlist/add/<%= product._id %>" class="btn btn-wish" title="Wishlist">
+            <i class="fa-regular fa-heart"></i>
+        </a>
+    </div>
+
+</div>

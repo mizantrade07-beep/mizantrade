@@ -1,0 +1,44 @@
+<%- include("partials/head", {
+    title: "Add Product | MizanTrade"
+}) %>
+
+<%- include("partials/sidebar") %>
+
+<div class="admin-main">
+
+    <%- include("partials/topbar", {
+        title: "Add Product"
+    }) %>
+
+
+    <main class="admin-content">
+
+        <div class="dashboard-header">
+
+            <div>
+                <h1 class="dashboard-title">
+                    Add Product
+                </h1>
+
+                <p class="dashboard-subtitle">
+                    Add a new hardware product to MizanTrade.
+                </p>
+            </div>
+
+            <a href="/admin/products" class="secondary-button">
+                ← Back to Products
+            </a>
+
+        </div>
+
+        <%- include("partials/productForm", {
+            product: null,
+            categories: categories,
+            formAction: "/admin/product/add"
+        }) %>
+
+    </main>
+
+</div>
+
+<%- include("partials/footer") %>

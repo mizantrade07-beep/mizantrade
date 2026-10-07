@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title><%= pageTitle %> | MizanTrade</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-family: Arial, sans-serif;
+            background: #f5f7fb;
+            color: #1f2937;
+        }
+
+        .error-box {
+            width: min(90%, 520px);
+            padding: 50px 30px;
+
+            text-align: center;
+
+            background: #ffffff;
+            border-radius: 16px;
+
+            box-shadow:
+                0 10px 30px rgba(0, 0, 0, 0.08);
+        }
+
+        .error-code {
+            margin: 0;
+
+            font-size: 80px;
+            font-weight: 800;
+        }
+
+        h1 {
+            margin: 10px 0;
+        }
+
+        p {
+            color: #6b7280;
+            line-height: 1.7;
+        }
+
+        a {
+            display: inline-block;
+
+            margin-top: 20px;
+            padding: 12px 22px;
+
+            color: #ffffff;
+            background: #111827;
+
+            text-decoration: none;
+            border-radius: 8px;
+        }
+
+        pre {
+            margin-top: 25px;
+            padding: 15px;
+
+            overflow: auto;
+
+            text-align: left;
+
+            background: #f3f4f6;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="error-box">
+
+        <p class="error-code">500</p>
+
+        <h1>Server Error</h1>
+
+        <p>
+            Sorry, something went wrong on the server. 
+            Please try again after a while.
+        </p>
+
+        <% if (error) { %>
+
+            <pre><%= error.message %></pre>
+
+        <% } %>
+
+        <a href="/">
+            Go To Homepage
+        </a>
+
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,149 @@
+<%- include("partials/head", {
+    title: "Comments | MizanTrade Admin"
+}) %>
+
+<%- include("partials/sidebar") %>
+
+<div class="admin-main">
+
+    <%- include("partials/topbar", {
+        title: "Comments Moderation"
+    }) %>
+
+    <main class="admin-content">
+
+        <div class="dashboard-header">
+            <div>
+                <h1 class="dashboard-title">Customer Comments</h1>
+                <p class="dashboard-subtitle">
+                    Approve or reject blog post comments. Approved comments will appear on the post.
+                </p>
+            </div>
+        </div>
+
+
+        <section class="stats-grid">
+
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-clock"></i></div>
+                <div class="stat-content">
+                    <span>Pending</span>
+                    <strong><%= pendingCount %></strong>
+                </div>
+            </article>
+
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-circle-check"></i></div>
+                <div class="stat-content">
+                    <span>Approved</span>
+                    <strong><%= approvedCount %></strong>
+                </div>
+            </article>
+
+        </section>
+
+
+        <section class="dashboard-card">
+
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fa-solid fa-comments card-icon"></i>
+                    <% if (filter === 'pending') { %>Pending Comments
+                    <% } else if (filter === 'approved') { %>Approved Comments
+                    <% } else { %>All Comments<% } %>
+                </h2>
+
+                <div class="product-search" style="gap:6px;">
+                    <a href="/admin/comments?filter=pending"
+                       class="page-link <%= filter === 'pending' ? 'active' : '' %>">Pending</a>
+                    <a href="/admin/comments?filter=approved"
+                       class="page-link <%= filter === 'approved' ? 'active' : '' %>">Approved</a>
+                    <a href="/admin/comments?filter=all"
+                       class="page-link <%= filter === 'all' ? 'active' : '' %>">All</a>
+                </div>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Author</th>
+                            <th>Comment</th>
+                            <th>Post</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        <% if (comments.length === 0) { %>
+                            <tr>
+                                <td colspan="6" style="text-align:center; padding:30px; color:#64748b;">
+                                    No comments.
+                                </td>
+                            </tr>
+                        <% } %>
+
+                        <% comments.forEach(function (c) { %>
+                            <tr>
+                                <td>
+                                    <div class="cat-cell">
+                                        <span class="cat-icon"><i class="fa-solid fa-user"></i></span>
+                                        <div>
+                                            <strong><%= c.name %></strong>
+                                            <% if (c.email) { %>
+                                                <div style="font-size:11px; color:#94a3b8;"><%= c.email %></div>
+                                            <% } %>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td style="max-width:340px; font-size:13px; color:#334155; line-height:1.5;">
+                                    <%= c.content.length > 160 ? c.content.slice(0, 160) + '…' : c.content %>
+                                </td>
+                                <td style="font-size:12px;">
+                                    <% if (c.post) { %>
+                                        <a href="/blog/<%= c.post.slug %>" target="_blank" style="color:var(--blue);">
+                                            <%= c.post.title %>
+                                        </a>
+                                    <% } else { %>
+                                        <span style="color:#94a3b8;">(deleted)</span>
+                                    <% } %>
+                                </td>
+                                <td style="font-size:12px; color:#64748b;">
+                                    <%= new Date(c.createdAt).toLocaleDateString() %>
+                                </td>
+                                <td>
+                                    <% if (c.isApproved) { %>
+                                        <span class="badge badge-approved">Approved</span>
+                                    <% } else { %>
+                                        <span class="badge badge-pending">Pending</span>
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <div class="product-actions">
+                                        <% if (!c.isApproved) { %>
+                                            <a href="/admin/comments/approve/<%= c._id %>" class="action-view" title="Approve">
+                                                <i class="fa-solid fa-check"></i>
+                                            </a>
+                                        <% } %>
+                                        <a href="/admin/comments/delete/<%= c._id %>" class="action-delete" title="Delete"
+                                           onclick="return confirm('Delete this comment?');">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        <% }); %>
+
+                    </tbody>
+                </table>
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+<%- include("partials/footer") %>

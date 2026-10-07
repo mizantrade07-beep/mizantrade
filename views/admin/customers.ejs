@@ -1,0 +1,171 @@
+<%- include("partials/head", {
+    title: "Customers | MizanTrade Admin"
+}) %>
+
+<%- include("partials/sidebar") %>
+
+<div class="admin-main">
+
+    <%- include("partials/topbar", {
+        title: "Customers"
+    }) %>
+
+    <main class="admin-content">
+
+        <div class="dashboard-header">
+            <div>
+                <h1 class="dashboard-title">Customers</h1>
+                <p class="dashboard-subtitle">
+                    View information, orders and status of customers who signed up on the site.
+                </p>
+            </div>
+        </div>
+
+
+        <section class="stats-grid">
+
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+                <div class="stat-content">
+                    <span>Total Customers</span>
+                    <strong><%= totalCustomers %></strong>
+                </div>
+            </article>
+
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-user-check"></i></div>
+                <div class="stat-content">
+                    <span>Active</span>
+                    <strong><%= activeTotal %></strong>
+                </div>
+            </article>
+
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-user-slash"></i></div>
+                <div class="stat-content">
+                    <span>Inactive</span>
+                    <strong><%= totalCustomers - activeTotal %></strong>
+                </div>
+            </article>
+
+        </section>
+
+
+        <section class="dashboard-card">
+
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fa-solid fa-users card-icon"></i>
+                    All Customers
+                </h2>
+
+                <form method="GET" action="/admin/customers" class="product-search">
+                    <input
+                        type="text"
+                        name="search"
+                        value="<%= search %>"
+                        placeholder="Name, email or phone..."
+                    >
+
+                    <select name="status" class="filter-select">
+                        <option value="">All Status</option>
+                        <option value="active" <%= status === 'active' ? 'selected' : '' %>>Active</option>
+                        <option value="inactive" <%= status === 'inactive' ? 'selected' : '' %>>Inactive</option>
+                    </select>
+
+                    <button type="submit">
+                        <i class="fa-solid fa-filter"></i>
+                        Filter
+                    </button>
+                </form>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Customer</th>
+                            <th>Contact</th>
+                            <th>Location</th>
+                            <th>Status</th>
+                            <th>Joined</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        <% if (customers.length === 0) { %>
+                            <tr>
+                                <td colspan="6" style="text-align:center; padding:30px; color:#64748b;">
+                                    No customers found.
+                                </td>
+                            </tr>
+                        <% } %>
+
+                        <% customers.forEach(function (c) { %>
+                            <tr>
+                                <td>
+                                    <div class="cat-cell">
+                                        <span class="cat-icon"><i class="fa-solid fa-user"></i></span>
+                                        <strong><%= c.name %></strong>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div style="font-size:13px; line-height:1.6;">
+                                        <div><code class="slug-chip"><%= c.email %></code></div>
+                                        <% if (c.phone) { %>
+                                            <div style="color:#64748b;"><i class="fa-solid fa-phone"></i> <%= c.phone %></div>
+                                        <% } %>
+                                    </div>
+                                </td>
+                                <td style="font-size:13px; color:#334155;">
+                                    <%= [c.city, c.district].filter(Boolean).join(', ') || '—' %>
+                                </td>
+                                <td>
+                                    <% if (c.isActive) { %>
+                                        <span class="badge badge-approved">Active</span>
+                                    <% } else { %>
+                                        <span class="badge badge-rejected">Inactive</span>
+                                    <% } %>
+                                </td>
+                                <td style="font-size:12px; color:#64748b;">
+                                    <%= new Date(c.createdAt).toLocaleDateString() %>
+                                </td>
+                                <td>
+                                    <div class="product-actions">
+                                        <a href="/admin/customers/<%= c._id %>" class="action-edit" title="View">
+                                            <i class="fa-solid fa-eye"></i>
+                                        </a>
+                                        <% if (can('customers.manage')) { %>
+                                            <a href="/admin/customers/delete/<%= c._id %>" class="action-delete" title="Delete"
+                                               onclick="return confirm('<%= c.name %> — delete this?');">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </a>
+                                        <% } %>
+                                    </div>
+                                </td>
+                            </tr>
+                        <% }); %>
+
+                    </tbody>
+                </table>
+            </div>
+
+            <% if (totalPages > 1) { %>
+                <div class="pagination">
+                    <% for (var p = 1; p <= totalPages; p++) { %>
+                        <a
+                            href="/admin/customers?page=<%= p %>&search=<%= encodeURIComponent(search) %>&status=<%= status %>"
+                            class="page-link <%= p === currentPage ? 'active' : '' %>"
+                        ><%= p %></a>
+                    <% } %>
+                </div>
+            <% } %>
+
+        </section>
+
+    </main>
+
+</div>
+
+<%- include("partials/footer") %>

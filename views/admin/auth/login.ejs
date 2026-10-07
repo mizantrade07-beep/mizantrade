@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        <%= typeof pageTitle !== "undefined" ? pageTitle : "Admin Login" %> | MizanTrade
+    </title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+
+            min-height: 100vh;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-family:
+                Inter,
+                Arial,
+                Helvetica,
+                sans-serif;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #f5f7fb,
+                    #e9eef7
+                );
+
+            color: #111827;
+        }
+
+
+        .login-wrapper {
+            width: 100%;
+            padding: 20px;
+        }
+
+
+        .login-card {
+            width: 100%;
+            max-width: 430px;
+
+            margin: auto;
+
+            padding: 40px;
+
+            background: #ffffff;
+
+            border-radius: 18px;
+
+            box-shadow:
+                0 20px 60px
+                rgba(0, 0, 0, 0.10);
+        }
+
+
+        .brand {
+            text-align: center;
+
+            margin-bottom: 30px;
+        }
+
+
+        .brand-logo {
+            width: 58px;
+            height: 58px;
+
+            margin: 0 auto 15px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 14px;
+
+            background: #111827;
+
+            color: #ffffff;
+
+            font-size: 24px;
+            font-weight: 800;
+        }
+
+
+        .brand h1 {
+            margin: 0;
+
+            font-size: 25px;
+            font-weight: 800;
+        }
+
+
+        .brand p {
+            margin: 8px 0 0;
+
+            color: #6b7280;
+
+            font-size: 14px;
+        }
+
+
+        .message {
+            margin-bottom: 20px;
+
+            padding: 12px 14px;
+
+            border-radius: 8px;
+
+            background: #fff7ed;
+
+            color: #9a3412;
+
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+
+        label {
+            display: block;
+
+            margin-bottom: 8px;
+
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+
+        input {
+            width: 100%;
+
+            padding: 13px 14px;
+
+            border: 1px solid #d1d5db;
+
+            border-radius: 9px;
+
+            outline: none;
+
+            font-size: 15px;
+
+            transition:
+                border-color 0.2s,
+                box-shadow 0.2s;
+        }
+
+
+        input:focus {
+            border-color: #111827;
+
+            box-shadow:
+                0 0 0 3px
+                rgba(17, 24, 39, 0.08);
+        }
+
+
+        button {
+            width: 100%;
+
+            padding: 14px;
+
+            border: 0;
+
+            border-radius: 9px;
+
+            background: #111827;
+
+            color: #ffffff;
+
+            font-size: 15px;
+            font-weight: 700;
+
+            cursor: pointer;
+
+            transition:
+                transform 0.2s,
+                opacity 0.2s;
+        }
+
+
+        button:hover {
+            opacity: 0.92;
+
+            transform:
+                translateY(-1px);
+        }
+
+
+        .footer-text {
+            margin-top: 25px;
+
+            text-align: center;
+
+            color: #9ca3af;
+
+            font-size: 12px;
+        }
+
+
+        @media (max-width: 480px) {
+
+            .login-card {
+                padding: 28px 22px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+    <main class="login-wrapper">
+
+        <section class="login-card">
+
+            <div class="brand">
+
+                <div class="brand-logo">
+                    MT
+                </div>
+
+                <h1>
+                    MizanTrade
+                </h1>
+
+                <p>
+                    Administrator Login
+                </p>
+
+            </div>
+
+
+            <% if (message === "login_required") { %>
+
+                <div class="message">
+                    Please login to access the admin dashboard.
+                </div>
+
+            <% } %>
+
+
+            <% if (message === "logout_success") { %>
+
+                <div class="message">
+                    You have been logged out successfully.
+                </div>
+
+            <% } %>
+
+
+            <% if (
+                message &&
+                message !== "login_required" &&
+                message !== "logout_success"
+            ) { %>
+
+                <div class="message">
+                    <%= message %>
+                </div>
+
+            <% } %>
+
+
+            <form
+                action="/admin/login"
+                method="POST"
+            >
+
+                <div class="form-group">
+
+                    <label for="email">
+                        Email Address
+                    </label>
+
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        value="<%= typeof oldEmail !== 'undefined' ? oldEmail : '' %>"
+                        placeholder="admin@example.com"
+                        autocomplete="username"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="password">
+                        Password
+                    </label>
+
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        placeholder="Enter your password"
+                        autocomplete="current-password"
+                        required
+                    >
+
+                </div>
+
+
+                <button type="submit">
+                    Sign In
+                </button>
+
+            </form>
+
+
+            <div class="footer-text">
+                © <%= new Date().getFullYear() %>
+                MizanTrade. All rights reserved.
+            </div>
+
+        </section>
+
+    </main>
+
+</body>
+
+</html>

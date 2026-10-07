@@ -1,0 +1,235 @@
+<%
+    const pg = page || {};
+    const seo = pg.seo || {};
+    const formAction = page ? "/admin/pages/edit/" + page._id : "/admin/pages/add";
+    const canPublish = can('content.publish');
+%>
+
+<%- include("partials/head", {
+    title: (page ? "Edit Page" : "Add Page") + " | MizanTrade Admin"
+}) %>
+
+<%- include("partials/sidebar") %>
+
+<div class="admin-main">
+
+    <%- include("partials/topbar", {
+        title: page ? "Edit Page" : "Add Page"
+    }) %>
+
+    <main class="admin-content">
+
+        <div class="dashboard-header">
+            <div>
+                <h1 class="dashboard-title"><%= page ? "Edit Page" : "Add New Page" %></h1>
+                <p class="dashboard-subtitle">
+                    Add page content, images and SEO information.
+                </p>
+            </div>
+
+            <a href="/admin/pages" class="secondary-button">
+                <i class="fa-solid fa-arrow-left"></i>
+                Back to Pages
+            </a>
+        </div>
+
+        <form action="<%= formAction %>" method="POST" enctype="multipart/form-data" id="pageForm">
+
+            <div class="cms-two-col">
+
+                <!-- ===== বাম কলাম: মূল কনটেন্ট ===== -->
+                <div class="side-stack">
+
+                    <section class="dashboard-card">
+                        <div class="card-header">
+                            <h2 class="card-title"><i class="fa-solid fa-file-lines card-icon"></i> Page Content</h2>
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="form-group form-full">
+                                <label for="titleInput">Page Title *</label>
+                                <input type="text" id="titleInput" name="title" required
+                                       value="<%= pg.title || '' %>" placeholder="Example: About Us">
+                            </div>
+
+                            <div class="form-group form-full">
+                                <label for="slugInput">
+                                    Slug <span class="label-hint">— leave blank to auto-generate</span>
+                                </label>
+                                <div class="input-with-btn">
+                                    <input type="text" id="slugInput" name="slug" value="<%= pg.slug || '' %>" placeholder="about-us">
+                                    <label class="mini-check" title="Auto slug">
+                                        <input type="checkbox" id="slugAuto" <%= page ? '' : 'checked' %>>
+                                        Auto
+                                    </label>
+                                </div>
+                                <div class="tag-input-hint">URL: <code>/page/<span id="slugPreview"><%= pg.slug || '...' %></span></code></div>
+                            </div>
+
+                            <div class="form-group form-full">
+                                <label for="excerptInput">Excerpt / Short description</label>
+                                <textarea id="excerptInput" name="excerpt" rows="2"
+                                          placeholder="Short intro (also used as the SEO description)"><%= pg.excerpt || '' %></textarea>
+                            </div>
+
+                            <div class="form-group form-full">
+                                <label>Content</label>
+                                <div class="rte-wrap">
+                                    <div class="rte-toolbar" data-editor="contentEditor">
+                                        <button type="button" class="rte-btn" data-cmd="bold" title="Bold"><i class="fa-solid fa-bold"></i></button>
+                                        <button type="button" class="rte-btn" data-cmd="italic" title="Italic"><i class="fa-solid fa-italic"></i></button>
+                                        <button type="button" class="rte-btn" data-cmd="underline" title="Underline"><i class="fa-solid fa-underline"></i></button>
+                                        <span class="rte-sep"></span>
+                                        <select class="rte-select" data-block title="Paragraph style">
+                                            <option value="p">Paragraph</option>
+                                            <option value="h2">Heading 2</option>
+                                            <option value="h3">Heading 3</option>
+                                            <option value="h4">Heading 4</option>
+                                        </select>
+                                        <span class="rte-sep"></span>
+                                        <button type="button" class="rte-btn" data-cmd="insertUnorderedList" title="Bullet list"><i class="fa-solid fa-list-ul"></i></button>
+                                        <button type="button" class="rte-btn" data-cmd="insertOrderedList" title="Numbered list"><i class="fa-solid fa-list-ol"></i></button>
+                                        <span class="rte-sep"></span>
+                                        <button type="button" class="rte-btn" data-cmd="createLink" title="Insert link"><i class="fa-solid fa-link"></i></button>
+                                        <button type="button" class="rte-btn" data-cmd="unlink" title="Remove link"><i class="fa-solid fa-link-slash"></i></button>
+                                        <span class="rte-sep"></span>
+                                        <button type="button" class="rte-btn" data-role="image" title="Upload image"><i class="fa-solid fa-image"></i></button>
+                                        <span class="rte-sep"></span>
+                                        <button type="button" class="rte-btn" data-cmd="removeFormat" title="Clear formatting"><i class="fa-solid fa-eraser"></i></button>
+                                    </div>
+                                    <div class="rte-area tall" id="contentEditor" contenteditable="true"></div>
+                                </div>
+                                <textarea name="content" class="hidden-source" data-rte-source="contentEditor"><%= pg.content || '' %></textarea>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="dashboard-card">
+                        <div class="card-header">
+                            <h2 class="card-title"><i class="fa-solid fa-magnifying-glass card-icon"></i> SEO Settings</h2>
+                        </div>
+                        <div class="form-grid">
+                            <div class="form-group form-full">
+                                <label>Meta Title</label>
+                                <input type="text" name="metaTitle" value="<%= seo.metaTitle || '' %>" placeholder="Title shown on Google">
+                            </div>
+                            <div class="form-group form-full">
+                                <label>Meta Description</label>
+                                <textarea name="metaDescription" rows="2" placeholder="150-160 character description"><%= seo.metaDescription || '' %></textarea>
+                            </div>
+                            <div class="form-group form-full">
+                                <label>Keywords</label>
+                                <input type="text" name="keywords" value="<%= seo.keywords || '' %>" placeholder="Separate with commas: ssd, ram, motherboard">
+                            </div>
+                        </div>
+                    </section>
+
+                </div>
+
+                <!-- ===== ডান কলাম: সেটিংস ===== -->
+                <div class="side-stack">
+
+                    <section class="dashboard-card">
+                        <div class="card-header">
+                            <h2 class="card-title"><i class="fa-solid fa-sliders card-icon"></i> Publish Settings</h2>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="statusSelect">Status</label>
+                            <select id="statusSelect" name="status">
+                                <option value="draft" <%= pg.status === 'draft' || !page ? 'selected' : '' %>>Draft</option>
+                                <option value="published" <%= pg.status === 'published' ? 'selected' : '' %>
+                                    <%= canPublish ? '' : 'disabled' %>>Published</option>
+                            </select>
+                            <% if (!canPublish) { %>
+                                <div class="tag-input-hint">Publishing requires the Admin or Editor role.</div>
+                            <% } %>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="templateSelect">Template</label>
+                            <select id="templateSelect" name="template">
+                                <option value="info" <%= pg.template === 'info' || !page ? 'selected' : '' %>>Info (centered, sidebar-less)</option>
+                                <option value="full" <%= pg.template === 'full' ? 'selected' : '' %>>Full width</option>
+                            </select>
+                        </div>
+
+                        <label class="checkbox-row">
+                            <input type="checkbox" name="showInFooter" <%= pg.showInFooter ? 'checked' : '' %>>
+                            <span>Show link in the footer</span>
+                        </label>
+                    </section>
+
+                    <section class="dashboard-card">
+                        <div class="card-header">
+                            <h2 class="card-title"><i class="fa-solid fa-image card-icon"></i> Featured Image</h2>
+                        </div>
+
+                        <div class="form-group">
+                            <input type="file" name="featuredImage" id="featuredImage" accept="image/jpeg,image/png,image/webp">
+                            <div class="img-preview-box" id="featuredPreviewBox"
+                                 style="<%= pg.featuredImage ? 'display:block;' : '' %>">
+                                <img id="featuredPreview" src="<%= pg.featuredImage || '' %>" alt="preview">
+                            </div>
+                        </div>
+                    </section>
+
+                    <div class="form-actions">
+                        <button type="submit" class="primary-button">
+                            <i class="fa-solid fa-floppy-disk"></i>
+                            <%= page ? "Update Page" : "Create Page" %>
+                        </button>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </main>
+
+</div>
+
+<%- include("partials/footer") %>
+
+<script src="/admin/js/rte.js"></script>
+<script>
+(function () {
+    var title = document.getElementById("titleInput");
+    var slug = document.getElementById("slugInput");
+    var auto = document.getElementById("slugAuto");
+    var preview = document.getElementById("slugPreview");
+
+    function slugify(v) {
+        return String(v || "").trim().toLowerCase()
+            .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+    }
+
+    function updatePreview() {
+        if (preview) preview.textContent = slug.value || "...";
+    }
+
+    if (title && slug) {
+        title.addEventListener("input", function () {
+            if (auto && auto.checked) { slug.value = slugify(title.value); updatePreview(); }
+        });
+        slug.addEventListener("input", function () {
+            if (auto) auto.checked = false;
+            updatePreview();
+        });
+    }
+
+    var fi = document.getElementById("featuredImage");
+    var box = document.getElementById("featuredPreviewBox");
+    var img = document.getElementById("featuredPreview");
+    if (fi && box && img) {
+        fi.addEventListener("change", function () {
+            if (fi.files && fi.files[0]) {
+                img.src = URL.createObjectURL(fi.files[0]);
+                box.style.display = "block";
+            }
+        });
+    }
+})();
+</script>

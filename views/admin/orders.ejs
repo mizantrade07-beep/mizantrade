@@ -1,0 +1,106 @@
+<%- include("partials/head", {
+    title: "Orders | MizanTrade Admin"
+}) %>
+
+<%- include("partials/sidebar") %>
+
+<div class="admin-main">
+
+    <%- include("partials/topbar", {
+        title: "Orders"
+    }) %>
+
+    <main class="admin-content">
+
+        <div class="dashboard-header">
+            <div>
+                <h1 class="dashboard-title">Orders</h1>
+                <p class="dashboard-subtitle">
+                    View all customer orders and change their status.
+                </p>
+            </div>
+        </div>
+
+        <section class="dashboard-card">
+
+            <div class="card-header">
+                <h2 class="card-title">All Orders (<%= orders.length %>)</h2>
+
+                <form method="GET" action="/admin/orders" class="product-search">
+                    <select name="status" style="padding:8px; border:1px solid #ddd; border-radius:6px;">
+                        <option value="">All Status</option>
+                        <% ['Pending','Confirmed','Processing','Shipped','Delivered','Cancelled'].forEach(function(s) { %>
+                            <option value="<%= s %>" <%= status === s ? 'selected' : '' %>><%= s %></option>
+                        <% }); %>
+                    </select>
+                    <input type="text" name="search" value="<%= search %>" placeholder="Order no / name / phone...">
+                    <button type="submit">Filter</button>
+                </form>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Order #</th>
+                            <th>Date</th>
+                            <th>Customer</th>
+                            <th>Phone</th>
+                            <th>Payment</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        <% if (orders.length === 0) { %>
+                            <tr>
+                                <td colspan="8" class="empty-state">No orders found.</td>
+                            </tr>
+                        <% } %>
+
+                        <%
+                            var statusColors = {
+                                Pending: '#b7791f',
+                                Confirmed: '#2b6cb0',
+                                Processing: '#6b46c1',
+                                Shipped: '#0987a0',
+                                Delivered: '#2f855a',
+                                Cancelled: '#c53030'
+                            };
+                            var paymentLabels = { bkash: 'bKash', cod: 'Cash on Delivery', bank: 'Bank Transfer' };
+                        %>
+
+                        <% orders.forEach(function(order) { %>
+                            <tr>
+                                <td><strong><%= order.orderNumber %></strong></td>
+                                <td><%= new Date(order.createdAt).toLocaleDateString('en-GB') %></td>
+                                <td><%= order.customer.name %></td>
+                                <td><%= order.customer.phone %></td>
+                                <td><%= paymentLabels[order.paymentMethod] || order.paymentMethod %></td>
+                                <td><strong>৳ <%= order.total.toLocaleString('en-US') %></strong></td>
+                                <td>
+                                    <span style="background:<%= statusColors[order.status] %>; color:#fff; padding:3px 10px; border-radius:12px; font-size:11.5px; font-weight:600;">
+                                        <%= order.status %>
+                                    </span>
+                                </td>
+                                <td>
+                                    <a href="/admin/order/<%= order._id %>" class="action-edit" title="View Details">👁</a>
+                                    <a href="/admin/order/delete/<%= order._id %>" class="action-delete" title="Delete"
+                                       onclick="return confirm('Delete this order permanently?');">🗑</a>
+                                </td>
+                            </tr>
+                        <% }); %>
+
+                    </tbody>
+                </table>
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+<%- include("partials/footer") %>

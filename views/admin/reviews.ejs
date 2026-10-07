@@ -1,0 +1,156 @@
+<%- include("partials/head", {
+    title: "Product Reviews | MizanTrade Admin"
+}) %>
+
+<%- include("partials/sidebar") %>
+
+<div class="admin-main">
+
+    <%- include("partials/topbar", {
+        title: "Product Reviews"
+    }) %>
+
+    <main class="admin-content">
+
+        <div class="dashboard-header">
+            <div>
+                <h1 class="dashboard-title">Product Reviews</h1>
+                <p class="dashboard-subtitle">
+                    Approve, edit or delete customer reviews. Approved reviews will appear on the product page.
+                </p>
+            </div>
+        </div>
+
+        <section class="stats-grid">
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-star"></i></div>
+                <div class="stat-content">
+                    <span>Total Reviews</span>
+                    <strong><%= totalReviews %></strong>
+                </div>
+            </article>
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-hourglass-half"></i></div>
+                <div class="stat-content">
+                    <span>Pending</span>
+                    <strong><%= pendingTotal %></strong>
+                </div>
+            </article>
+        </section>
+
+        <section class="dashboard-card">
+
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fa-solid fa-comments card-icon"></i>
+                    Moderation
+                </h2>
+
+                <div class="product-search">
+                    <a href="/admin/reviews?status=pending" class="filter-select <%= status === 'pending' ? 'active' : '' %>" style="text-decoration:none;">Pending</a>
+                    <a href="/admin/reviews?status=approved" class="filter-select <%= status === 'approved' ? 'active' : '' %>" style="text-decoration:none;">Approved</a>
+                    <a href="/admin/reviews?status=all" class="filter-select <%= status === 'all' ? 'active' : '' %>" style="text-decoration:none;">All</a>
+                </div>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Reviewer</th>
+                            <th>Rating</th>
+                            <th>Comment</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        <% if (reviews.length === 0) { %>
+                            <tr>
+                                <td colspan="6" style="text-align:center; padding:30px; color:#64748b;">
+                                    No reviews in this list.
+                                </td>
+                            </tr>
+                        <% } %>
+
+                        <% reviews.forEach(function (r) { %>
+                            <tr>
+                                <td style="font-size:13px;">
+                                    <a href="/product/<%= r.productSlug %>" target="_blank" style="color:var(--blue); text-decoration:none;">
+                                        <%= r.productTitle %>
+                                    </a>
+                                </td>
+                                <td style="font-size:13px;"><%= r.name %></td>
+                                <td style="font-size:13px; color:#f59e0b;">
+                                    ★ <%= r.rating %>/5
+                                </td>
+                                <td style="font-size:13px; color:#334155; max-width:320px;">
+                                    <%= r.comment %>
+                                    <div style="font-size:11px; color:#94a3b8; margin-top:4px;">
+                                        <%= new Date(r.createdAt).toLocaleString() %>
+                                    </div>
+                                </td>
+                                <td>
+                                    <% if (r.isApproved) { %>
+                                        <span class="badge badge-approved">Approved</span>
+                                    <% } else { %>
+                                        <span class="badge badge-pending">Pending</span>
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <div class="product-actions">
+                                        <% if (!r.isApproved) { %>
+                                            <form method="POST" action="/admin/reviews/approve/<%= r.productId %>/<%= r.reviewId %>" style="display:inline;">
+                                                <button type="submit" class="action-edit" title="Approve">
+                                                    <i class="fa-solid fa-check"></i>
+                                                </button>
+                                            </form>
+                                        <% } %>
+
+                                        <details style="display:inline;">
+                                            <summary class="action-view" title="Edit" style="list-style:none; cursor:pointer;">
+                                                <i class="fa-solid fa-pen"></i>
+                                            </summary>
+                                            <form method="POST" action="/admin/reviews/update/<%= r.productId %>/<%= r.reviewId %>"
+                                                  style="margin-top:8px; display:flex; flex-direction:column; gap:6px; min-width:220px;">
+                                                <input type="text" name="name" value="<%= r.name %>" placeholder="Name" style="padding:6px; border:1px solid var(--line); border-radius:6px;">
+                                                <select name="rating" style="padding:6px; border:1px solid var(--line); border-radius:6px;">
+                                                    <% for (var s = 1; s <= 5; s++) { %>
+                                                        <option value="<%= s %>" <%= s === r.rating ? 'selected' : '' %>><%= s %> ★</option>
+                                                    <% } %>
+                                                </select>
+                                                <textarea name="comment" rows="3" placeholder="Comment" style="padding:6px; border:1px solid var(--line); border-radius:6px;"><%= r.comment %></textarea>
+                                                <label style="font-size:12px; display:flex; align-items:center; gap:6px;">
+                                                    <input type="checkbox" name="isApproved" value="on" <%= r.isApproved ? 'checked' : '' %>>
+                                                    Approved
+                                                </label>
+                                                <button type="submit" class="primary-button" style="padding:7px;">
+                                                    <i class="fa-solid fa-floppy-disk"></i> Save
+                                                </button>
+                                            </form>
+                                        </details>
+
+                                        <form method="POST" action="/admin/reviews/delete/<%= r.productId %>/<%= r.reviewId %>" style="display:inline;"
+                                              onsubmit="return confirm('Delete this review?');">
+                                            <button type="submit" class="action-delete" title="Delete">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        <% }); %>
+
+                    </tbody>
+                </table>
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+<%- include("partials/footer") %>

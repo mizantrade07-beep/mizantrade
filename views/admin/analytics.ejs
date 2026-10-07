@@ -1,0 +1,224 @@
+<%- include("partials/head", {
+    title: "Analytics | MizanTrade Admin"
+}) %>
+
+<%- include("partials/sidebar") %>
+
+<div class="admin-main">
+
+    <%- include("partials/topbar", {
+        title: "Analytics Report"
+    }) %>
+
+    <main class="admin-content">
+
+        <div class="dashboard-header">
+            <div>
+                <h1 class="dashboard-title">Analytics Report</h1>
+                <p class="dashboard-subtitle">
+                    Overview of orders, revenue, payments and customer logins.
+                </p>
+            </div>
+
+            <div class="product-search">
+                <% [["7","7 days"],["30","30 days"],["90","90 days"],["all","All"]].forEach(function (r) { %>
+                    <a href="/admin/analytics?range=<%= r[0] %>"
+                       class="filter-select <%= range === r[0] ? 'active' : '' %>"
+                       style="text-decoration:none;"><%= r[1] %></a>
+                <% }); %>
+            </div>
+        </div>
+
+        <section class="stats-grid">
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-sack-dollar"></i></div>
+                <div class="stat-content">
+                    <span>Total Revenue</span>
+                    <strong>৳ <%= stats.revenue.toLocaleString('en-US') %></strong>
+                </div>
+            </article>
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-cart-shopping"></i></div>
+                <div class="stat-content">
+                    <span>Orders</span>
+                    <strong><%= stats.orders %></strong>
+                </div>
+            </article>
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-receipt"></i></div>
+                <div class="stat-content">
+                    <span>Avg. Order Value</span>
+                    <strong>৳ <%= stats.avgOrderValue.toLocaleString('en-US') %></strong>
+                </div>
+            </article>
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-percent"></i></div>
+                <div class="stat-content">
+                    <span>Discount Given</span>
+                    <strong>৳ <%= stats.discount.toLocaleString('en-US') %></strong>
+                </div>
+            </article>
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+                <div class="stat-content">
+                    <span>Customers</span>
+                    <strong><%= stats.totalCustomers %></strong>
+                </div>
+            </article>
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-user-plus"></i></div>
+                <div class="stat-content">
+                    <span>New Customers</span>
+                    <strong><%= stats.newCustomers %></strong>
+                </div>
+            </article>
+        </section>
+
+        <section class="dashboard-card">
+            <div class="card-header">
+                <h2 class="card-title"><i class="fa-solid fa-chart-line card-icon"></i> Revenue Trend</h2>
+            </div>
+            <div style="padding:16px;">
+                <canvas id="revenueChart" height="90"></canvas>
+            </div>
+        </section>
+
+        <div class="cms-two-col">
+            <section class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fa-solid fa-credit-card card-icon"></i> Payment Methods</h2>
+                </div>
+                <div style="padding:16px;">
+                    <canvas id="paymentChart" height="160"></canvas>
+                </div>
+                <div class="table-wrapper">
+                    <table class="admin-table">
+                        <thead><tr><th>Method</th><th>Orders</th><th>Revenue</th></tr></thead>
+                        <tbody>
+                            <% if (byPayment.length === 0) { %>
+                                <tr><td colspan="3" style="text-align:center; color:#64748b; padding:20px;">No data</td></tr>
+                            <% } %>
+                            <% byPayment.forEach(function (p) { %>
+                                <tr>
+                                    <td><%= p.method %></td>
+                                    <td><%= p.count %></td>
+                                    <td>৳ <%= p.revenue.toLocaleString('en-US') %></td>
+                                </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fa-solid fa-list-check card-icon"></i> Orders by Status</h2>
+                </div>
+                <div class="table-wrapper">
+                    <table class="admin-table">
+                        <thead><tr><th>Status</th><th>Count</th></tr></thead>
+                        <tbody>
+                            <% if (byStatus.length === 0) { %>
+                                <tr><td colspan="2" style="text-align:center; color:#64748b; padding:20px;">No data</td></tr>
+                            <% } %>
+                            <% byStatus.forEach(function (s) { %>
+                                <tr>
+                                    <td><span class="badge badge-info"><%= s.status %></span></td>
+                                    <td><%= s.count %></td>
+                                </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="card-header" style="margin-top:10px;">
+                    <h2 class="card-title"><i class="fa-solid fa-fire card-icon"></i> Top Products</h2>
+                </div>
+                <div class="table-wrapper">
+                    <table class="admin-table">
+                        <thead><tr><th>Product</th><th>Sold</th><th>Revenue</th></tr></thead>
+                        <tbody>
+                            <% if (topProducts.length === 0) { %>
+                                <tr><td colspan="3" style="text-align:center; color:#64748b; padding:20px;">No data</td></tr>
+                            <% } %>
+                            <% topProducts.forEach(function (t) { %>
+                                <tr>
+                                    <td style="font-size:13px;"><%= t.title %></td>
+                                    <td><%= t.qty %></td>
+                                    <td>৳ <%= t.revenue.toLocaleString('en-US') %></td>
+                                </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+
+        <section class="dashboard-card">
+            <div class="card-header">
+                <h2 class="card-title"><i class="fa-solid fa-right-to-bracket card-icon"></i> Recent Customer Logins</h2>
+            </div>
+            <div class="table-wrapper">
+                <table class="admin-table">
+                    <thead><tr><th>Customer</th><th>Email</th><th>Last Login</th></tr></thead>
+                    <tbody>
+                        <% if (recentLogins.length === 0) { %>
+                            <tr><td colspan="3" style="text-align:center; color:#64748b; padding:20px;">No customer logins yet.</td></tr>
+                        <% } %>
+                        <% recentLogins.forEach(function (c) { %>
+                            <tr>
+                                <td><%= c.name %></td>
+                                <td><a href="mailto:<%= c.email %>"><code class="slug-chip"><%= c.email %></code></a></td>
+                                <td style="font-size:12px; color:#64748b;"><%= new Date(c.lastLoginAt).toLocaleString() %></td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+</div>
+
+<%- include("partials/footer") %>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+(function () {
+    var trend = <%- trendJson %>;
+    var payments = <%- paymentJson %>;
+
+    if (window.Chart && document.getElementById("revenueChart")) {
+        new Chart(document.getElementById("revenueChart"), {
+            type: "line",
+            data: {
+                labels: trend.map(function (t) { return t.date; }),
+                datasets: [{
+                    label: "Revenue (৳)",
+                    data: trend.map(function (t) { return t.revenue; }),
+                    borderColor: "#ef4a23",
+                    backgroundColor: "rgba(239,74,35,0.12)",
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: { responsive: true, plugins: { legend: { display: false } } }
+        });
+    }
+
+    if (window.Chart && document.getElementById("paymentChart")) {
+        new Chart(document.getElementById("paymentChart"), {
+            type: "doughnut",
+            data: {
+                labels: payments.map(function (p) { return p.label; }),
+                datasets: [{
+                    data: payments.map(function (p) { return p.value; }),
+                    backgroundColor: ["#e2136e", "#82b440", "#374957", "#ef4a23", "#3b82f6"]
+                }]
+            },
+            options: { responsive: true }
+        });
+    }
+})();
+</script>

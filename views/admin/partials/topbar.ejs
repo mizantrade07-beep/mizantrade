@@ -1,0 +1,61 @@
+<header class="admin-topbar">
+
+    <div class="topbar-left">
+
+        <button
+            type="button"
+            class="sidebar-toggle"
+            id="sidebarToggle"
+            aria-label="Toggle sidebar"
+        >
+            <i class="fa-solid fa-bars"></i>
+        </button>
+
+        <div>
+            <p class="topbar-eyebrow">
+                MizanTrade Admin
+            </p>
+
+            <h1 class="topbar-title">
+                <%= pageTitle || "Dashboard" %>
+            </h1>
+        </div>
+
+    </div>
+
+    <div class="topbar-right">
+
+        <div class="admin-user">
+
+            <div class="admin-avatar">
+                <%= admin?.name?.charAt(0)?.toUpperCase() || "A" %>
+            </div>
+
+            <div class="admin-user-info">
+                <strong>
+                    <%= admin?.name || "Administrator" %>
+                </strong>
+
+                <span>
+                    <%= admin?.role || "admin" %>
+                </span>
+            </div>
+
+        </div>
+
+        <form
+            action="/admin/logout"
+            method="POST"
+        >
+            <button
+                type="submit"
+                class="logout-button"
+            >
+                <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                Logout
+            </button>
+        </form>
+
+    </div>
+
+</header>

@@ -1,0 +1,263 @@
+<%- include("partials/head", {
+    title: (category ? "Edit Category" : "Add Category") + " | MizanTrade Admin"
+}) %>
+
+<%- include("partials/sidebar") %>
+
+<div class="admin-main">
+
+    <%- include("partials/topbar", {
+        title: category ? "Edit Category" : "Add Category"
+    }) %>
+
+    <main class="admin-content">
+
+        <div class="dashboard-header">
+            <div>
+                <h1 class="dashboard-title">
+                    <%= category ? "Edit Category" : "Add Category" %>
+                </h1>
+                <p class="dashboard-subtitle">
+                    Once saved it will appear in the header menu, mega menu, shop filter and homepage.
+                </p>
+            </div>
+
+            <a href="/admin/categories" class="secondary-button">
+                ← Back to Categories
+            </a>
+        </div>
+
+        <form
+            class="product-form"
+            method="POST"
+            id="categoryForm"
+            action="<%= category ? '/admin/categories/edit/' + category._id : '/admin/categories/add' %>"
+        >
+
+            <section class="dashboard-card">
+
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fa-solid fa-layer-group card-icon"></i>
+                        Category Information
+                    </h2>
+                </div>
+
+                <div class="form-grid">
+
+                    <div class="form-group form-full">
+                        <label for="catName">Category Name *</label>
+                        <input
+                            type="text"
+                            id="catName"
+                            name="name"
+                            required
+                            value="<%= category ? category.name : '' %>"
+                            placeholder="e.g. Gaming Monitor"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="catSlug">
+                            Slug (URL) <span class="label-hint">— auto from name</span>
+                        </label>
+                        <div class="input-with-btn">
+                            <input
+                                type="text"
+                                id="catSlug"
+                                name="slug"
+                                value="<%= category ? category.slug : '' %>"
+                                placeholder="auto-from-name"
+                            >
+                            <label class="mini-check">
+                                <input
+                                    type="checkbox"
+                                    id="slugAuto"
+                                    <%= category ? '' : 'checked' %>
+                                >
+                                Auto
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="catOrder">Display Order</label>
+                        <input
+                            type="number"
+                            id="catOrder"
+                            name="order"
+                            value="<%= category ? category.order : 0 %>"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="catParent">Parent Category</label>
+                        <select id="catParent" name="parent">
+                            <option value="" data-level="0">— Main Category (top level) —</option>
+                            <% parents.forEach(function (p) { %>
+                                <option
+                                    value="<%= p.slug %>"
+                                    data-level="<%= p.level %>"
+                                    <%= category && category.parent === p.slug ? 'selected' : '' %>
+                                ><%= p.label %></option>
+                            <% }) %>
+                        </select>
+                        <div class="cat-type-hint" id="catTypeHint"></div>
+                        <small>
+                            If no Parent is chosen it becomes <strong>Main</strong>. Choosing Main makes it <strong>Sub</strong>,
+                            choosing Sub makes it <strong>Child</strong> — 3 levels total (like startech).
+                        </small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="catIcon">Icon</label>
+                        <div class="input-with-btn">
+                            <span class="icon-preview" id="iconPreview">
+                                <i class="<%= category ? category.icon : 'fa-solid fa-microchip' %>"></i>
+                            </span>
+                            <input
+                                type="text"
+                                id="catIcon"
+                                name="icon"
+                                list="iconList"
+                                value="<%= category ? category.icon : 'fa-solid fa-microchip' %>"
+                                placeholder="fa-solid fa-microchip"
+                            >
+                        </div>
+                        <datalist id="iconList">
+                            <option value="fa-solid fa-microchip"></option>
+                            <option value="fa-solid fa-computer"></option>
+                            <option value="fa-solid fa-desktop"></option>
+                            <option value="fa-solid fa-laptop"></option>
+                            <option value="fa-solid fa-tablet-screen-button"></option>
+                            <option value="fa-solid fa-mobile-screen"></option>
+                            <option value="fa-solid fa-hard-drive"></option>
+                            <option value="fa-solid fa-server"></option>
+                            <option value="fa-solid fa-memory"></option>
+                            <option value="fa-solid fa-gamepad"></option>
+                            <option value="fa-solid fa-keyboard"></option>
+                            <option value="fa-solid fa-computer-mouse"></option>
+                            <option value="fa-solid fa-headphones"></option>
+                            <option value="fa-solid fa-print"></option>
+                            <option value="fa-solid fa-camera"></option>
+                            <option value="fa-solid fa-video"></option>
+                            <option value="fa-solid fa-tv"></option>
+                            <option value="fa-solid fa-display"></option>
+                            <option value="fa-solid fa-network-wired"></option>
+                            <option value="fa-solid fa-wifi"></option>
+                            <option value="fa-solid fa-battery-full"></option>
+                            <option value="fa-solid fa-fan"></option>
+                            <option value="fa-solid fa-bolt"></option>
+                            <option value="fa-solid fa-shield-halved"></option>
+                            <option value="fa-solid fa-cable-car"></option>
+                            <option value="fa-solid fa-compact-disc"></option>
+                            <option value="fa-solid fa-plug"></option>
+                            <option value="fa-solid fa-gauge-high"></option>
+                            <option value="fa-solid fa-microscope"></option>
+                            <option value="fa-solid fa-toolbox"></option>
+                            <option value="fa-solid fa-cart-shopping"></option>
+                            <option value="fa-solid fa-tags"></option>
+                        </datalist>
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <section class="dashboard-card">
+
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fa-solid fa-copyright card-icon"></i>
+                        Brands
+                    </h2>
+                </div>
+
+                <div class="card-body">
+
+                    <div class="chip-builder">
+                        <input
+                            type="text"
+                            id="brandInput"
+                            placeholder="Type a Brand then press Enter or Add — e.g. ASUS"
+                        >
+                        <button type="button" class="secondary-button" id="brandAddBtn">
+                            <i class="fa-solid fa-plus"></i>
+                            Add
+                        </button>
+                    </div>
+
+                    <div class="chip-list" id="brandChips"></div>
+
+                    <p class="section-note">
+                        These brands will automatically appear in the mega menu and the product form brand dropdown.
+                    </p>
+
+                </div>
+
+            </section>
+
+
+            <section class="dashboard-card">
+
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fa-solid fa-toggle-on card-icon"></i>
+                        Visibility
+                    </h2>
+                </div>
+
+                <div class="switch-grid">
+
+                    <label class="switch-card">
+                        <input
+                            type="checkbox"
+                            name="showOnHome"
+                            <%= category && category.showOnHome ? 'checked' : '' %>
+                        >
+                        <span class="switch-box"></span>
+                        <span class="switch-text">
+                            <strong>Homepage Section</strong>
+                            <small>Show products from this category as a homepage section</small>
+                        </span>
+                    </label>
+
+                    <label class="switch-card">
+                        <input
+                            type="checkbox"
+                            name="isActive"
+                            <%= !category || category.isActive ? 'checked' : '' %>
+                        >
+                        <span class="switch-box"></span>
+                        <span class="switch-text">
+                            <strong>Active</strong>
+                            <small>Show in the site menu and shop</small>
+                        </span>
+                    </label>
+
+                </div>
+
+            </section>
+
+
+            <div class="form-actions">
+                <a href="/admin/categories" class="secondary-button">Cancel</a>
+                <button type="submit" class="primary-button">
+                    <i class="fa-solid fa-floppy-disk"></i>
+                    <%= category ? 'Update Category' : 'Create Category' %>
+                </button>
+            </div>
+
+        </form>
+
+    </main>
+
+</div>
+
+<script>
+    window.MT_BRANDS = <%- JSON.stringify(category ? (category.brands || []) : []) %>;
+</script>
+<script src="/admin/js/categoryForm.js"></script>
+
+<%- include("partials/footer") %>

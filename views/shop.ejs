@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <%- include('partials/seo') %>
+    <link rel="icon" href="/images/logo.svg">
+    <style>
+        .filter-acc { border-top: 1px solid #eef0f3; }
+        .filter-acc summary {
+            cursor: pointer; list-style: none; display: flex; justify-content: space-between;
+            align-items: center; padding: 12px 4px; font-weight: 700; color: #081621; font-size: 14px;
+        }
+        .filter-acc summary::-webkit-details-marker { display: none; }
+        .filter-acc summary::after { content: '+'; font-size: 16px; color: #8892a0; font-weight: 600; }
+        .filter-acc[open] summary::after { content: '\2212'; }
+        .filter-acc-body { padding: 2px 4px 14px; }
+        .spec-check { display: flex; align-items: center; gap: 8px; padding: 5px 0; font-size: 13.5px; color: #44505c; cursor: pointer; }
+        .spec-check input { accent-color: #ef4a23; width: 15px; height: 15px; flex: 0 0 15px; }
+        .shop-filter-form .filter-apply { width: 100%; margin-top: 12px; }
+    </style>
+</head>
+<body>
+
+    <%- include('partials/header') %>
+
+    <div class="container">
+
+        <!-- Breadcrumb -->
+        <div class="breadcrumb">
+            <a href="/"><i class="fa-solid fa-house"></i> Home</a>
+            <i class="fa-solid fa-angle-right" style="margin:0 6px; font-size:10px;"></i>
+            <span>Shop</span>
+        </div>
+
+        <div class="shop-layout">
+
+            <!-- ========== ফিল্টার সাইডবার ========== -->
+            <aside class="filter-card">
+
+                <div class="filter-title" style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+                    <span><i class="fa-solid fa-filter" style="color:#ef4a23;"></i> Filter Products</span>
+                    <a href="/shop<%= (typeof catSlug !== 'undefined' && catSlug) ? '?cat=' + encodeURIComponent(catSlug) : '' %>"
+                       style="font-size:12px; color:#ef4a23; font-weight:600;">Reset</a>
+                </div>
+
+                <form method="GET" action="/shop" class="shop-filter-form">
+                    <% if (typeof catSlug !== 'undefined' && catSlug) { %><input type="hidden" name="cat" value="<%= catSlug %>"><% } %>
+                    <% if (search) { %><input type="hidden" name="search" value="<%= search %>"><% } %>
+                    <% if (sort && sort !== 'latest') { %><input type="hidden" name="sort" value="<%= sort %>"><% } %>
+
+                    <!-- Price & Availability (always first) -->
+                    <details class="filter-acc" open>
+                        <summary>Price &amp; Availability</summary>
+                        <div class="filter-acc-body">
+                            <div class="price-range">
+                                <input type="number" name="min" min="0" placeholder="Min" value="<%= typeof min !== 'undefined' ? min : '' %>">
+                                <span>–</span>
+                                <input type="number" name="max" min="0" placeholder="Max" value="<%= typeof max !== 'undefined' ? max : '' %>">
+                            </div>
+                            <label class="stock-check">
+                                <input type="checkbox" name="stock" value="1" <%= (typeof inStock !== 'undefined' && inStock) ? 'checked' : '' %>>
+                                Exclude Out of Stock Items
+                            </label>
+                        </div>
+                    </details>
+
+                    <!-- Specification / filter attributes, in serial order -->
+                    <% specFacets.forEach(function (f) { %>
+                        <%
+                            var selCount = f.values.filter(function (v) {
+                                return specSel.indexOf(f.key + '::' + v) > -1;
+                            }).length;
+                        %>
+                        <details class="filter-acc" <%= selCount ? 'open' : '' %>>
+                            <summary><%= f.key %></summary>
+                            <div class="filter-acc-body">
+                                <% f.values.forEach(function (v) { %>
+                                    <label class="spec-check">
+                                        <input type="checkbox" name="spec" value="<%= f.key %>::<%= v %>"
+                                               <%= specSel.indexOf(f.key + '::' + v) > -1 ? 'checked' : '' %>>
+                                        <span><%= v %></span>
+                                    </label>
+                                <% }); %>
+                            </div>
+                        </details>
+                    <% }); %>
+
+                    <button type="submit" class="filter-apply">Apply Filter</button>
+                </form>
+
+                <!-- দরকারি লিংক -->
+                <div class="filter-group">
+                    <strong>Information</strong>
+                    <a href="/pages/payment-methods"><i class="fa-solid fa-credit-card" style="width:16px;"></i> Payment Methods</a>
+                    <a href="/pages/shipping-info"><i class="fa-solid fa-truck" style="width:16px;"></i> Shipping Info</a>
+                    <a href="/become-a-partner"><i class="fa-solid fa-handshake" style="width:16px;"></i> Become a Partner</a>
+                </div>
+
+            </aside>
+
+            <!-- ========== প্রোডাক্ট লিস্ট ========== -->
+            <main>
+
+                <div class="shop-toolbar">
+                    <span>
+                        <strong style="color:#081621;"><%= total %></strong> products found
+                        <% if (search) { %> for search "<%= search %>"<% } %>
+                    </span>
+
+                    <form method="GET" style="display:flex; gap:8px; align-items:center;">
+                        <% if (search) { %><input type="hidden" name="search" value="<%= search %>"><% } %>
+                        <% if (typeof catSlug !== 'undefined' && catSlug) { %><input type="hidden" name="cat" value="<%= catSlug %>"><% } %>
+                        <% brand.forEach(function (b) { %><input type="hidden" name="brand" value="<%= b %>"><% }); %>
+                        <% specSel.forEach(function (s) { %><input type="hidden" name="spec" value="<%= s %>"><% }); %>
+                        <% if (min !== '') { %><input type="hidden" name="min" value="<%= min %>"><% } %>
+                        <% if (max !== '') { %><input type="hidden" name="max" value="<%= max %>"><% } %>
+                        <% if (inStock) { %><input type="hidden" name="stock" value="1"><% } %>
+                        <select name="sort" onchange="this.form.submit()">
+                            <option value="latest" <%= sort === 'latest' ? 'selected' : '' %>>Latest First</option>
+                            <option value="price_asc" <%= sort === 'price_asc' ? 'selected' : '' %>>Price: Low to High</option>
+                            <option value="price_desc" <%= sort === 'price_desc' ? 'selected' : '' %>>Price: High to Low</option>
+                            <option value="name_asc" <%= sort === 'name_asc' ? 'selected' : '' %>>Name: A to Z</option>
+                        </select>
+                    </form>
+                </div>
+
+                <% if (products.length > 0) { %>
+
+                    <div class="product-grid">
+                        <% products.forEach(function(product) { %>
+                            <%- include('partials/productCard', { product: product }) %>
+                        <% }); %>
+                    </div>
+
+                    <!-- প্যাজিনেশন -->
+                    <% if (totalPages > 1) { %>
+                        <div class="pagination">
+                            <%
+                                function pageUrl(p) {
+                                    var params = new URLSearchParams();
+                                    if (typeof catSlug !== 'undefined' && catSlug) params.set('cat', catSlug);
+                                    if (search) params.set('search', search);
+                                    brand.forEach(function (b) { params.append('brand', b); });
+                                    specSel.forEach(function (s) { params.append('spec', s); });
+                                    if (min !== '') params.set('min', min);
+                                    if (max !== '') params.set('max', max);
+                                    if (inStock) params.set('stock', '1');
+                                    if (sort && sort !== 'latest') params.set('sort', sort);
+                                    if (p > 1) params.set('page', p);
+                                    var qs = params.toString();
+                                    return qs ? '?' + qs : '?';
+                                }
+                            %>
+
+                            <% if (currentPage > 1) { %>
+                                <a href="<%= pageUrl(currentPage - 1) %>"><i class="fa-solid fa-angle-left"></i></a>
+                            <% } %>
+
+                            <% for (var p = 1; p <= totalPages; p++) { %>
+                                <% if (p === currentPage) { %>
+                                    <span class="current"><%= p %></span>
+                                <% } else { %>
+                                    <a href="<%= pageUrl(p) %>"><%= p %></a>
+                                <% } %>
+                            <% } %>
+
+                            <% if (currentPage < totalPages) { %>
+                                <a href="<%= pageUrl(currentPage + 1) %>"><i class="fa-solid fa-angle-right"></i></a>
+                            <% } %>
+                        </div>
+                    <% } %>
+
+                <% } else { %>
+
+                    <div class="empty-box">
+                        <i class="fa-solid fa-box-open"></i>
+                        <h3 style="color:#081621; margin-bottom:8px;">No products found</h3>
+                        <p>Try a different category or search term.</p>
+                        <a href="/shop" class="btn btn-primary" style="margin-top:16px;">View All Products</a>
+                    </div>
+
+                <% } %>
+
+            </main>
+
+        </div>
+    </div>
+
+    <%- include('partials/footer') %>
+
+    <script src="/js/main.js?v=2"></script>
+</body>
+</html>

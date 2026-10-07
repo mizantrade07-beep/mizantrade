@@ -1,0 +1,151 @@
+<%- include("partials/head", {
+    title: "Posts | MizanTrade Admin"
+}) %>
+
+<%- include("partials/sidebar") %>
+
+<div class="admin-main">
+
+    <%- include("partials/topbar", {
+        title: "Blog Posts"
+    }) %>
+
+    <main class="admin-content">
+
+        <div class="dashboard-header">
+            <div>
+                <h1 class="dashboard-title">Blog Posts</h1>
+                <p class="dashboard-subtitle">
+                    Create and edit blog articles. Customers will see them on the /blog page.
+                </p>
+            </div>
+
+            <% if (can('content.create')) { %>
+                <a href="/admin/posts/add" class="primary-button">
+                    <i class="fa-solid fa-plus"></i>
+                    Add Post
+                </a>
+            <% } %>
+        </div>
+
+
+        <section class="stats-grid">
+
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-newspaper"></i></div>
+                <div class="stat-content">
+                    <span>Total Posts</span>
+                    <strong><%= posts.length %></strong>
+                </div>
+            </article>
+
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-globe"></i></div>
+                <div class="stat-content">
+                    <span>Published</span>
+                    <strong><%= totalPublished %></strong>
+                </div>
+            </article>
+
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-pen-ruler"></i></div>
+                <div class="stat-content">
+                    <span>Drafts</span>
+                    <strong><%= totalDraft %></strong>
+                </div>
+            </article>
+
+        </section>
+
+
+        <section class="dashboard-card">
+
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fa-solid fa-newspaper card-icon"></i>
+                    All Posts
+                </h2>
+
+                <form method="GET" action="/admin/posts" class="product-search">
+                    <input type="text" name="search" value="<%= search %>" placeholder="Title or slug...">
+                    <select name="status" class="filter-select">
+                        <option value="">All Status</option>
+                        <option value="published" <%= status === 'published' ? 'selected' : '' %>>Published</option>
+                        <option value="draft" <%= status === 'draft' ? 'selected' : '' %>>Draft</option>
+                    </select>
+                    <button type="submit"><i class="fa-solid fa-filter"></i> Filter</button>
+                </form>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Slug</th>
+                            <th>Author</th>
+                            <th>Views</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        <% if (posts.length === 0) { %>
+                            <tr>
+                                <td colspan="6" style="text-align:center; padding:30px; color:#64748b;">
+                                    No posts. Start with "Add Post".
+                                </td>
+                            </tr>
+                        <% } %>
+
+                        <% posts.forEach(function (p) { %>
+                            <tr>
+                                <td>
+                                    <div class="cat-cell">
+                                        <span class="cat-icon"><i class="fa-solid fa-newspaper"></i></span>
+                                        <strong><%= p.title %></strong>
+                                    </div>
+                                </td>
+                                <td><code class="slug-chip">/<%= p.slug %></code></td>
+                                <td style="font-size:13px; color:#475569;"><%= p.author || '—' %></td>
+                                <td style="font-size:13px; color:#475569;"><%= p.views || 0 %></td>
+                                <td>
+                                    <% if (p.status === 'published') { %>
+                                        <span class="badge badge-approved">Published</span>
+                                    <% } else { %>
+                                        <span class="badge badge-pending">Draft</span>
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <div class="product-actions">
+                                        <a href="/blog/<%= p.slug %>" target="_blank" class="action-view" title="View live">
+                                            <i class="fa-solid fa-eye"></i>
+                                        </a>
+                                        <% if (can('content.edit')) { %>
+                                            <a href="/admin/posts/edit/<%= p._id %>" class="action-edit" title="Edit">
+                                                <i class="fa-solid fa-pen"></i>
+                                            </a>
+                                        <% } %>
+                                        <% if (can('content.delete')) { %>
+                                            <a href="/admin/posts/delete/<%= p._id %>" class="action-delete" title="Delete"
+                                               onclick="return confirm('<%= p.title %> — delete this post?');">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </a>
+                                        <% } %>
+                                    </div>
+                                </td>
+                            </tr>
+                        <% }); %>
+
+                    </tbody>
+                </table>
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+<%- include("partials/footer") %>

@@ -1,0 +1,312 @@
+<%- include("partials/head", {
+    title: "Products | MizanTrade"
+}) %>
+
+<%- include("partials/sidebar") %>
+
+<div class="admin-main">
+
+    <%- include("partials/topbar", {
+        title: "Products"
+    }) %>
+
+
+    <main class="admin-content">
+
+        <div class="dashboard-header">
+
+            <div>
+                <h1 class="dashboard-title">
+                    Products
+                </h1>
+
+                <p class="dashboard-subtitle">
+                    Manage your computer hardware products.
+                </p>
+            </div>
+
+
+            <a
+                href="/admin/products/add"
+                class="primary-button"
+            >
+                + Add Product
+            </a>
+
+        </div>
+
+
+        <section class="dashboard-card">
+
+            <div class="card-header">
+
+                <h2 class="card-title">
+                    All Products
+                </h2>
+
+                <form
+                    method="GET"
+                    action="/admin/products"
+                    class="product-search"
+                >
+
+                    <input
+                        type="text"
+                        name="search"
+                        value="<%= search || '' %>"
+                        placeholder="Search products..."
+                    >
+
+                    <select name="category">
+                        <option value="">All Categories</option>
+                        <% (categories || []).forEach(function (name) { %>
+                            <option value="<%= name %>" <%= category === name ? 'selected' : '' %>>
+                                <%= name %>
+                            </option>
+                        <% }) %>
+                    </select>
+
+                    <select name="status">
+                        <option value="">All Status</option>
+                        <option value="active" <%= status === 'active' ? 'selected' : '' %>>Active</option>
+                        <option value="inactive" <%= status === 'inactive' ? 'selected' : '' %>>Inactive</option>
+                    </select>
+
+                    <button type="submit">
+                        Search
+                    </button>
+
+                </form>
+
+            </div>
+
+
+            <div class="table-wrapper">
+
+                <table class="admin-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>Product</th>
+
+                            <th>SKU</th>
+
+                            <th>Category</th>
+
+                            <th>Brand</th>
+
+                            <th>Price</th>
+
+                            <th>Stock</th>
+
+                            <th>Status</th>
+
+                            <th>Action</th>
+
+                        </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                        <% if (
+                            !products ||
+                            products.length === 0
+                        ) { %>
+
+                            <tr>
+
+                                <td
+                                    colspan="8"
+                                    class="empty-state"
+                                >
+                                    No products found.
+                                </td>
+
+                            </tr>
+
+                        <% } %>
+
+
+                        <% products.forEach(product => { %>
+
+                            <tr>
+
+                                <td>
+
+                                    <div class="product-table-info">
+
+                                        <% if (
+                                            product.mainImage
+                                        ) { %>
+
+                                            <img
+                                                src="<%= product.mainImage %>"
+                                                alt="<%= product.title %>"
+                                                class="product-thumb"
+                                            >
+
+                                        <% } else { %>
+
+                                            <div class="product-thumb placeholder">
+                                                M
+                                            </div>
+
+                                        <% } %>
+
+
+                                        <div>
+
+                                            <strong>
+                                                <%= product.title %>
+                                            </strong>
+
+                                            <small>
+                                                <%= product.subCategory || "" %>
+                                            </small>
+
+                                        </div>
+
+                                    </div>
+
+                                </td>
+
+
+                                <td>
+                                    <%= product.sku || "-" %>
+                                </td>
+
+
+                                <td>
+                                    <%= product.mainCategory || "-" %>
+                                </td>
+
+
+                                <td>
+                                    <%= product.brand || "-" %>
+                                </td>
+
+
+                                <td>
+
+                                    <% if (
+                                        product.callForPrice
+                                    ) { %>
+
+                                        <strong>
+                                            Call for Price
+                                        </strong>
+
+                                    <% } else if (
+                                        product.salePrice
+                                    ) { %>
+
+                                        <strong>
+                                            ৳<%= product.salePrice %>
+                                        </strong>
+
+                                        <del>
+                                            ৳<%= product.regularPrice || "" %>
+                                        </del>
+
+                                    <% } else if (
+                                        product.regularPrice
+                                    ) { %>
+
+                                        <strong>
+                                            ৳<%= product.regularPrice %>
+                                        </strong>
+
+                                    <% } else { %>
+
+                                        Call for Price
+
+                                    <% } %>
+
+                                </td>
+
+
+                                <td>
+
+                                    <span
+                                        class="stock-badge stock-<%= String(product.stockStatus || '').toLowerCase().replace(/\s+/g, '-') %>"
+                                    >
+                                        <%= product.stockStatus || "In Stock" %>
+                                    </span>
+
+                                </td>
+
+
+                                <td>
+
+                                    <% if (
+                                        product.isActive
+                                    ) { %>
+
+                                        <span class="badge badge-approved">
+                                            Active
+                                        </span>
+
+                                    <% } else { %>
+
+                                        <span class="badge badge-rejected">
+                                            Inactive
+                                        </span>
+
+                                    <% } %>
+
+                                </td>
+
+
+                                <td>
+
+                                    <div class="product-actions">
+
+                                        <a
+                                            href="/admin/product/duplicate/<%= product._id %>"
+                                            class="action-edit"
+                                            title="Duplicate"
+                                        >
+                                            Duplicate
+                                        </a>
+
+                                        <a
+                                            href="/admin/product/edit/<%= product._id %>"
+                                            class="action-edit"
+                                        >
+                                            Edit
+                                        </a>
+
+
+                                        <a
+                                            href="/admin/product/delete/<%= product._id %>"
+                                            class="action-delete"
+                                            onclick="return confirm('Are you sure you want to delete this product?');"
+                                        >
+                                            Delete
+                                        </a>
+
+                                    </div>
+
+                                </td>
+
+                            </tr>
+
+                        <% }) %>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+<%- include("partials/footer") %>

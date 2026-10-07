@@ -1,0 +1,153 @@
+<%- include("partials/head", {
+    title: "Pages | MizanTrade Admin"
+}) %>
+
+<%- include("partials/sidebar") %>
+
+<div class="admin-main">
+
+    <%- include("partials/topbar", {
+        title: "Pages"
+    }) %>
+
+    <main class="admin-content">
+
+        <div class="dashboard-header">
+            <div>
+                <h1 class="dashboard-title">Pages</h1>
+                <p class="dashboard-subtitle">
+                    Create and edit all website pages (About, Contact, Policy, new custom pages).
+                </p>
+            </div>
+
+            <% if (can('content.create')) { %>
+                <a href="/admin/pages/add" class="primary-button">
+                    <i class="fa-solid fa-plus"></i>
+                    Add Page
+                </a>
+            <% } %>
+        </div>
+
+
+        <section class="stats-grid">
+
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-file-lines"></i></div>
+                <div class="stat-content">
+                    <span>Total Pages</span>
+                    <strong><%= pages.length %></strong>
+                </div>
+            </article>
+
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-globe"></i></div>
+                <div class="stat-content">
+                    <span>Published</span>
+                    <strong><%= totalPublished %></strong>
+                </div>
+            </article>
+
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-pen-ruler"></i></div>
+                <div class="stat-content">
+                    <span>Drafts</span>
+                    <strong><%= totalDraft %></strong>
+                </div>
+            </article>
+
+        </section>
+
+
+        <section class="dashboard-card">
+
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fa-solid fa-file-lines card-icon"></i>
+                    All Pages
+                </h2>
+
+                <form method="GET" action="/admin/pages" class="product-search">
+                    <input type="text" name="search" value="<%= search %>" placeholder="Title or slug...">
+                    <select name="status" class="filter-select">
+                        <option value="">All Status</option>
+                        <option value="published" <%= status === 'published' ? 'selected' : '' %>>Published</option>
+                        <option value="draft" <%= status === 'draft' ? 'selected' : '' %>>Draft</option>
+                    </select>
+                    <button type="submit"><i class="fa-solid fa-filter"></i> Filter</button>
+                </form>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Slug</th>
+                            <th>Template</th>
+                            <th>Status</th>
+                            <th>Updated</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        <% if (pages.length === 0) { %>
+                            <tr>
+                                <td colspan="6" style="text-align:center; padding:30px; color:#64748b;">
+                                    No pages. Start with "Add Page".
+                                </td>
+                            </tr>
+                        <% } %>
+
+                        <% pages.forEach(function (pg) { %>
+                            <tr>
+                                <td>
+                                    <div class="cat-cell">
+                                        <span class="cat-icon"><i class="fa-solid fa-file-lines"></i></span>
+                                        <strong><%= pg.title %></strong>
+                                    </div>
+                                </td>
+                                <td><code class="slug-chip">/<%= pg.slug %></code></td>
+                                <td style="font-size:13px; color:#475569;"><%= pg.template %></td>
+                                <td>
+                                    <% if (pg.status === 'published') { %>
+                                        <span class="badge badge-approved">Published</span>
+                                    <% } else { %>
+                                        <span class="badge badge-pending">Draft</span>
+                                    <% } %>
+                                </td>
+                                <td style="font-size:12px; color:#64748b;">
+                                    <%= new Date(pg.updatedAt).toLocaleDateString() %>
+                                </td>
+                                <td>
+                                    <div class="product-actions">
+                                        <a href="/page/<%= pg.slug %>" target="_blank" class="action-view" title="View live">
+                                            <i class="fa-solid fa-eye"></i>
+                                        </a>
+                                        <% if (can('content.edit')) { %>
+                                            <a href="/admin/pages/edit/<%= pg._id %>" class="action-edit" title="Edit">
+                                                <i class="fa-solid fa-pen"></i>
+                                            </a>
+                                        <% } %>
+                                        <% if (can('content.delete')) { %>
+                                            <a href="/admin/pages/delete/<%= pg._id %>" class="action-delete" title="Delete"
+                                               onclick="return confirm('<%= pg.title %> — delete this page?');">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </a>
+                                        <% } %>
+                                    </div>
+                                </td>
+                            </tr>
+                        <% }); %>
+
+                    </tbody>
+                </table>
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+<%- include("partials/footer") %>

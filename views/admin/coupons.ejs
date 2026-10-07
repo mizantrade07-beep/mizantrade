@@ -1,0 +1,191 @@
+<%- include("partials/head", {
+    title: "Coupons | MizanTrade Admin"
+}) %>
+
+<%- include("partials/sidebar") %>
+
+<div class="admin-main">
+
+    <%- include("partials/topbar", {
+        title: "Coupons"
+    }) %>
+
+    <main class="admin-content">
+
+        <div class="dashboard-header">
+            <div>
+                <h1 class="dashboard-title">Coupons</h1>
+                <p class="dashboard-subtitle">
+                    Create and manage discount coupons for specific products or customers.
+                </p>
+            </div>
+
+            <a href="/admin/coupons/add" class="primary-button">
+                <i class="fa-solid fa-plus"></i>
+                New Coupon
+            </a>
+        </div>
+
+        <section class="stats-grid">
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-tags"></i></div>
+                <div class="stat-content">
+                    <span>Total Coupons</span>
+                    <strong><%= totalCoupons %></strong>
+                </div>
+            </article>
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-circle-check"></i></div>
+                <div class="stat-content">
+                    <span>Active</span>
+                    <strong><%= activeTotal %></strong>
+                </div>
+            </article>
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-circle-pause"></i></div>
+                <div class="stat-content">
+                    <span>Inactive</span>
+                    <strong><%= totalCoupons - activeTotal %></strong>
+                </div>
+            </article>
+        </section>
+
+        <section class="dashboard-card">
+
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fa-solid fa-tags card-icon"></i>
+                    All Coupons
+                </h2>
+
+                <form method="GET" action="/admin/coupons" class="product-search">
+                    <input type="text" name="search" value="<%= search %>" placeholder="Coupon code...">
+                    <select name="status" class="filter-select">
+                        <option value="">All Status</option>
+                        <option value="active" <%= status === 'active' ? 'selected' : '' %>>Active</option>
+                        <option value="inactive" <%= status === 'inactive' ? 'selected' : '' %>>Inactive</option>
+                    </select>
+                    <button type="submit"><i class="fa-solid fa-filter"></i> Filter</button>
+                </form>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Discount</th>
+                            <th>Applies To</th>
+                            <th>Usage</th>
+                            <th>Validity</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        <% if (coupons.length === 0) { %>
+                            <tr>
+                                <td colspan="7" style="text-align:center; padding:30px; color:#64748b;">
+                                    No coupons found.
+                                </td>
+                            </tr>
+                        <% } %>
+
+                        <% coupons.forEach(function (c) { %>
+                            <%
+                                var productCount = c.applicableProducts ? c.applicableProducts.length : 0;
+                                var customerCount = c.applicableCustomers ? c.applicableCustomers.length : 0;
+                                var applies = [];
+                                if (productCount) applies.push(productCount + " products");
+                                if (customerCount) applies.push(customerCount + " customers");
+                                var appliesText = applies.length ? applies.join(", ") : "All (site-wide)";
+
+                                var now = new Date();
+                                var expired = c.endDate && now > new Date(c.endDate);
+                                var limitReached = c.usageLimit > 0 && c.usedCount >= c.usageLimit;
+                            %>
+                            <tr>
+                                <td>
+                                    <div class="cat-cell">
+                                        <span class="cat-icon"><i class="fa-solid fa-tag"></i></span>
+                                        <div>
+                                            <strong><code class="slug-chip"><%= c.code %></code></strong>
+                                            <% if (c.description) { %>
+                                                <div style="font-size:12px; color:#64748b;"><%= c.description %></div>
+                                            <% } %>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td style="font-size:13px;">
+                                    <% if (c.discountType === 'percent') { %>
+                                        <strong><%= c.discountValue %>%</strong>
+                                        <% if (c.maxDiscount > 0) { %>
+                                            <div style="color:#64748b; font-size:12px;">Max ৳<%= c.maxDiscount.toLocaleString('en-US') %></div>
+                                        <% } %>
+                                    <% } else { %>
+                                        <strong>৳<%= c.discountValue.toLocaleString('en-US') %></strong>
+                                    <% } %>
+                                    <% if (c.minOrderAmount > 0) { %>
+                                        <div style="color:#64748b; font-size:12px;">Min. order ৳<%= c.minOrderAmount.toLocaleString('en-US') %></div>
+                                    <% } %>
+                                </td>
+                                <td style="font-size:13px; color:#334155;"><%= appliesText %></td>
+                                <td style="font-size:13px;">
+                                    <%= c.usedCount %><% if (c.usageLimit > 0) { %> / <%= c.usageLimit %><% } else { %> (unlimited)<% } %>
+                                </td>
+                                <td style="font-size:12px; color:#64748b;">
+                                    <%= c.startDate ? new Date(c.startDate).toLocaleDateString() : '—' %>
+                                    →
+                                    <%= c.endDate ? new Date(c.endDate).toLocaleDateString() : '—' %>
+                                </td>
+                                <td>
+                                    <% if (!c.isActive) { %>
+                                        <span class="badge badge-rejected">Inactive</span>
+                                    <% } else if (expired) { %>
+                                        <span class="badge badge-pending">Expired</span>
+                                    <% } else if (limitReached) { %>
+                                        <span class="badge badge-pending">Limit reached</span>
+                                    <% } else { %>
+                                        <span class="badge badge-approved">Active</span>
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <div class="product-actions">
+                                        <a href="/admin/coupons/edit/<%= c._id %>" class="action-edit" title="Edit">
+                                            <i class="fa-solid fa-pen"></i>
+                                        </a>
+                                        <form method="POST" action="/admin/coupons/toggle/<%= c._id %>" style="display:inline;">
+                                            <button type="submit" class="action-view" title="<%= c.isActive ? 'Disable' : 'Enable' %>">
+                                                <i class="fa-solid <%= c.isActive ? 'fa-toggle-on' : 'fa-toggle-off' %>"></i>
+                                            </button>
+                                        </form>
+                                        <a href="/admin/coupons/delete/<%= c._id %>" class="action-delete" title="Delete"
+                                           onclick="return confirm('<%= c.code %> — delete this coupon?');">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        <% }); %>
+
+                    </tbody>
+                </table>
+            </div>
+
+            <% if (totalPages > 1) { %>
+                <div class="pagination">
+                    <% for (var p = 1; p <= totalPages; p++) { %>
+                        <a href="/admin/coupons?page=<%= p %>&search=<%= encodeURIComponent(search) %>&status=<%= status %>"
+                           class="page-link <%= p === currentPage ? 'active' : '' %>"><%= p %></a>
+                    <% } %>
+                </div>
+            <% } %>
+
+        </section>
+
+    </main>
+
+</div>
+
+<%- include("partials/footer") %>

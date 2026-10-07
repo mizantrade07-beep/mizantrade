@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <%- include('partials/seo') %>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background: #f4f6f9; color: #333; }
+        .container { max-width: 1600px; margin: 20px auto; padding: 0 20px; }
+
+        /* Breadcrumb */
+        .breadcrumb { font-size: 13px; color: #666; margin-bottom: 15px; display: flex; align-items: center; gap: 6px; }
+        .breadcrumb a { color: #333; text-decoration: none; }
+        .breadcrumb a:hover { color: #ef4a23; }
+
+        /* Full Width Layout */
+        .single-product-layout { display: flex; flex-direction: column; gap: 20px; }
+
+        /* Top Product Overview Card */
+        .product-top-card { background: #fff; padding: 30px; border-radius: 6px; border: 1px solid #e5e5e5; display: flex; gap: 40px; }
+        
+        /* Advanced Gallery Section */
+        .gallery-container { display: flex; gap: 20px; flex: 1.2; }
+        .thumbnail-list { display: flex; flex-direction: column; gap: 12px; max-height: 450px; overflow-y: auto; padding-right: 5px; }
+        .thumb-img { width: 75px; height: 75px; object-fit: contain; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; padding: 4px; transition: 0.2s; background: #fff; }
+        .thumb-img:hover, .thumb-img.active { border-color: #ef4a23; box-shadow: 0 0 5px rgba(239, 74, 35, 0.2); }
+        .main-display-img { flex: 1; text-align: center; display: flex; align-items: center; justify-content: center; position: relative; border: 1px solid #f0f0f0; border-radius: 6px; background: #fff; padding: 20px; }
+        .main-display-img img { max-width: 100%; height: 420px; object-fit: contain; }
+
+        /* Product Info Column */
+        .product-info-container { flex: 1.5; }
+        .product-title { font-size: 26px; font-weight: 700; color: #081621; margin-bottom: 10px; line-height: 1.4; }
+        
+        .rating-sku { display: flex; align-items: center; gap: 20px; font-size: 13px; color: #666; margin-bottom: 15px; flex-wrap: wrap; }
+        .stars { color: #ffc107; font-weight: 600; letter-spacing: 1px; }
+        .stars span { color: #2e7d32; }
+
+        /* Price Box */
+        .price-box-ryans { background: #f2f4f8; padding: 18px; border-radius: 6px; margin-bottom: 20px; border-left: 4px solid #ef4a23; }
+        .special-price-label { font-size: 12px; color: #555; text-transform: uppercase; font-weight: 600; }
+        .special-price { font-size: 28px; font-weight: 700; color: #ef4a23; margin: 4px 0; }
+        .extra-offer-text { font-size: 13px; color: #7b1fa2; font-weight: 600; margin-bottom: 8px; }
+        .regular-price-box { font-size: 13px; color: #666; }
+        .reg-strike { text-decoration: line-through; color: #999; }
+
+        .quick-overview { font-size: 13px; color: #444; border-top: 1px solid #eee; padding-top: 15px; margin-bottom: 20px; }
+        .quick-overview ul { padding-left: 18px; margin-top: 6px; }
+        .quick-overview li { margin-bottom: 5px; }
+
+        .cart-qty-row { display: flex; gap: 12px; align-items: center; margin-bottom: 25px; flex-wrap: wrap; }
+        .qty-input { width: 70px; padding: 10px; text-align: center; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; outline: none; }
+        .qty-input:focus { border-color: #ef4a23; }
+        .add-to-cart-btn { background: #82b440; color: #fff; border: none; padding: 12px 30px; font-size: 15px; font-weight: 600; border-radius: 4px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s; }
+        .add-to-cart-btn:hover { background: #719d37; }
+        .action-icon-btn { background: #fff; border: 1px solid #ddd; width: 42px; height: 42px; border-radius: 4px; cursor: pointer; font-size: 14px; color: #555; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: 0.2s; }
+        .action-icon-btn:hover { border-color: #999; color: #000; background: #fafafa; }
+
+        /* Social Share Row */
+        .social-share-row { display: flex; gap: 10px; align-items: center; border-top: 1px solid #eee; padding-top: 18px; font-size: 13px; color: #666; flex-wrap: wrap; }
+        .social-icon { width: 32px; height: 32px; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #fff; text-decoration: none; font-size: 13px; transition: 0.2s; }
+        .social-icon:hover { opacity: 0.85; transform: translateY(-1px); }
+
+        /* Specs & Details Tabs Card */
+        .specs-details-card { background: #fff; border: 1px solid #e5e5e5; border-radius: 6px; padding: 30px; }
+        .tab-nav { display: flex; gap: 30px; border-bottom: 2px solid #eee; margin-bottom: 25px; overflow-x: auto; }
+        .tab-nav-btn { background: none; border: none; font-size: 16px; font-weight: 600; color: #666; padding-bottom: 12px; cursor: pointer; position: relative; white-space: nowrap; }
+        .tab-nav-btn.active { color: #000; }
+        .tab-nav-btn.active::after { content: ''; position: absolute; bottom: -2px; left: 0; width: 100%; height: 3px; background: #ef4a23; }
+
+        .tab-pane-content { display: none; font-size: 14px; line-height: 1.7; color: #333; }
+        .tab-pane-content.active { display: block; }
+
+        /* Specs Table Style */
+        .specs-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        .specs-table th, .specs-table td { padding: 14px 18px; border-bottom: 1px solid #eee; text-align: left; }
+        .specs-table th { background: #f9f9f9; color: #333; width: 25%; font-weight: 600; }
+        .specs-group-title { background: #f1f3f5; font-weight: 700; color: #081621; }
+
+        @media(max-width: 992px) {
+            .product-top-card { flex-direction: column; }
+            .gallery-container { flex-direction: column-reverse; }
+            .thumbnail-list { flex-direction: row; max-height: none; overflow-x: auto; }
+        }
+    </style>
+</head>
+<body>
+
+    <%- include('partials/header') %>
+
+    <div class="container">
+        <!-- Breadcrumb -->
+        <div class="breadcrumb">
+            <a href="/"><i class="fa-solid fa-house"></i></a> / 
+            <a href="/shop"><%= product.mainCategory || 'Accessories' %></a> / 
+            <span><%= product.title %></span>
+        </div>
+
+        <div class="single-product-layout">
+            <!-- Top Overview Box & Gallery -->
+            <div class="product-top-card">
+                <div class="gallery-container">
+                    <!-- Product Gallery Thumbnails -->
+                    <div class="thumbnail-list">
+                        <% if (product.mainImage) { %>
+                            <img src="<%= product.mainImage %>" class="thumb-img active" onclick="changeImage(this)" alt="Main Image" loading="lazy" decoding="async">
+                        <% } %>
+                        
+                        <% 
+                            let galleryImages = product.galleryImages || product.gallery || [];
+                        %>
+                        <% if (Array.isArray(galleryImages) && galleryImages.length > 0) { %>
+                            <% galleryImages.forEach(img => { %>
+                                <% if (img) { %>
+                                    <img src="<%= img %>" class="thumb-img" onclick="changeImage(this)" alt="Gallery Image" loading="lazy" decoding="async">
+                                <% } %>
+                            <% }) %>
+                        <% } %>
+                    </div>
+                    <!-- Main Display Image Viewer -->
+                    <div class="main-display-img">
+                        <img id="mainProductImg" src="<%= product.mainImage || (galleryImages && galleryImages[0]) || 'https://via.placeholder.com/400' %>" alt="<%= product.title %>" decoding="async" fetchpriority="high">
+                    </div>
+                </div>
+
+                <div class="product-info-container">
+                    <h1 class="product-title"><%= product.title %></h1>
+                    
+                    <% 
+                        const approvedReviews = product.reviews ? product.reviews.filter(r => r.isApproved) : [];
+                        let avgRating = 0;
+                        if (approvedReviews.length > 0) {
+                            const totalRating = approvedReviews.reduce((sum, r) => sum + Number(r.rating), 0);
+                            avgRating = (totalRating / approvedReviews.length).toFixed(1);
+                        }
+                    %>
+
+                    <div class="rating-sku">
+                        <div class="stars">
+                            <% let starCount = Math.round(avgRating || 5); %>
+                            <% for(let i=0; i<5; i++) { %>
+                                <i class="<%= i < starCount ? 'fa-solid' : 'fa-regular' %> fa-star"></i>
+                            <% } %>
+                            <span style="font-weight: 600; margin-left: 4px;"><%= avgRating > 0 ? avgRating : '5.0' %></span>
+                            <span style="color: #666; font-size: 12px; font-weight: 400; margin-left: 4px;">(<%= approvedReviews.length %> reviews)</span>
+                        </div>
+                    </div>
+
+                    <!-- Price Box -->
+                    <div class="price-box-ryans">
+                        <div class="special-price-label">Special Price</div>
+                        <div class="special-price">
+                            <% if (!product.callForPrice && (product.salePrice || product.regularPrice)) { %>
+                                ৳ <%= (product.salePrice || product.regularPrice).toLocaleString('en-US') %>
+                            <% } else { %>
+                                <a href="tel:<%= site.hotline %>" style="color:#82b440; font-size:20px;">
+                                    <i class="fa-solid fa-phone-volume"></i> Call for Price: <%= site.hotline %>
+                                </a>
+                            <% } %>
+                        </div>
+                        
+                        <% if (product.regularPrice && product.salePrice && product.regularPrice > product.salePrice) { %>
+                            <div class="extra-offer-text">Save Extra Tk <%= (product.regularPrice - product.salePrice).toLocaleString() %> on various offer</div>
+                            <div class="regular-price-box">Regular Price: <span class="reg-strike">Tk <%= product.regularPrice.toLocaleString() %></span></div>
+                        <% } %>
+                    </div>
+
+                    <div class="quick-overview">
+                        <strong>Quick Overview</strong>
+                        <%- product.shortDesc || '<ul><li>High performance quality product</li><li>Reliable dealer stock</li></ul>' %>
+                    </div>
+
+                    <!-- Functional Add to Cart Form, Compare, and Wishlist Links -->
+                    <form action="/cart/add/<%= product._id %>" method="POST" class="cart-qty-row" id="add-to-cart-form">
+                        <input type="number" name="quantity" value="1" min="1" class="qty-input">
+                        <button type="submit" class="add-to-cart-btn" data-id="<%= product._id %>"><i class="fa-solid fa-cart-shopping"></i> Add to Cart</button>
+                        <a href="/wishlist/add/<%= product._id %>" class="action-icon-btn wishlist-btn" data-id="<%= product._id %>" title="Wishlist"><i class="fa-regular fa-heart"></i></a>
+                    </form>
+
+                    <!-- Social Share & Utility Links -->
+                    <div class="social-share-row">
+                        <a href="/pages/payment-methods" class="action-icon-btn" style="width: 34px; height: 34px; font-size: 12px;" title="Payment Method"><i class="fa-solid fa-credit-card"></i></a>
+                        <a href="/pages/shipping-info" class="action-icon-btn" style="width: 34px; height: 34px; font-size: 12px;" title="Shipping"><i class="fa-solid fa-truck"></i></a>
+                        <span style="margin-left: auto;">Share:</span>
+                        <a href="https://api.whatsapp.com/send?text=<%= encodeURIComponent(product.title) %>" target="_blank" class="social-icon" style="background: #25d366;" title="Share on WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+                        <a href="mailto:?subject=<%= encodeURIComponent(product.title) %>" class="social-icon" style="background: #ea4335;" title="Share via Email"><i class="fa-solid fa-envelope"></i></a>
+                        <a href="https://www.facebook.com/sharer/sharer.php?u=<%= encodeURIComponent('https://yourdomain.com/product/' + product._id) %>" target="_blank" class="social-icon" style="background: #1877f2;" title="Share on Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+                        <a href="https://twitter.com/intent/tweet?text=<%= encodeURIComponent(product.title) %>" target="_blank" class="social-icon" style="background: #000;" title="Share on X"><i class="fa-brands x-twitter">𝕏</i></a>
+                        <a href="javascript:window.print();" class="social-icon" style="background: #4caf50;" title="Print Page"><i class="fa-solid fa-print"></i></a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabs Card (Specifications, Details, Customer Questions, Reviews) -->
+            <div class="specs-details-card">
+                <div class="tab-nav">
+                    <button class="tab-nav-btn active" onclick="switchRyansTab(event, 'specsTabContent')">Specifications</button>
+                    <button class="tab-nav-btn" onclick="switchRyansTab(event, 'questionsTabContent')">Customer Questions</button>
+                    <button class="tab-nav-btn" onclick="switchRyansTab(event, 'reviewsTabContent')">Review (<%= approvedReviews.length %>)</button>
+                </div>
+
+                <!-- 1. Specifications (+ product description) -->
+                <div id="specsTabContent" class="tab-pane-content active">
+                    <table class="specs-table">
+                        <tr><th colspan="2" class="specs-group-title">General Information</th></tr>
+                        <tr><th>Brand</th><td><%= product.brand || 'Mizan Trade Stock' %></td></tr>
+                        <tr><th>Model</th><td><%= product.title %></td></tr>
+                        <tr><th>Category</th><td><%= product.mainCategory || 'General' %></td></tr>
+                        <tr><th colspan="2" class="specs-group-title">Physical & Warranty Description</th></tr>
+                        <tr><th>Stock Status</th><td><%= product.stockStatus || 'In Stock' %></td></tr>
+                        <tr><th>Warranty</th><td><%= product.warranty || '1 Year Official Warranty' %></td></tr>
+                        <% if (product.specs && product.specs.length) { %>
+                            <tr><th colspan="2" class="specs-group-title">Key Specifications</th></tr>
+                            <% product.specs.forEach(function (spec) { %>
+                                <tr><th><%= spec.key %></th><td><%= spec.value %></td></tr>
+                            <% }) %>
+                        <% } %>
+                    </table>
+
+                    <div style="margin-top:22px;">
+                        <h3 style="font-size:16px; color:#081621; margin-bottom:10px;">Product Description</h3>
+                        <div class="rte-output" style="font-size:14px; color:#44505c; line-height:1.7;">
+                            <%- product.longDesc || '<p>No detailed description has been added for this product yet. Feel free to contact us directly for wholesale inquiries.</p>' %>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Customer Questions -->
+                <div id="questionsTabContent" class="tab-pane-content">
+                    <% var approvedQuestions = (product.questions || []).filter(function (q) { return q.isApproved; }); %>
+                    <h3 style="font-size: 16px; margin-bottom: 15px; color: #081621;">Questions about this product (<%= approvedQuestions.length %>)</h3>
+                    <% if (approvedQuestions.length > 0) { %>
+                        <% approvedQuestions.forEach(q => { %>
+                            <div style="border-bottom: 1px solid #eee; padding: 12px 0;">
+                                <strong>Q: <%= q.question %></strong> <span style="font-size: 11px; color: #888;">- <%= q.name %></span>
+                                <p style="font-size: 13px; color: #555; margin-top: 6px; background: #f9f9f9; padding: 10px; border-radius: 4px;"><strong>Answer:</strong> <%= q.answer || 'Admin reply pending.' %></p>
+                            </div>
+                        <% }) %>
+                    <% } else { %>
+                        <p style="font-size: 13px; color: #666; margin-bottom: 15px;">No questions have been asked about this product yet. You can submit your question below:</p>
+                    <% } %>
+
+                    <form action="/product/question/<%= product._id %>" method="POST" style="margin-top: 20px; display: flex; flex-direction: column; gap: 12px; max-width: 600px;">
+                        <input type="text" name="name" placeholder="Your Name" required style="padding: 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;">
+                        <textarea name="question" placeholder="Write your question about this product..." rows="3" required style="padding: 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;"></textarea>
+                        <button type="submit" style="background: #081621; color: #fff; border: none; padding: 10px 20px; border-radius: 4px; font-size: 13px; cursor: pointer; width: fit-content; font-weight: 600;">Ask Question</button>
+                    </form>
+                </div>
+
+                <!-- 4. Customer Reviews -->
+                <div id="reviewsTabContent" class="tab-pane-content">
+                    <h3 style="font-size: 16px; margin-bottom: 15px; color: #081621;">Verified Customer Reviews</h3>
+                    <% if (approvedReviews.length > 0) { %>
+                        <% approvedReviews.forEach(rev => { %>
+                            <div style="border-bottom: 1px solid #eee; padding: 12px 0;">
+                                <strong><%= rev.name %></strong> - <span style="color: #ffc107;">★ <%= rev.rating %>/5</span>
+                                <p style="font-size: 13px; color: #555; margin-top: 4px;"><%= rev.comment %></p>
+                            </div>
+                        <% }) %>
+                    <% } else { %>
+                        <p style="color: #666; font-size: 13px; margin-bottom: 15px;">No approved reviews available for this product yet.</p>
+                    <% } %>
+
+                    <form action="/product/review/<%= product._id %>" method="POST" style="margin-top: 25px; border-top: 1px solid #eee; padding-top: 20px; display: flex; flex-direction: column; gap: 12px; max-width: 600px;">
+                        <h4 style="font-size: 15px; color: #333;">Write a Review</h4>
+                        <div style="display: flex; gap: 15px;">
+                            <input type="text" name="name" placeholder="Your Name" required style="flex: 1; padding: 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;">
+                            <select name="rating" style="padding: 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;">
+                                <option value="5">5 Star (Excellent)</option>
+                                <option value="4">4 Star (Good)</option>
+                                <option value="3">3 Star (Average)</option>
+                                <option value="2">2 Star (Poor)</option>
+                                <option value="1">1 Star (Bad)</option>
+                            </select>
+                        </div>
+                        <textarea name="comment" placeholder="Write your feedback here..." rows="3" required style="padding: 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 13px;"></textarea>
+                        <button type="submit" style="background: #ef4a23; color: #fff; border: none; padding: 10px 20px; border-radius: 4px; font-size: 13px; cursor: pointer; width: fit-content; font-weight: 600;">Submit Review (Pending Approval)</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Gallery Thumbnail Change Script
+        function changeImage(element) {
+            document.getElementById('mainProductImg').src = element.src;
+            let thumbs = document.getElementsByClassName('thumb-img');
+            for(let t of thumbs) { t.classList.remove('active'); }
+            element.classList.add('active');
+        }
+
+        // Tab Switching Script
+        function switchRyansTab(evt, tabId) {
+            let panes = document.getElementsByClassName('tab-pane-content');
+            for(let p of panes) { p.classList.remove('active'); }
+            let btns = document.getElementsByClassName('tab-nav-btn');
+            for(let b of btns) { b.classList.remove('active'); }
+            document.getElementById(tabId).classList.add('active');
+            evt.currentTarget.classList.add('active');
+        }
+
+        // Optional AJAX functionality for Cart and Wishlist if using JSON response
+        document.addEventListener('DOMContentLoaded', () => {
+            const addToCartBtn = document.querySelector('.add-to-cart-btn');
+            if (addToCartBtn) {
+                addToCartBtn.addEventListener('click', async (e) => {
+                    // যদি ফর্ম সাবমিট স্বাভাবিক নিয়মে (Page Reload) করতে চান তবে নিচের preventDefault লাইনটি বাদ দিতে পারেন।
+                    // কিন্তু যদি AJAX ব্যবহার করতে চান তবে এটি রাখতে হবে।
+                });
+            }
+        });
+    </script>
+
+    <%- include('partials/footer') %>
+    <script src="/js/main.js?v=2"></script>
+</body>
+</html>

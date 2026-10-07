@@ -1,0 +1,443 @@
+<%
+    const p = product || {};
+    const specs = p.specs || [];
+    const stockOptions = ["In Stock", "Out of Stock", "Pre Order", "Coming Soon"];
+%>
+
+<form
+    action="<%= formAction %>"
+    method="POST"
+    enctype="multipart/form-data"
+    class="product-form"
+    id="productForm"
+>
+
+    <!-- ================= BASIC INFORMATION ================= -->
+
+    <section class="dashboard-card">
+
+        <div class="card-header">
+            <h2 class="card-title">
+                <i class="fa-solid fa-circle-info card-icon"></i>
+                Basic Information
+            </h2>
+        </div>
+
+        <div class="form-grid">
+
+            <div class="form-group form-full">
+                <label for="titleInput">Product Title *</label>
+                <input
+                    type="text"
+                    id="titleInput"
+                    name="title"
+                    required
+                    value="<%= p.title || '' %>"
+                    placeholder="Example: Kingston NV3 1TB NVMe SSD"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="skuInput">
+                    SKU <span class="label-hint">— leave blank to auto-generate</span>
+                </label>
+                <div class="input-with-btn">
+                    <input
+                        type="text"
+                        id="skuInput"
+                        name="sku"
+                        value="<%= p.sku || '' %>"
+                        placeholder="Auto generate"
+                    >
+                    <button
+                        type="button"
+                        class="mini-button"
+                        id="skuGenBtn"
+                        title="Generate new SKU"
+                    >
+                        <i class="fa-solid fa-rotate"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="slugInput">
+                    Slug (URL) <span class="label-hint">— auto from title</span>
+                </label>
+                <div class="input-with-btn">
+                    <input
+                        type="text"
+                        id="slugInput"
+                        name="slug"
+                        value="<%= p.slug || '' %>"
+                        placeholder="auto-from-product-title"
+                    >
+                    <label class="mini-check">
+                        <input
+                            type="checkbox"
+                            id="slugAuto"
+                            <%= p.slug ? '' : 'checked' %>
+                        >
+                        Auto
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="categorySelect">Main Category *</label>
+                <select id="categorySelect" name="mainCategory" required>
+                    <option value="">Select category</option>
+                    <% categories.forEach(function (cat) { %>
+                        <option
+                            value="<%= cat.name %>"
+                            <%= (p.mainCategory === cat.name || p.mainCategory === cat.slug) ? 'selected' : '' %>
+                        ><%= cat.name %></option>
+                    <% }) %>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="subSelect">Sub Category</label>
+                <select id="subSelect" name="subCategory">
+                    <option value="">Select sub category</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="childSelect">Child Category</label>
+                <select id="childSelect" name="childCategory">
+                    <option value="">Select child category</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="brandInput">Brand</label>
+                <input
+                    type="text"
+                    id="brandInput"
+                    name="brand"
+                    list="brandList"
+                    value="<%= p.brand || '' %>"
+                    placeholder="Type or pick a brand"
+                >
+                <datalist id="brandList"></datalist>
+            </div>
+
+            <div class="form-group">
+                <label for="stockSelect">Stock Status</label>
+                <select id="stockSelect" name="stockStatus">
+                    <% stockOptions.forEach(function (option) { %>
+                        <option
+                            value="<%= option %>"
+                            <%= (p.stockStatus || 'In Stock') === option ? 'selected' : '' %>
+                        ><%= option %></option>
+                    <% }) %>
+                </select>
+            </div>
+
+            <div class="form-group checkbox-group">
+                <label>
+                    <input
+                        type="checkbox"
+                        name="isActive"
+                        value="on"
+                        <%= p.isActive === false ? '' : 'checked' %>
+                    >
+                    Visible on website (Active)
+                </label>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ================= PRICING ================= -->
+
+    <section class="dashboard-card">
+
+        <div class="card-header">
+            <h2 class="card-title">
+                <i class="fa-solid fa-tags card-icon"></i>
+                Pricing
+            </h2>
+        </div>
+
+        <div class="form-grid">
+
+            <div class="form-group">
+                <label for="regularPrice">Regular Price (৳)</label>
+                <input
+                    type="number"
+                    id="regularPrice"
+                    name="regularPrice"
+                    min="0"
+                    step="0.01"
+                    value="<%= p.regularPrice ?? '' %>"
+                    placeholder="0"
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="salePrice">Sale / Offer Price (৳)</label>
+                <input
+                    type="number"
+                    id="salePrice"
+                    name="salePrice"
+                    min="0"
+                    step="0.01"
+                    value="<%= p.salePrice ?? '' %>"
+                    placeholder="0"
+                >
+            </div>
+
+            <div class="form-group checkbox-group">
+                <label>
+                    <input
+                        type="checkbox"
+                        id="callForPrice"
+                        name="callForPrice"
+                        value="true"
+                        <%= p.callForPrice ? 'checked' : '' %>
+                    >
+                    Call for Price (hide the price, show a phone number)
+                </label>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ================= IMAGES ================= -->
+
+    <section class="dashboard-card">
+
+        <div class="card-header">
+            <h2 class="card-title">
+                <i class="fa-solid fa-images card-icon"></i>
+                Product Images
+            </h2>
+        </div>
+
+        <div class="form-grid">
+
+            <div class="form-group">
+                <label for="mainImageInput">Main Image</label>
+
+                <input
+                    type="file"
+                    id="mainImageInput"
+                    name="mainImage"
+                    accept="image/jpeg,image/png,image/webp"
+                >
+
+                <div class="preview-grid single">
+                    <img
+                        id="mainPreview"
+                        class="preview-tile"
+                        src="<%= p.mainImage || '' %>"
+                        alt="Main image preview"
+                        style="<%= p.mainImage ? '' : 'display:none;' %>"
+                    >
+                </div>
+
+                <small>JPG, PNG or WEBP — maximum 5MB.</small>
+            </div>
+
+            <div class="form-group">
+                <label for="galleryInput">Gallery Images</label>
+
+                <input
+                    type="file"
+                    id="galleryInput"
+                    name="galleryImages"
+                    multiple
+                    accept="image/jpeg,image/png,image/webp"
+                >
+
+                <div class="preview-grid" id="galleryPreview">
+                    <% (p.galleryImages || []).forEach(function (img) { %>
+                        <img class="preview-tile" src="<%= img %>" alt="Gallery image">
+                    <% }) %>
+                </div>
+
+                <small>You can select multiple images. Adding new images will replace the old gallery.</small>
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ================= DESCRIPTIONS ================= -->
+
+    <section class="dashboard-card">
+
+        <div class="card-header">
+            <h2 class="card-title">
+                <i class="fa-solid fa-pen-to-square card-icon"></i>
+                Descriptions
+            </h2>
+        </div>
+
+        <div class="form-grid one-col">
+
+            <div class="form-group form-full">
+                <label>Short Description</label>
+
+                <div class="rte-wrap">
+                    <div class="rte-toolbar" data-editor="shortEditor">
+                        <button type="button" class="rte-btn" data-cmd="bold" title="Bold"><i class="fa-solid fa-bold"></i></button>
+                        <button type="button" class="rte-btn" data-cmd="italic" title="Italic"><i class="fa-solid fa-italic"></i></button>
+                        <button type="button" class="rte-btn" data-cmd="underline" title="Underline"><i class="fa-solid fa-underline"></i></button>
+                        <button type="button" class="rte-btn" data-cmd="strikeThrough" title="Strike through"><i class="fa-solid fa-strikethrough"></i></button>
+                        <span class="rte-sep"></span>
+                        <select class="rte-select" data-block title="Paragraph style">
+                            <option value="p">Paragraph</option>
+                            <option value="h2">Heading 2</option>
+                            <option value="h3">Heading 3</option>
+                            <option value="h4">Heading 4</option>
+                        </select>
+                        <span class="rte-sep"></span>
+                        <button type="button" class="rte-btn" data-cmd="insertUnorderedList" title="Bullet list"><i class="fa-solid fa-list-ul"></i></button>
+                        <button type="button" class="rte-btn" data-cmd="insertOrderedList" title="Numbered list"><i class="fa-solid fa-list-ol"></i></button>
+                        <span class="rte-sep"></span>
+                        <button type="button" class="rte-btn" data-cmd="createLink" title="Insert link"><i class="fa-solid fa-link"></i></button>
+                        <button type="button" class="rte-btn" data-cmd="unlink" title="Remove link"><i class="fa-solid fa-link-slash"></i></button>
+                        <span class="rte-sep"></span>
+                        <button type="button" class="rte-btn" data-cmd="undo" title="Undo"><i class="fa-solid fa-rotate-left"></i></button>
+                        <button type="button" class="rte-btn" data-cmd="redo" title="Redo"><i class="fa-solid fa-rotate-right"></i></button>
+                        <button type="button" class="rte-btn" data-cmd="removeFormat" title="Clear formatting"><i class="fa-solid fa-eraser"></i></button>
+                    </div>
+
+                    <div class="rte-area" id="shortEditor" contenteditable="true"></div>
+                </div>
+
+                <textarea id="shortDescSource" name="shortDesc" class="hidden-source"><%= p.shortDesc || '' %></textarea>
+            </div>
+
+            <div class="form-group form-full">
+                <label>Long Description</label>
+
+                <div class="rte-wrap">
+                    <div class="rte-toolbar" data-editor="longEditor">
+                        <button type="button" class="rte-btn" data-cmd="bold" title="Bold"><i class="fa-solid fa-bold"></i></button>
+                        <button type="button" class="rte-btn" data-cmd="italic" title="Italic"><i class="fa-solid fa-italic"></i></button>
+                        <button type="button" class="rte-btn" data-cmd="underline" title="Underline"><i class="fa-solid fa-underline"></i></button>
+                        <button type="button" class="rte-btn" data-cmd="strikeThrough" title="Strike through"><i class="fa-solid fa-strikethrough"></i></button>
+                        <span class="rte-sep"></span>
+                        <select class="rte-select" data-block title="Paragraph style">
+                            <option value="p">Paragraph</option>
+                            <option value="h2">Heading 2</option>
+                            <option value="h3">Heading 3</option>
+                            <option value="h4">Heading 4</option>
+                        </select>
+                        <span class="rte-sep"></span>
+                        <button type="button" class="rte-btn" data-cmd="insertUnorderedList" title="Bullet list"><i class="fa-solid fa-list-ul"></i></button>
+                        <button type="button" class="rte-btn" data-cmd="insertOrderedList" title="Numbered list"><i class="fa-solid fa-list-ol"></i></button>
+                        <span class="rte-sep"></span>
+                        <button type="button" class="rte-btn" data-cmd="createLink" title="Insert link"><i class="fa-solid fa-link"></i></button>
+                        <button type="button" class="rte-btn" data-cmd="unlink" title="Remove link"><i class="fa-solid fa-link-slash"></i></button>
+                        <span class="rte-sep"></span>
+                        <button type="button" class="rte-btn" data-role="image" title="Upload image from computer"><i class="fa-solid fa-image"></i></button>
+                        <span class="rte-sep"></span>
+                        <button type="button" class="rte-btn" data-cmd="undo" title="Undo"><i class="fa-solid fa-rotate-left"></i></button>
+                        <button type="button" class="rte-btn" data-cmd="redo" title="Redo"><i class="fa-solid fa-rotate-right"></i></button>
+                        <button type="button" class="rte-btn" data-cmd="removeFormat" title="Clear formatting"><i class="fa-solid fa-eraser"></i></button>
+                    </div>
+
+                    <div class="rte-area tall" id="longEditor" contenteditable="true"></div>
+                </div>
+
+                <textarea id="longDescSource" name="longDesc" class="hidden-source"><%= p.longDesc || '' %></textarea>
+
+                <input
+                    type="file"
+                    id="rteImageInput"
+                    accept="image/jpeg,image/png,image/webp"
+                    style="display:none;"
+                >
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ================= SPECIFICATIONS ================= -->
+
+    <section class="dashboard-card">
+
+        <div class="card-header">
+            <h2 class="card-title">
+                <i class="fa-solid fa-sliders card-icon"></i>
+                Specifications / Filter Attributes
+            </h2>
+
+            <button type="button" class="secondary-button" id="addSpecBtn">
+                <i class="fa-solid fa-plus"></i>
+                Add Row
+            </button>
+        </div>
+
+        <div class="spec-rows" id="specRows">
+
+            <% if (specs.length === 0) { %>
+                <div class="spec-row">
+                    <input type="text" name="specKey[]" placeholder="Attribute — e.g. Warranty">
+                    <input type="text" name="specValue[]" placeholder="Value — e.g. 3 Years Official">
+                    <button type="button" class="mini-button danger spec-remove" title="Remove row">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            <% } %>
+
+            <% specs.forEach(function (spec) { %>
+                <div class="spec-row">
+                    <input type="text" name="specKey[]" value="<%= spec.key %>" placeholder="Attribute">
+                    <input type="text" name="specValue[]" value="<%= spec.value %>" placeholder="Value">
+                    <button type="button" class="mini-button danger spec-remove" title="Remove row">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            <% }) %>
+
+        </div>
+
+        <p class="section-note">
+            Information given here will appear as a specification table on the product page.
+        </p>
+
+    </section>
+
+
+    <!-- ================= ACTIONS ================= -->
+
+    <div class="form-actions">
+
+        <a href="/admin/products" class="secondary-button">
+            Cancel
+        </a>
+
+        <button type="submit" class="primary-button">
+            <i class="fa-solid fa-floppy-disk"></i>
+            Save Product
+        </button>
+
+    </div>
+
+</form>
+
+
+<script>
+    window.MT_CATEGORIES = <%- JSON.stringify(categories) %>;
+    window.MT_SELECTED = {
+        mainCategory: <%- JSON.stringify(p.mainCategory || '') %>,
+        subCategory: <%- JSON.stringify(p.subCategory || '') %>,
+        childCategory: <%- JSON.stringify(p.childCategory || '') %>,
+        brand: <%- JSON.stringify(p.brand || '') %>
+    };
+</script>
+
+<script src="/admin/js/productForm.js"></script>

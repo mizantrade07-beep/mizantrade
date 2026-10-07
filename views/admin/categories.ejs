@@ -1,0 +1,262 @@
+<%- include("partials/head", {
+    title: "Categories | MizanTrade Admin"
+}) %>
+
+<%- include("partials/sidebar") %>
+
+<div class="admin-main">
+
+    <%- include("partials/topbar", {
+        title: "Categories"
+    }) %>
+
+    <main class="admin-content">
+
+        <div class="dashboard-header">
+            <div>
+                <h1 class="dashboard-title">Categories</h1>
+                <p class="dashboard-subtitle">
+                    3-level categories — Main to Sub to Child. Whatever you add or edit here
+                    will appear in the header mega menu, shop and homepage.
+                </p>
+            </div>
+
+            <a href="/admin/categories/add" class="primary-button">
+                <i class="fa-solid fa-plus"></i>
+                Add Category
+            </a>
+        </div>
+
+
+        <section class="stats-grid">
+
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-layer-group"></i></div>
+                <div class="stat-content">
+                    <span>Main Categories</span>
+                    <strong><%= tree.length %></strong>
+                </div>
+            </article>
+
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-sitemap"></i></div>
+                <div class="stat-content">
+                    <span>Sub Categories</span>
+                    <strong><%= subCount %></strong>
+                </div>
+            </article>
+
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-diagram-project"></i></div>
+                <div class="stat-content">
+                    <span>Child Categories</span>
+                    <strong><%= childCount %></strong>
+                </div>
+            </article>
+
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-box-open"></i></div>
+                <div class="stat-content">
+                    <span>Products Mapped</span>
+                    <strong><%= totalProducts %></strong>
+                </div>
+            </article>
+
+        </section>
+
+
+        <section class="dashboard-card">
+
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fa-solid fa-sitemap card-icon"></i>
+                    Category Tree
+                </h2>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="admin-table category-table">
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>Slug</th>
+                            <th>Brands</th>
+                            <th>Products</th>
+                            <th>Home</th>
+                            <th>Order</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        <% if (tree.length === 0 && orphans.length === 0) { %>
+                            <tr>
+                                <td colspan="8" class="empty-state">
+                                    <div class="empty-icon"><i class="fa-solid fa-folder-open"></i></div>
+                                    <h4>No categories</h4>
+                                    <p>Start from "Add Category" or run in the terminal: <code>npm run seed:categories</code></p>
+                                </td>
+                            </tr>
+                        <% } %>
+
+                        <%
+                            function brandCell(cat) {
+                                var list = cat.brands || [];
+                                var html = '<div class="brand-chips">';
+                                list.slice(0, 4).forEach(function (b) {
+                                    html += '<span class="brand-chip">' + b + '</span>';
+                                });
+                                if (list.length > 4) {
+                                    html += '<span class="brand-chip more">+' + (list.length - 4) + '</span>';
+                                }
+                                if (!list.length) {
+                                    html += '<span class="muted-dash">—</span>';
+                                }
+                                html += '</div>';
+                                return html;
+                            }
+
+                            function actionCell(cat) {
+                                return '' +
+                                    '<div class="product-actions">' +
+                                        '<a href="/admin/categories/edit/' + cat._id + '" class="action-edit" title="Edit">' +
+                                            '<i class="fa-solid fa-pen"></i></a>' +
+                                        '<a href="/admin/categories/delete/' + cat._id + '" class="action-delete" title="Delete" ' +
+                                            'onclick="return confirm(\'Delete this category?\');">' +
+                                            '<i class="fa-solid fa-trash"></i></a>' +
+                                    '</div>';
+                            }
+                        %>
+
+                        <% tree.forEach(function (main) { %>
+                            <tr class="tree-top">
+                                <td>
+                                    <div class="cat-cell">
+                                        <span class="cat-icon"><i class="<%= main.icon %>"></i></span>
+                                        <strong><%= main.name %></strong>
+                                        <span class="lvl-tag lvl-main">Main</span>
+                                    </div>
+                                </td>
+                                <td><code class="slug-chip"><%= main.slug %></code></td>
+                                <td><%- brandCell(main) %></td>
+                                <td><span class="count-pill"><%= counts[main.slug] || counts[main.name] || 0 %></span></td>
+                                <td>
+                                    <% if (main.showOnHome) { %>
+                                        <span class="badge badge-approved"><i class="fa-solid fa-house"></i> Yes</span>
+                                    <% } else { %>
+                                        <span class="badge">No</span>
+                                    <% } %>
+                                </td>
+                                <td><%= main.order %></td>
+                                <td>
+                                    <% if (main.isActive) { %>
+                                        <span class="badge badge-approved">Active</span>
+                                    <% } else { %>
+                                        <span class="badge badge-rejected">Inactive</span>
+                                    <% } %>
+                                </td>
+                                <td><%- actionCell(main) %></td>
+                            </tr>
+
+                            <% (main.children || []).forEach(function (sub) { %>
+                                <tr class="tree-child">
+                                    <td>
+                                        <div class="cat-cell indent">
+                                            <span class="tree-line"><i class="fa-solid fa-corner-down-right"></i></span>
+                                            <span class="cat-icon small"><i class="<%= sub.icon || 'fa-solid fa-tag' %>"></i></span>
+                                            <span><%= sub.name %></span>
+                                            <span class="lvl-tag lvl-sub">Sub</span>
+                                        </div>
+                                    </td>
+                                    <td><code class="slug-chip"><%= sub.slug %></code></td>
+                                    <td><%- brandCell(sub) %></td>
+                                    <td><span class="count-pill"><%= counts[sub.slug] || counts[sub.name] || 0 %></span></td>
+                                    <td>
+                                        <% if (sub.showOnHome) { %>
+                                            <span class="badge badge-approved">Yes</span>
+                                        <% } else { %>
+                                            <span class="badge">No</span>
+                                        <% } %>
+                                    </td>
+                                    <td><%= sub.order %></td>
+                                    <td>
+                                        <% if (sub.isActive) { %>
+                                            <span class="badge badge-approved">Active</span>
+                                        <% } else { %>
+                                            <span class="badge badge-rejected">Inactive</span>
+                                        <% } %>
+                                    </td>
+                                    <td><%- actionCell(sub) %></td>
+                                </tr>
+
+                                <% (sub.children || []).forEach(function (child) { %>
+                                    <tr class="tree-grandchild">
+                                        <td>
+                                            <div class="cat-cell indent indent-2">
+                                                <span class="tree-line soft"><i class="fa-solid fa-angle-right"></i></span>
+                                                <span class="cat-icon small"><i class="<%= child.icon || 'fa-solid fa-circle-small' %>"></i></span>
+                                                <span><%= child.name %></span>
+                                                <span class="lvl-tag lvl-child">Child</span>
+                                            </div>
+                                        </td>
+                                        <td><code class="slug-chip"><%= child.slug %></code></td>
+                                        <td><%- brandCell(child) %></td>
+                                        <td><span class="count-pill"><%= counts[child.slug] || counts[child.name] || 0 %></span></td>
+                                        <td>
+                                            <% if (child.showOnHome) { %>
+                                                <span class="badge badge-approved">Yes</span>
+                                            <% } else { %>
+                                                <span class="badge">No</span>
+                                            <% } %>
+                                        </td>
+                                        <td><%= child.order %></td>
+                                        <td>
+                                            <% if (child.isActive) { %>
+                                                <span class="badge badge-approved">Active</span>
+                                            <% } else { %>
+                                                <span class="badge badge-rejected">Inactive</span>
+                                            <% } %>
+                                        </td>
+                                        <td><%- actionCell(child) %></td>
+                                    </tr>
+                                <% }) %>
+                            <% }) %>
+                        <% }) %>
+
+                        <% orphans.forEach(function (cat) { %>
+                            <tr>
+                                <td>
+                                    <div class="cat-cell">
+                                        <span class="cat-icon"><i class="<%= cat.icon %>"></i></span>
+                                        <strong><%= cat.name %></strong>
+                                        <span class="badge badge-pending">parent missing</span>
+                                    </div>
+                                </td>
+                                <td><code class="slug-chip"><%= cat.slug %></code></td>
+                                <td><%- brandCell(cat) %></td>
+                                <td><span class="count-pill"><%= counts[cat.slug] || counts[cat.name] || 0 %></span></td>
+                                <td><span class="badge">No</span></td>
+                                <td><%= cat.order %></td>
+                                <td>
+                                    <% if (cat.isActive) { %>
+                                        <span class="badge badge-approved">Active</span>
+                                    <% } else { %>
+                                        <span class="badge badge-rejected">Inactive</span>
+                                    <% } %>
+                                </td>
+                                <td><%- actionCell(cat) %></td>
+                            </tr>
+                        <% }) %>
+
+                    </tbody>
+                </table>
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+<%- include("partials/footer") %>

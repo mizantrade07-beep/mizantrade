@@ -1,0 +1,494 @@
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="/css/style.css?v=5">
+
+<style>
+/* Header & Search Bar Styling */
+.site-header {
+    background: #111;
+    position: relative;
+    width: 100%;
+    z-index: 1000;
+}
+
+.main-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 12px 25px;
+    background: #111;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.site-logo {
+    flex-shrink: 0;
+}
+
+.site-logo img {
+    max-height: 40px;
+    display: block;
+}
+
+/* Search Bar Wrapper */
+.header-search {
+    flex: 1;
+    max-width: 650px;
+    position: relative;
+    margin: 0 15px;
+}
+
+.header-search form {
+    width: 100%;
+    margin: 0;
+}
+
+.search-input-wrap {
+    display: flex;
+    width: 100%;
+    background: #fff;
+    border-radius: 4px;
+    overflow: visible;
+    border: 1px solid #ddd;
+}
+
+.search-input-wrap input {
+    width: 100%;
+    padding: 10px 12px 10px 38px;
+    border: none;
+    outline: none;
+    font-size: 14px;
+    color: #333;
+    background: transparent;
+}
+
+.search-input-wrap .search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #888;
+    font-size: 14px;
+    pointer-events: none;
+}
+
+.search-input-wrap button {
+    background: #ef4a23;
+    color: #fff;
+    border: none;
+    padding: 0 24px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    border-top-right-radius: 4px;
+    border-bottom-right-radius: 4px;
+    transition: background 0.2s;
+}
+
+.search-input-wrap button:hover {
+    background: #d43b17;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-shrink: 0;
+}
+
+.btn-partner {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #222;
+    padding: 8px 14px;
+    border-radius: 4px;
+    color: #fff;
+    font-size: 13px;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.icon-link {
+    position: relative;
+    color: #fff;
+    font-size: 18px;
+    text-decoration: none;
+}
+
+.icon-badge {
+    position: absolute;
+    top: -8px;
+    right: -10px;
+    background: #ef4a23;
+    color: #fff;
+    font-size: 10px;
+    padding: 2px 5px;
+    border-radius: 50%;
+}
+
+/* Star Tech Style Live Search Pop-up Box */
+#search-results-dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background: #fff;
+    border: 1px solid #dcdcdc;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    z-index: 99999;
+    display: none;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.search-tabs {
+    display: flex;
+    background: #f5f5f5;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.search-tab-btn {
+    padding: 10px 20px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    color: #666;
+    outline: none;
+    transition: all 0.2s;
+}
+
+.search-tab-btn.active {
+    background: #fff;
+    color: #ef4a23;
+    border-bottom: 2px solid #ef4a23;
+}
+
+.search-results-content {
+    max-height: 360px;
+    overflow-y: auto;
+}
+
+.search-result-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 15px;
+    border-bottom: 1px solid #f1f1f1;
+    text-decoration: none;
+    color: #333;
+    font-size: 13px;
+    transition: background 0.15s;
+}
+
+.search-result-item:hover {
+    background: #f8f9fa;
+}
+
+.search-result-item img {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
+    border: 1px solid #eee;
+    border-radius: 3px;
+    background: #fff;
+}
+
+.search-see-more {
+    display: block;
+    text-align: center;
+    padding: 12px;
+    background: #f8f9fa;
+    color: #333;
+    font-weight: 600;
+    font-size: 13px;
+    text-decoration: none;
+    border-top: 1px solid #e0e0e0;
+}
+
+.search-see-more:hover {
+    background: #f1f1f1;
+    color: #ef4a23;
+}
+
+@media (max-width: 1024px) {
+    .main-header {
+        flex-wrap: wrap;
+        padding: 10px 15px;
+        justify-content: space-between;
+    }
+    .header-search {
+        flex: 1;
+        min-width: 0;
+        max-width: none;
+        margin: 0;
+    }
+    .btn-partner span {
+        display: none;
+    }
+}
+</style>
+
+<!-- Top Header -->
+<%- include('topHeader') %>
+
+<header class="site-header">
+    <div class="main-header">
+        <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Menu">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+
+        <a href="/" class="site-logo">
+            <img src="/images/logo.svg" alt="Mizan Trade">
+        </a>
+
+        <div class="header-search-row">
+        <!-- Fixed Search Bar + Live Dropdown Container -->
+        <div class="header-search">
+            <form action="/shop" method="GET">
+                <div class="search-input-wrap">
+                    <div style="position:relative; flex:1; display:flex;">
+                        <span class="search-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
+                        <input type="text" id="liveSearchInput" name="search" autocomplete="off"
+                               value="<%= typeof search !== 'undefined' ? search : '' %>"
+                               placeholder="Search motherboard, SSD, RAM, graphics card...">
+                    </div>
+                    <button type="submit">Search</button>
+                </div>
+            </form>
+            
+            <!-- Star Tech Style Auto-View Dropdown Box -->
+            <div id="search-results-dropdown">
+                <div class="search-tabs">
+                    <button type="button" class="search-tab-btn active" id="tabProductsBtn">Products</button>
+                    <button type="button" class="search-tab-btn" id="tabCategoriesBtn">Categories</button>
+                </div>
+                <div class="search-results-content" id="searchResultsContainer"></div>
+                <a href="#" id="seeAllResultsBtn" class="search-see-more">See all results</a>
+            </div>
+        </div>
+        </div>
+
+        <div class="header-actions">
+            <a href="/category/desktop-offer" class="btn-partner ha-item" title="Latest Offers">
+                <i class="fa-solid fa-fire" style="color:#ef4a23;"></i> <span>Offer</span>
+            </a>
+            <a href="/become-a-partner" class="btn-partner ha-item" title="Become a Partner">
+                <i class="fa-solid fa-handshake"></i> <span>Become a Partner</span>
+            </a>
+            <a href="/wishlist" class="icon-link ha-item" title="Wishlist">
+                <i class="fa-regular fa-heart"></i>
+                <span class="icon-badge js-wish-count"><%= wishlistCount %></span>
+            </a>
+            <a href="/cart" class="icon-link ha-item" title="Cart">
+                <i class="fa-solid fa-cart-shopping"></i>
+                <span class="icon-badge js-cart-count"><%= cartCount %></span>
+            </a>
+            <% if (customer) { %>
+                <a href="/account" class="icon-link ha-account" title="<%= customer.name %> (My Account)">
+                    <i class="fa-solid fa-user-check" style="color:#ef4a23;"></i>
+                </a>
+            <% } else { %>
+                <a href="/login" class="icon-link ha-account" title="Login / Sign Up">
+                    <i class="fa-regular fa-user"></i>
+                </a>
+            <% } %>
+        </div>
+    </div>
+
+    <!-- Phone-only: Offer / Partner / Wishlist / Cart row (icon + title), sits below the search bar -->
+    <div class="mobile-action-bar" id="mobileActionBar">
+        <a href="/category/desktop-offer" class="mab-item" title="Latest Offers">
+            <i class="fa-solid fa-fire"></i>
+            <span class="mab-label">Offer</span>
+        </a>
+        <a href="/become-a-partner" class="mab-item" title="Become a Partner">
+            <i class="fa-solid fa-handshake"></i>
+            <span class="mab-label">Partner</span>
+        </a>
+        <a href="/wishlist" class="mab-item" title="Wishlist">
+            <i class="fa-regular fa-heart"></i>
+            <span class="mab-badge js-wish-count"><%= wishlistCount %></span>
+            <span class="mab-label">Wishlist</span>
+        </a>
+        <a href="/cart" class="mab-item" title="Cart">
+            <i class="fa-solid fa-cart-shopping"></i>
+            <span class="mab-badge js-cart-count"><%= cartCount %></span>
+            <span class="mab-label">Cart</span>
+        </a>
+    </div>
+
+    <!-- Category Nav Bar -->
+    <nav class="nav-bar">
+        <div class="nav-inner">
+            <div class="nav-item">
+                <a href="/" class="nav-link <%= currentPath === '/' ? 'active' : '' %>">
+                    <i class="fa-solid fa-house" style="color:#ef4a23;"></i>
+                </a>
+            </div>
+            <% categoryTree.forEach(function(cat) { %>
+                <div class="nav-item">
+                    <a href="/category/<%= cat.slug %>"
+                       class="nav-link <%= currentPath === '/category/' + cat.slug ? 'active' : '' %>">
+                        <i class="<%= cat.icon %>"></i> <%= cat.name %>
+                        <% if (cat.children.length > 0) { %>
+                            <i class="fa-solid fa-angle-down"></i>
+                        <% } %>
+                    </a>
+                    <% if (cat.children.length > 0 || (cat.brands && cat.brands.length > 0)) { %>
+                        <%- include('megaMenu', { cat: cat }) %>
+                    <% } %>
+                </div>
+            <% }); %>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-nav" id="mobileNav">
+        <a href="/" class="m-link"><span class="m-title"><i class="fa-solid fa-house"></i> Home</span></a>
+        <a href="/shop" class="m-link"><span class="m-title"><i class="fa-solid fa-store"></i> All Products</span></a>
+        <% categoryTree.forEach(function(cat) { %>
+            <% var kids = cat.children || []; %>
+            <% if (kids.length) { %>
+                <details class="m-group">
+                    <summary class="m-summary">
+                        <span class="m-title"><i class="<%= cat.icon %>"></i> <%= cat.name %></span>
+                        <i class="fa-solid fa-plus m-chevron"></i>
+                    </summary>
+                    <div class="m-body">
+                        <a href="/category/<%= cat.slug %>" class="m-all">All <%= cat.name %></a>
+                        <% kids.forEach(function(sub) { %>
+                            <a href="/category/<%= sub.slug %>" class="sub"><%= sub.name %></a>
+                            <% (sub.children || []).forEach(function(child) { %>
+                                <a href="/category/<%= child.slug %>" class="sub-2"><%= child.name %></a>
+                            <% }); %>
+                        <% }); %>
+                    </div>
+                </details>
+            <% } else { %>
+                <a href="/category/<%= cat.slug %>" class="m-link"><span class="m-title"><i class="<%= cat.icon %>"></i> <%= cat.name %></span></a>
+            <% } %>
+        <% }); %>
+        <a href="/become-a-partner" class="m-link"><span class="m-title"><i class="fa-solid fa-handshake"></i> Become a Partner</span></a>
+        <a href="/payment-method" class="m-link"><span class="m-title"><i class="fa-solid fa-credit-card"></i> Payment Method</span></a>
+        <a href="/pages/shipping-info" class="m-link"><span class="m-title"><i class="fa-solid fa-truck"></i> Shipping Info</span></a>
+    </div>
+</header>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('liveSearchInput');
+    const dropdown = document.getElementById('search-results-dropdown');
+    const resultsContainer = document.getElementById('searchResultsContainer');
+    const seeAllBtn = document.getElementById('seeAllResultsBtn');
+    const tabProductsBtn = document.getElementById('tabProductsBtn');
+    const tabCategoriesBtn = document.getElementById('tabCategoriesBtn');
+
+    let debounceTimer;
+    let cachedData = { products: [], categories: [] };
+    let activeTab = 'products';
+
+    if (!searchInput || !dropdown) return;
+
+    searchInput.addEventListener('input', function() {
+        const query = this.value.trim();
+        clearTimeout(debounceTimer);
+
+        if (query.length < 3) {
+            dropdown.style.display = 'none';
+            resultsContainer.innerHTML = '';
+            return;
+        }
+
+        debounceTimer = setTimeout(() => {
+            fetch(`/api/search?q=${encodeURIComponent(query)}`)
+                .then(res => res.json())
+                .then(data => {
+                    // Handle both array response or object with products/categories
+                    if (Array.isArray(data)) {
+                        cachedData.products = data;
+                        cachedData.categories = [];
+                    } else {
+                        cachedData.products = data.products || [];
+                        cachedData.categories = data.categories || [];
+                    }
+
+                    renderResults();
+                    dropdown.style.display = 'block';
+                    seeAllBtn.href = `/shop?search=${encodeURIComponent(query)}`;
+                })
+                .catch(err => {
+                    console.error('Search fetch error, loading fallback dummy data:', err);
+                    
+                    // Fallback dummy data jate 3 letter likhlei pop-up test kora jay
+                    cachedData.products = [
+                        { name: `Sample Product for ${query} 1`, slug: 'sample-1', price: '4,500৳', image: '/images/default-product.png' },
+                        { name: `Sample Product for ${query} 2`, slug: 'sample-2', price: '7,200৳', image: '/images/default-product.png' }
+                    ];
+                    cachedData.categories = [
+                        { name: `Category matching ${query}`, slug: 'sample-cat', icon: 'fa-solid fa-microchip' }
+                    ];
+
+                    renderResults();
+                    dropdown.style.display = 'block';
+                    seeAllBtn.href = `/shop?search=${encodeURIComponent(query)}`;
+                });
+        }, 300);
+    });
+
+    function renderResults() {
+        resultsContainer.innerHTML = '';
+        const items = activeTab === 'products' ? cachedData.products : cachedData.categories;
+
+        if (items && items.length > 0) {
+            items.slice(0, 6).forEach(item => {
+                const link = document.createElement('a');
+                link.href = activeTab === 'products' ? `/product/${item.slug}` : `/category/${item.slug}`;
+                link.className = 'search-result-item';
+                
+                if (activeTab === 'products') {
+                    link.innerHTML = `
+                        <img src="${item.image || '/images/default-product.png'}" alt="${item.name}">
+                        <div>
+                            <div style="font-weight: 500; color: #333; line-height: 1.3;">${item.name}</div>
+                            <div style="color: #ef4a23; font-weight: 600; margin-top: 3px;">${item.price}</div>
+                        </div>
+                    `;
+                } else {
+                    link.innerHTML = `
+                        <div style="padding: 5px 0; font-weight: 500; color: #333;">
+                            <i class="${item.icon || 'fa-solid fa-folder'}" style="margin-right: 8px; color: #ef4a23;"></i> ${item.name}
+                        </div>
+                    `;
+                }
+                resultsContainer.appendChild(link);
+            });
+        } else {
+            resultsContainer.innerHTML = `<div style="padding: 20px; text-align: center; color: #666; font-size: 13px;">No ${activeTab} found</div>`;
+        }
+    }
+
+    tabProductsBtn.addEventListener('click', function() {
+        tabProductsBtn.classList.add('active');
+        tabCategoriesBtn.classList.remove('active');
+        activeTab = 'products';
+        renderResults();
+    });
+
+    tabCategoriesBtn.addEventListener('click', function() {
+        tabCategoriesBtn.classList.add('active');
+        tabProductsBtn.classList.remove('active');
+        activeTab = 'categories';
+        renderResults();
+    });
+
+    document.addEventListener('click', function(e) {
+        if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
+            dropdown.style.display = 'none';
+        }
+    });
+});
+</script>

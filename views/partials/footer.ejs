@@ -1,0 +1,106 @@
+<footer style="background: #000000; color: #fff; margin-top: 50px; padding: 50px 20px 20px 20px; font-size: 14px; font-family: Arial, sans-serif;">
+    <div style="max-width: 1600px; margin: 0 auto; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 30px;">
+        
+        <!-- Column 1: Logo & Address -->
+        <div style="flex: 1; min-width: 250px;">
+            <img src="/images/logo.svg" alt="Mizan Trade" style="max-height: 45px; margin-bottom: 20px;">
+            
+            <p style="color: #bbb; font-size: 13px; line-height: 1.6; margin-bottom: 15px;">
+                <strong style="color: #fff;">Address</strong><br>
+                Shop No 301-303, Level 3, 69-71<br>
+                New Elephant Road, Dhaka.
+            </p>
+
+            <p style="color: #bbb; font-size: 13px; line-height: 1.6;">
+                <strong style="color: #fff;">Corporate Office</strong><br>
+                30 New Elephant Road, Level 4,<br>
+                Dhaka 1205.
+            </p>
+        </div>
+
+        <!-- Column 2: About Company -->
+        <div style="flex: 1; min-width: 160px;">
+            <h4 style="color: #fff; margin-bottom: 20px; border-bottom: 2px solid #ef4a23; display: inline-block; padding-bottom: 5px; font-size: 16px;">About Company</h4>
+            <ul style="list-style: none; padding: 0; margin: 0; color: #bbb; line-height: 2.2; font-size: 13px;">
+                <li><a href="/about" style="color: #bbb; text-decoration: none;">About Us</a></li>
+                <li><a href="/blog" style="color: #bbb; text-decoration: none;">Blog</a></li>
+                <li><a href="/contact" style="color: #bbb; text-decoration: none;">Contact Us</a></li>
+                <li><a href="/privacy-policy" style="color: #bbb; text-decoration: none;">Privacy Policy</a></li>
+                <li><a href="/our-brand" style="color: #bbb; text-decoration: none;">Our Brand</a></li>
+            </ul>
+        </div>
+
+        <!-- Column 3: Customer Help -->
+        <div style="flex: 1; min-width: 180px;">
+            <h4 style="color: #fff; margin-bottom: 20px; border-bottom: 2px solid #ef4a23; display: inline-block; padding-bottom: 5px; font-size: 16px;">Customer Help</h4>
+            <ul style="list-style: none; padding: 0; margin: 0; color: #bbb; line-height: 2.2; font-size: 13px;">
+                <li><a href="/warranty" style="color: #bbb; text-decoration: none;">Warranty</a></li>
+                <li><a href="/services" style="color: #bbb; text-decoration: none;">Repair and Services</a></li>
+                <li><a href="/refund-policy" style="color: #bbb; text-decoration: none;">Refund And Return Policy</a></li>
+                <li><a href="/terms" style="color: #bbb; text-decoration: none;">Terms and Conditions</a></li>
+                <li><a href="/cookie-policy" style="color: #bbb; text-decoration: none;">Cookie Policy</a></li>
+            </ul>
+        </div>
+
+        <!-- Column 4: Customer Service -->
+        <div style="flex: 1; min-width: 160px;">
+            <h4 style="color: #fff; margin-bottom: 20px; border-bottom: 2px solid #ef4a23; display: inline-block; padding-bottom: 5px; font-size: 16px;">Customer Service</h4>
+            <ul style="list-style: none; padding: 0; margin: 0; color: #bbb; line-height: 2.2; font-size: 13px;">
+                <li><a href="/become-a-partner" style="color: #bbb; text-decoration: none;">Become a Partner</a></li>
+                <li><a href="/login" style="color: #bbb; text-decoration: none;">Login & Register</a></li>
+                <li><a href="/account" style="color: #bbb; text-decoration: none;">My Account</a></li>
+                <li><a href="/order-procedure" style="color: #bbb; text-decoration: none;">Order Procedure</a></li>
+                <li><a href="/delivery-method" style="color: #bbb; text-decoration: none;">Delivery Method</a></li>
+                <li><a href="/payment-method" style="color: #bbb; text-decoration: none;">Payment Method</a></li>
+            </ul>
+        </div>
+
+        <!-- Column 4.5: Dynamic CMS Pages (admin-controlled via showInFooter) -->
+        <% if (typeof footerPages !== "undefined" && footerPages && footerPages.length) { %>
+        <div style="flex: 1; min-width: 160px;">
+            <h4 style="color: #fff; margin-bottom: 20px; border-bottom: 2px solid #ef4a23; display: inline-block; padding-bottom: 5px; font-size: 16px;">More</h4>
+            <ul style="list-style: none; padding: 0; margin: 0; color: #bbb; line-height: 2.2; font-size: 13px;">
+                <% footerPages.forEach(function (fp) { %>
+                <li><a href="/page/<%= fp.slug %>" style="color: #bbb; text-decoration: none;"><%= fp.title %></a></li>
+                <% }); %>
+            </ul>
+        </div>
+        <% } %>
+
+        <!-- Column 5: Membership & Social Links -->
+        <div style="flex: 1; min-width: 220px;">
+            <h4 style="color: #fff; margin-bottom: 20px; border-bottom: 2px solid #ef4a23; display: inline-block; padding-bottom: 5px; font-size: 16px;">Membership</h4>
+            <!-- Membership Badges -->
+            <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 15px; flex-wrap: wrap;">
+                <span style="background: #fff; color: #000; padding: 8px 12px; border-radius: 4px; font-weight: bold; font-size: 12px;">e-CAB</span>
+                <span style="background: #fff; color: #000; padding: 8px 12px; border-radius: 4px; font-weight: bold; font-size: 12px;">BASIS</span>
+                <span style="background: #fff; color: #000; padding: 8px 12px; border-radius: 4px; font-weight: bold; font-size: 12px;">BCC</span>
+            </div>
+            
+            <!-- Social Icons with Links -->
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <a href="https://www.facebook.com/mizantrade/" target="_blank" rel="noopener" style="background: #3b5998; color: #fff; width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border-radius: 4px; text-decoration: none;"><i class="fab fa-facebook-f"></i></a>
+                <a href="https://www.youtube.com/@MIZANTRADE-s3z" target="_blank" rel="noopener" style="background: #ff0000; color: #fff; width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border-radius: 4px; text-decoration: none;"><i class="fab fa-youtube"></i></a>
+                <a href="mailto:support@mizantrade.com" style="background: #555; color: #fff; width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border-radius: 4px; text-decoration: none;"><i class="fas fa-envelope"></i></a>
+                <a href="https://wa.me/8801709867815" target="_blank" rel="noopener" style="background: #25d366; color: #fff; width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border-radius: 4px; text-decoration: none;"><i class="fab fa-whatsapp"></i></a>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Bottom Bar with Copyright and Payment Logos -->
+    <div style="max-width: 1600px; margin: 40px auto 0 auto; border-top: 1px solid #1a2228; padding-top: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
+        <div style="color: #888; font-size: 13px;">
+            &copy; 2026 MizanTrade | All Rights Reserved.
+        </div>
+        
+        <!-- Payment Method Badges -->
+        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+            <span style="background: #fff; padding: 4px 8px; border-radius: 4px; font-weight: bold; color: #000; font-size: 11px;">VISA</span>
+            <span style="background: #fff; padding: 4px 8px; border-radius: 4px; font-weight: bold; color: #000; font-size: 11px;">MasterCard</span>
+            <span style="background: #fff; padding: 4px 8px; border-radius: 4px; font-weight: bold; color: #000; font-size: 11px;">bKash</span>
+            <span style="background: #fff; padding: 4px 8px; border-radius: 4px; font-weight: bold; color: #000; font-size: 11px;">Nagad</span>
+            <span style="background: #fff; padding: 4px 8px; border-radius: 4px; font-weight: bold; color: #000; font-size: 11px;">Rocket</span>
+        </div>
+    </div>
+</footer>

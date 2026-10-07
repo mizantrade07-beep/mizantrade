@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wishlist - Mizan Trade</title>
+    <link rel="icon" href="/images/logo.svg">
+</head>
+<body>
+
+    <%- include('partials/header') %>
+
+    <div class="container">
+
+        <div class="breadcrumb">
+            <a href="/">Home</a>
+            <i class="fa-solid fa-angle-right" style="margin:0 6px; font-size:10px;"></i>
+            <span>Wishlist</span>
+        </div>
+
+        <h1 class="page-title"><i class="fa-regular fa-heart" style="color:#ef4a23;"></i> My Wishlist</h1>
+
+        <% if (products.length === 0) { %>
+
+            <div class="empty-box">
+                <i class="fa-regular fa-heart"></i>
+                <h3 style="color:#081621; margin-bottom:8px;">Your wishlist is empty</h3>
+                <p>Click the heart icon on products you like to save them here.</p>
+                <a href="/shop" class="btn btn-primary" style="margin-top:16px;">
+                    <i class="fa-solid fa-store"></i> Start Shopping
+                </a>
+            </div>
+
+        <% } else { %>
+
+            <div class="product-grid" style="margin-bottom:40px;">
+                <% products.forEach(function(product) { %>
+                    <div style="position:relative;">
+                        <%- include('partials/productCard', { product: product }) %>
+                        <form action="/wishlist/remove/<%= product._id %>" method="POST" style="position:absolute; top:8px; right:8px; z-index:3;">
+                            <button type="submit" class="icon-btn" title="Remove from Wishlist">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </form>
+                    </div>
+                <% }); %>
+            </div>
+
+        <% } %>
+
+    </div>
+
+    <%- include('partials/footer') %>
+
+    <script src="/js/main.js?v=2"></script>
+</body>
+</html>

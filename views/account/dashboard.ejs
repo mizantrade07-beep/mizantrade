@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Account - Mizan Trade</title>
+    <link rel="icon" href="/images/logo.svg">
+</head>
+<body>
+
+    <%- include('../partials/header') %>
+
+    <div class="container">
+
+        <div class="breadcrumb">
+            <a href="/">Home</a>
+            <i class="fa-solid fa-angle-right" style="margin:0 6px; font-size:10px;"></i>
+            <span>My Account</span>
+        </div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+            <h1 class="page-title" style="margin:0;">
+                <i class="fa-solid fa-user-check"></i> Hello, <%= profile.name %>
+            </h1>
+
+            <form action="/logout" method="POST">
+                <button type="submit" class="btn btn-outline" style="color:#c0392b; border-color:#e6b3ad;">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Logout
+                </button>
+            </form>
+        </div>
+
+        <% if (typeof updated !== 'undefined' && updated) { %>
+            <div style="background:#e8f6ee; color:#1e7d43; padding:12px 16px; border-radius:8px; margin:16px 0; border:1px solid #bfe6cd; font-size:14px;">
+                <i class="fa-solid fa-circle-check"></i> Profile updated successfully.
+            </div>
+        <% } %>
+
+        <div class="cart-layout" style="margin-top:20px;">
+
+            <!-- প্রোফাইল এডিট -->
+            <div class="content-card">
+                <h3 style="color:#081621; margin-bottom:18px; font-size:16px;">
+                    <i class="fa-solid fa-id-card" style="color:#ef4a23;"></i> Profile Information
+                </h3>
+
+                <form action="/account/update" method="POST">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Name</label>
+                            <input type="text" name="name" class="form-control" value="<%= profile.name %>">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Mobile</label>
+                            <input type="tel" name="phone" class="form-control" value="<%= profile.phone || '' %>">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Gender</label>
+                            <select name="gender" class="form-control">
+                                <option value="">Select</option>
+                                <option value="male" <%= profile.gender === 'male' ? 'selected' : '' %>>Male</option>
+                                <option value="female" <%= profile.gender === 'female' ? 'selected' : '' %>>Female</option>
+                                <option value="other" <%= profile.gender === 'other' ? 'selected' : '' %>>Other</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Date of Birth</label>
+                            <input type="date" name="dateOfBirth" class="form-control"
+                                   value="<%= profile.dateOfBirth ? new Date(profile.dateOfBirth).toISOString().slice(0,10) : '' %>">
+                        </div>
+
+                        <div class="form-group full">
+                            <label>Address</label>
+                            <textarea name="address" class="form-control" style="min-height:60px;"><%= profile.address || '' %></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>City</label>
+                            <input type="text" name="city" class="form-control" value="<%= profile.city || '' %>">
+                        </div>
+
+                        <div class="form-group">
+                            <label>District</label>
+                            <input type="text" name="district" class="form-control" value="<%= profile.district || '' %>">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Postal Code</label>
+                            <input type="text" name="postalCode" class="form-control" value="<%= profile.postalCode || '' %>">
+                        </div>
+                    </div>
+
+                    <h3 style="color:#081621; margin:26px 0 16px; font-size:15px;">
+                        <i class="fa-solid fa-key" style="color:#ef4a23;"></i> Change Password (optional)
+                    </h3>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Current Password</label>
+                            <input type="password" name="currentPassword" class="form-control" placeholder="Fill in only if you want a new password">
+                        </div>
+                        <div class="form-group">
+                            <label>New Password</label>
+                            <input type="password" name="newPassword" class="form-control" placeholder="At least 6 characters">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="margin-top:18px;">
+                        <i class="fa-solid fa-floppy-disk"></i> Update
+                    </button>
+                </form>
+            </div>
+
+            <!-- অর্ডার ইতিহাস -->
+            <div>
+                <div class="content-card">
+                    <h3 style="color:#081621; margin-bottom:18px; font-size:16px;">
+                        <i class="fa-solid fa-bag-shopping" style="color:#ef4a23;"></i> My Orders
+                    </h3>
+
+                    <% if (orders.length === 0) { %>
+                        <p style="color:#777; font-size:14px;">You have not placed any orders yet.</p>
+                        <a href="/shop" class="btn btn-primary" style="margin-top:8px;">
+                            <i class="fa-solid fa-store"></i> Start Shopping
+                        </a>
+                    <% } else { %>
+                        <% orders.forEach(function (o) { %>
+                            <div style="border:1px solid #eef0f3; border-radius:10px; padding:14px 16px; margin-bottom:12px;">
+                                <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+                                    <strong style="color:#081621;"><%= o.orderNumber %></strong>
+                                    <span style="font-size:12px; color:#888;"><%= new Date(o.createdAt).toLocaleDateString() %></span>
+                                </div>
+                                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px; flex-wrap:wrap; gap:8px;">
+                                    <span style="font-size:13px; color:#555;">
+                                        <%= o.items ? o.items.length : 0 %> item(s) · <%= o.paymentMethod %>
+                                    </span>
+                                    <strong style="color:#ef4a23;">৳ <%= (o.total || 0).toLocaleString() %></strong>
+                                </div>
+                                <div style="margin-top:8px;">
+                                    <span style="display:inline-block; background:#fff3ef; color:#ef4a23; font-size:12px; font-weight:600; padding:4px 10px; border-radius:20px;">
+                                        <%= o.status %>
+                                    </span>
+                                </div>
+                            </div>
+                        <% }); %>
+                    <% } %>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <%- include('../partials/footer') %>
+
+    <script src="/js/main.js?v=2"></script>
+</body>
+</html>

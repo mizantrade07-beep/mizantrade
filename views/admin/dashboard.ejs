@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        <%= pageTitle %> | MizanTrade
+    </title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+
+        body {
+            margin: 0;
+
+            font-family:
+                Inter,
+                Arial,
+                sans-serif;
+
+            background: #f5f7fb;
+
+            color: #111827;
+        }
+
+
+        .topbar {
+            min-height: 70px;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            padding: 0 30px;
+
+            background: #ffffff;
+
+            border-bottom:
+                1px solid #e5e7eb;
+        }
+
+
+        .brand {
+            font-size: 20px;
+            font-weight: 800;
+        }
+
+
+        .admin-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+
+        .admin-name {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+
+        .logout-button {
+            padding: 9px 15px;
+
+            border: 0;
+
+            border-radius: 7px;
+
+            background: #111827;
+
+            color: #ffffff;
+
+            cursor: pointer;
+        }
+
+
+        .container {
+            padding: 35px;
+        }
+
+
+        .welcome {
+            margin-bottom: 30px;
+        }
+
+
+        .welcome h1 {
+            margin: 0 0 8px;
+
+            font-size: 30px;
+        }
+
+
+        .welcome p {
+            margin: 0;
+
+            color: #6b7280;
+        }
+
+
+        .cards {
+            display: grid;
+
+            grid-template-columns:
+                repeat(4, 1fr);
+
+            gap: 20px;
+        }
+
+
+        .card {
+            padding: 25px;
+
+            background: #ffffff;
+
+            border-radius: 14px;
+
+            box-shadow:
+                0 5px 20px
+                rgba(0, 0, 0, 0.04);
+        }
+
+
+        .card-title {
+            margin-bottom: 10px;
+
+            color: #6b7280;
+
+            font-size: 14px;
+        }
+
+
+        .card-value {
+            font-size: 30px;
+
+            font-weight: 800;
+        }
+
+
+        @media (max-width: 900px) {
+
+            .cards {
+                grid-template-columns:
+                    repeat(2, 1fr);
+            }
+
+        }
+
+
+        @media (max-width: 600px) {
+
+            .topbar {
+                padding: 0 15px;
+            }
+
+
+            .admin-name {
+                display: none;
+            }
+
+
+            .container {
+                padding: 20px 15px;
+            }
+
+
+            .cards {
+                grid-template-columns: 1fr;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+    <header class="topbar">
+
+        <div class="brand">
+            MizanTrade Admin
+        </div>
+
+
+        <div class="admin-info">
+
+            <span class="admin-name">
+                <%= admin ? admin.name : "" %>
+            </span>
+
+
+            <form
+                action="/admin/logout"
+                method="POST"
+            >
+
+                <button
+                    type="submit"
+                    class="logout-button"
+                >
+                    Logout
+                </button>
+
+            </form>
+
+        </div>
+
+    </header>
+
+
+    <main class="container">
+
+        <section class="welcome">
+
+            <h1>
+                Dashboard
+            </h1>
+
+            <p>
+                Welcome back,
+                <strong>
+                    <%= admin ? admin.name : "Admin" %>
+                </strong>.
+            </p>
+
+        </section>
+
+
+        <section class="cards">
+
+            <div class="card">
+
+                <div class="card-title">
+                    Products
+                </div>
+
+                <div class="card-value">
+                    —
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <div class="card-title">
+                    Orders
+                </div>
+
+                <div class="card-value">
+                    —
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <div class="card-title">
+                    Partners
+                </div>
+
+                <div class="card-value">
+                    —
+                </div>
+
+            </div>
+
+
+            <div class="card">
+
+                <div class="card-title">
+                    Customers
+                </div>
+
+                <div class="card-value">
+                    —
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+</body>
+
+</html>

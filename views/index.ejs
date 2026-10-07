@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <%- include('partials/seo') %>
+    <link rel="icon" href="/images/logo.svg">
+</head>
+<body>
+
+    <%- include('partials/header') %>
+
+    <div class="container">
+
+        <!-- ==================== হিরো স্লাইডার + সাইড ব্যানার ==================== -->
+        <div class="hero-wrap">
+
+            <div class="hero-slider">
+                <div class="hero-slide hero-slide-1 active">
+                    <span class="hero-tag">Authorized Distributor</span>
+                    <h1>Your Trusted Wholesale Partner for Computer Components</h1>
+                    <p>Motherboard, SSD, Desktop RAM, Laptop RAM and Graphics Card — at dealer prices, directly from the importer.</p>
+                    <div>
+                        <a href="/shop" class="btn btn-primary" style="padding:12px 26px;">
+                            <i class="fa-solid fa-store"></i> Browse All Products
+                        </a>
+                    </div>
+                </div>
+
+                <div class="hero-slide hero-slide-2">
+                    <span class="hero-tag">Dealer Wholesale</span>
+                    <h1>Best Wholesale Prices for Your Shop</h1>
+                    <p>Registered dealers get special discounts. Fill out the Become a Partner form today and join our network.</p>
+                    <div>
+                        <a href="/become-a-partner" class="btn btn-primary" style="padding:12px 26px;">
+                            <i class="fa-solid fa-handshake"></i> Become a Partner
+                        </a>
+                    </div>
+                </div>
+
+                <div class="hero-slide hero-slide-3">
+                    <span class="hero-tag">Official Brands</span>
+                    <h1>KingSpec • AITC Kingsman • Xentrha • Unika • PowerSync</h1>
+                    <p>All products are 100% original and come with official warranty. Verify the "AUTHORIZED PRODUCT – Powered by MIZAN TRADE" sticker.</p>
+                    <div>
+                        <a href="/category/ssd" class="btn btn-primary" style="padding:12px 26px;">
+                            <i class="fa-solid fa-hard-drive"></i> Shop SSD
+                        </a>
+                    </div>
+                </div>
+
+                <div class="hero-dots">
+                    <button class="hero-dot active" aria-label="Slide 1"></button>
+                    <button class="hero-dot" aria-label="Slide 2"></button>
+                    <button class="hero-dot" aria-label="Slide 3"></button>
+                </div>
+            </div>
+
+            <div class="hero-side">
+                <div class="hero-side-card hero-side-card-1">
+                    <h3><i class="fa-solid fa-headset" style="color:#ef4a23;"></i> Hotline Support</h3>
+                    <p>Call us directly for any product or order-related information.</p>
+                    <a href="tel:<%= site.hotline %>" class="side-link">
+                        <i class="fa-solid fa-phone"></i> <%= site.hotline %>
+                    </a>
+                </div>
+
+                <div class="hero-side-card hero-side-card-2">
+                    <h3><i class="fa-solid fa-truck-fast"></i> Fast Delivery</h3>
+                    <p>Delivery within 24 hours inside Dhaka and 48-72 hours outside Dhaka.</p>
+                    <a href="/pages/shipping-info" class="side-link">
+                        Shipping Details <i class="fa-solid fa-angle-right"></i>
+                    </a>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ==================== ক্যাটাগরি স্ট্রিপ ==================== -->
+        <div class="category-strip">
+            <% allCategories.filter(function(c){ return !c.parent; }).slice(0, 8).forEach(function(cat) { %>
+                <a href="/category/<%= cat.slug %>">
+                    <i class="<%= cat.icon %>"></i>
+                    <span><%= cat.name %></span>
+                </a>
+            <% }); %>
+        </div>
+
+        <!-- ==================== ক্যাটাগরিওয়াইজ প্রোডাক্ট সেকশন ==================== -->
+        <% sections.forEach(function(section) { %>
+            <% if (section.products.length > 0) { %>
+                <div class="section">
+                    <div class="section-header">
+                        <h2><i class="<%= section.category.icon %>"></i> <%= section.category.name %></h2>
+                        <a href="/category/<%= section.category.slug %>" class="view-all">
+                            View All <i class="fa-solid fa-angle-right"></i>
+                        </a>
+                    </div>
+
+                    <div class="product-grid">
+                        <% section.products.forEach(function(product) { %>
+                            <%- include('partials/productCard', { product: product }) %>
+                        <% }); %>
+                    </div>
+                </div>
+            <% } %>
+        <% }); %>
+
+        <!-- ==================== লেটেস্ট প্রোডাক্ট ==================== -->
+        <% if (latestProducts.length > 0) { %>
+            <div class="section">
+                <div class="section-header">
+                    <h2><i class="fa-solid fa-bolt"></i> Latest Products</h2>
+                    <a href="/shop?sort=latest" class="view-all">
+                        View All <i class="fa-solid fa-angle-right"></i>
+                    </a>
+                </div>
+
+                <div class="product-grid">
+                    <% latestProducts.forEach(function(product) { %>
+                        <%- include('partials/productCard', { product: product }) %>
+                    <% }); %>
+                </div>
+            </div>
+        <% } %>
+
+        <!-- ==================== ব্র্যান্ড স্ট্রিপ ==================== -->
+        <div class="brand-strip">
+            <span>KINGSPEC</span>
+            <span>AITC KINGSMAN GAMING</span>
+            <span>XENTRHA</span>
+            <span>UNIKA</span>
+            <span>POWERSYNC</span>
+        </div>
+
+    </div>
+
+    <%- include('partials/footer') %>
+
+    <script src="/js/main.js?v=2"></script>
+</body>
+</html>

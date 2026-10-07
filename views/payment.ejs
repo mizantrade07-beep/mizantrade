@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Methods - Mizan Trade</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <%- include('partials/header') %>
+
+    <div class="container" style="max-width: 1200px; margin: 30px auto; padding: 0 20px; min-height: 500px;">
+        <h2 style="font-size: 26px; color: #081621; margin-bottom: 25px; font-weight: 700;">Payment & Delivery Methods</h2>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+            
+            <!-- ১. বিকাশ মার্চেন্ট পেমেন্ট ও কিউআর কোড -->
+            <div style="background: #fff; padding: 30px; border-radius: 8px; border: 1px solid #e5e5e5; box-shadow: 0 2px 5px rgba(0,0,0,0.05); text-align: center;">
+                <h3 style="color: #e2136e; margin-bottom: 15px; font-size: 20px;">
+                    <i class="fa-solid fa-qrcode"></i> 1. bKash Merchant (Manual)
+                </h3>
+                <p style="font-size: 15px; color: #333; margin-bottom: 15px;">
+                    bKash Merchant Number: <strong style="font-size: 18px; color: #081621;">01709867815</strong>
+                </p>
+                <div style="margin: 20px 0;">
+                    <!-- আপনার আপলোড করা কিউআর কোডের ছবি এখানে শো করবে -->
+                    <img src="/uploads/1789990432945-579056997.webp" alt="bKash Bangla QR" style="max-width: 220px; border: 1px solid #ddd; padding: 10px; border-radius: 8px;">
+                </div>
+                <p style="font-size: 13px; color: #666; line-height: 1.6;">
+                    Scan the QR code from the bKash app, or Send Money / make a payment, then provide the Transaction ID (TrxID) when placing your order. <em>(A cash-out charge may apply where applicable.)</em>
+                </p>
+            </div>
+
+            <!-- ২. ক্যাশ অন ডেলিভারি ও চার্জ -->
+            <div style="background: #fff; padding: 30px; border-radius: 8px; border: 1px solid #e5e5e5; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                <h3 style="color: #081621; margin-bottom: 20px; font-size: 20px;">
+                    <i class="fa-solid fa-truck-fast"></i> 2. Cash On Delivery & Charge
+                </h3>
+                <p style="font-size: 14px; color: #555; margin-bottom: 20px; line-height: 1.6;">
+                    Pay for your products when they are delivered to you. A delivery charge applies based on your location:
+                </p>
+                
+                <div style="background: #f8f9fa; padding: 15px 20px; border-radius: 6px; margin-bottom: 15px; border-left: 4px solid #ef4a23;">
+                    <strong style="color: #333; font-size: 15px;">Inside Dhaka:</strong> 
+                    <span style="float: right; font-weight: bold; color: #ef4a23; font-size: 16px;">80 TK</span>
+                </div>
+
+                <div style="background: #f8f9fa; padding: 15px 20px; border-radius: 6px; border-left: 4px solid #374957;">
+                    <strong style="color: #333; font-size: 15px;">Outside Dhaka:</strong> 
+                    <span style="float: right; font-weight: bold; color: #374957; font-size: 16px;">120 TK</span>
+                </div>
+
+                <p style="font-size: 12px; color: #770000; margin-top: 20px;">
+                    * For heavy computers or gaming chairs, an additional charge may apply depending on the courier.
+                </p>
+            </div>
+
+        </div>
+    </div>
+
+    <%- include('partials/footer') %>
+<script src="/js/main.js?v=2"></script>
+</body>
+</html>
