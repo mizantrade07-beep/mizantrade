@@ -3,18 +3,6 @@ const fs = require("fs");
 
 const PartnerRequest = require("../models/PartnerRequest");
 
-const partnerDocDir = path.join(
-    __dirname,
-    "..",
-    "storage",
-    "private",
-    "partners"
-);
-
-if (!fs.existsSync(partnerDocDir)) {
-    fs.mkdirSync(partnerDocDir, { recursive: true });
-}
-
 /* ======================================================
    PUBLIC - PARTNER FORM
 ====================================================== */
@@ -48,7 +36,8 @@ exports.postPartnerForm = async (req, res) => {
 
         const documents = (req.files || []).map((file) => ({
             originalName: file.originalname,
-            filename: file.filename
+            filename: file.filename,
+            path: file.path || file.secure_url
         }));
 
         await PartnerRequest.create({
@@ -123,17 +112,10 @@ exports.deletePartner = async (req, res) => {
     }
 };
 
-// Private document download (Admin only)
+// Document download handler for cloud storage
 exports.getPartnerDocument = (req, res) => {
     try {
-        const filename = path.basename(req.params.filename);
-        const filePath = path.join(partnerDocDir, filename);
-
-        if (!fs.existsSync(filePath)) {
-            return res.status(404).send("Document not found.");
-        }
-
-        return res.download(filePath, filename);
+        return res.status(400).send("Document storage has been migrated to Cloudinary.");
     } catch (error) {
         console.error("Partner document error:", error);
         return res.status(500).send("Unable to download document.");
