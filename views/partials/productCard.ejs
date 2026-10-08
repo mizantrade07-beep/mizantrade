@@ -22,7 +22,7 @@
     <% } %>
 
     <a href="/product/<%= product.slug %>" class="pc-img-wrap">
-        <img src="<%= product.mainImage || '/images/logo.svg' %>" alt="<%= product.title %>" loading="lazy" decoding="async">
+        <img src="<%= product.mainImage || product.image || product.imageUrl || (Array.isArray(product.images) && product.images[0]) || '/images/logo.svg' %>" alt="<%= product.title %>" loading="lazy" decoding="async">
     </a>
 
     <a href="/product/<%= product.slug %>" class="pc-title"><%= product.title %></a>
