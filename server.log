@@ -1,0 +1,12 @@
+
+==========================================
+       MIZANTRADE SERVER STARTED
+==========================================
+Environment : development
+Port        : 5000
+Website     : http://localhost:5000
+Health      : http://localhost:5000/health
+Admin Login : http://localhost:5000/admin/login
+==========================================
+
+MongoDB connected successfully.
