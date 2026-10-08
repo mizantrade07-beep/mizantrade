@@ -1,16 +1,33 @@
+const path = require("path");
 const dotenv = require("dotenv");
 
-dotenv.config();
+/* ======================================================
+   LOAD .ENV FROM PROJECT ROOT
+====================================================== */
+
+dotenv.config({
+    path: path.resolve(__dirname, "../.env")
+});
+
+/* ======================================================
+   REQUIRED ENV
+====================================================== */
 
 function required(name) {
     const value = process.env[name];
 
     if (!value) {
-        throw new Error(`Missing required environment variable: ${name}`);
+        throw new Error(
+            `Missing required environment variable: ${name}`
+        );
     }
 
     return value;
 }
+
+/* ======================================================
+   CONFIG
+====================================================== */
 
 const config = {
     nodeEnv: process.env.NODE_ENV || "development",
@@ -21,16 +38,25 @@ const config = {
 
     sessionSecret: required("SESSION_SECRET"),
 
-    adminEmail: required("ADMIN_EMAIL").trim().toLowerCase(),
+    adminEmail: required("ADMIN_EMAIL")
+        .trim()
+        .toLowerCase(),
 
     adminPassword: required("ADMIN_PASSWORD"),
 
-    siteUrl: process.env.SITE_URL || "http://localhost:5000",
+    siteUrl:
+        process.env.SITE_URL ||
+        "http://localhost:5000",
 
     cloudinary: {
-        cloudName: process.env.CLOUDINARY_CLOUD_NAME || "",
-        apiKey: process.env.CLOUDINARY_API_KEY || "",
-        apiSecret: process.env.CLOUDINARY_API_SECRET || ""
+        cloudName:
+            required("CLOUDINARY_CLOUD_NAME"),
+
+        apiKey:
+            required("CLOUDINARY_API_KEY"),
+
+        apiSecret:
+            required("CLOUDINARY_API_SECRET")
     }
 };
 

@@ -1,10 +1,11 @@
 const multer = require("multer");
-const cloudinary = require('cloudinary').v2;
-const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const cloudinary = require("cloudinary").v2;
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
 
 /* ======================================================
    CLOUDINARY CONFIGURATION
 ====================================================== */
+
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
@@ -12,165 +13,206 @@ cloudinary.config({
 });
 
 /* ======================================================
-   STORAGE (Products / Standard Images)
+   SAFE CONFIG CHECK
+   Secret কখনো console-এ দেখাবে না
 ====================================================== */
-const storage = new CloudinaryStorage({
-    cloudinary: cloudinary,
-    params: {
-        folder: 'mizantrade/products',
-        allowed_formats: ['jpg', 'png', 'jpeg', 'webp']
-    }
-});
 
-/* ======================================================
-   FILE FILTER
-====================================================== */
-function fileFilter(
-    req,
-    file,
-    cb
-) {
-    const allowedTypes = [
-        "image/jpeg",
-        "image/png",
-        "image/webp",
-        "image/jpg"
-    ];
+if (!process.env.CLOUDINARY_CLOUD_NAME) {
+    console.error("❌ Cloudinary CLOUD_NAME is missing");
+}
 
-    if (
-        allowedTypes.includes(
-            file.mimetype
-        )
-    ) {
-        cb(
-            null,
-            true
-        );
-    } else {
-        cb(
-            new Error(
-                "Only JPG, JPEG, PNG and WEBP images are allowed."
-            )
-        );
-    }
+if (!process.env.CLOUDINARY_API_KEY) {
+    console.error("❌ Cloudinary API_KEY is missing");
+}
+
+if (!process.env.CLOUDINARY_API_SECRET) {
+    console.error("❌ Cloudinary API_SECRET is missing");
 }
 
 /* ======================================================
-   MULTER
+   PRODUCT IMAGE STORAGE
 ====================================================== */
-const upload =
-    multer({
-        storage,
-        fileFilter,
 
-        limits: {
-            fileSize:
-                5 * 1024 * 1024
-        }
-    });
+const productStorage = new CloudinaryStorage({
+    cloudinary,
 
-
-/* ======================================================
-   MEDIA (IMAGES + VIDEO) FOR RICH TEXT EDITORS
-====================================================== */
-const mediaStorage = new CloudinaryStorage({
-    cloudinary: cloudinary,
     params: {
-        folder: 'mizantrade/media',
-        resource_type: 'auto', // ভিডিও এবং ছবি উভয়ই সাপোর্ট করার জন্য
-        allowed_formats: ['jpg', 'png', 'jpeg', 'webp', 'mp4', 'webm']
+        folder: "mizantrade/products",
+        resource_type: "image",
+        allowed_formats: ["jpg", "jpeg", "png", "webp"],
+
+        transformation: [
+            {
+                quality: "auto",
+                fetch_format: "auto"
+            }
+        ]
     }
 });
 
-function mediaFilter(
-    req,
-    file,
-    cb
-) {
+/* ======================================================
+   PRODUCT IMAGE FILTER
+====================================================== */
+
+function productFileFilter(req, file, cb) {
+    const allowedTypes = [
+        "image/jpeg",
+        "image/png",
+        "image/webp"
+    ];
+
+    if (allowedTypes.includes(file.mimetype)) {
+        return cb(null, true);
+    }
+
+    return cb(
+        new Error(
+            "Only JPG, JPEG, PNG and WEBP images are allowed."
+        ),
+        false
+    );
+}
+
+/* ======================================================
+   PRODUCT UPLOAD
+====================================================== */
+
+const upload = multer({
+    storage: productStorage,
+
+    fileFilter: productFileFilter,
+
+    limits: {
+        fileSize: 5 * 1024 * 1024
+    }
+});
+
+/* ======================================================
+   RICH TEXT MEDIA STORAGE
+====================================================== */
+
+const mediaStorage = new CloudinaryStorage({
+    cloudinary,
+
+    params: {
+        folder: "mizantrade/media",
+        resource_type: "auto",
+        allowed_formats: [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp",
+            "mp4",
+            "webm"
+        ]
+    }
+});
+
+/* ======================================================
+   MEDIA FILTER
+====================================================== */
+
+function mediaFilter(req, file, cb) {
     const allowedTypes = [
         "image/jpeg",
         "image/png",
         "image/webp",
-        "image/jpg",
         "video/mp4",
         "video/webm"
     ];
 
     if (allowedTypes.includes(file.mimetype)) {
-        cb(null, true);
-    } else {
-        cb(new Error("Only JPG, PNG, WEBP images and MP4/WEBM videos are allowed."));
+        return cb(null, true);
     }
+
+    return cb(
+        new Error(
+            "Only JPG, PNG, WEBP images and MP4/WEBM videos are allowed."
+        ),
+        false
+    );
 }
 
-const uploadMedia =
-    multer({
-        storage: mediaStorage,
-        fileFilter: mediaFilter,
-
-        limits: {
-            fileSize: 60 * 1024 * 1024
-        }
-    });
-
-
 /* ======================================================
-   PARTNER DOCUMENTS (Cloudinary-এর প্রাইভেট ফোল্ডার বা Raw ফাইল হিসেবে)
+   MEDIA UPLOAD
 ====================================================== */
-const partnerDocStorage = new CloudinaryStorage({
-    cloudinary: cloudinary,
-    params: {
-        folder: 'mizantrade/partners',
-        resource_type: 'auto', // PDF বা ছবির জন্য
-        allowed_formats: ['jpg', 'png', 'jpeg', 'webp', 'pdf']
+
+const uploadMedia = multer({
+    storage: mediaStorage,
+
+    fileFilter: mediaFilter,
+
+    limits: {
+        fileSize: 60 * 1024 * 1024
     }
 });
 
+/* ======================================================
+   PARTNER DOCUMENT STORAGE
+====================================================== */
 
-function partnerDocFilter(
-    req,
-    file,
-    cb
-) {
+const partnerDocStorage = new CloudinaryStorage({
+    cloudinary,
+
+    params: {
+        folder: "mizantrade/partners",
+        resource_type: "auto",
+        allowed_formats: [
+            "jpg",
+            "jpeg",
+            "png",
+            "webp",
+            "pdf"
+        ]
+    }
+});
+
+/* ======================================================
+   PARTNER DOCUMENT FILTER
+====================================================== */
+
+function partnerDocFilter(req, file, cb) {
     const allowedTypes = [
         "image/jpeg",
         "image/png",
         "image/webp",
-        "image/jpg",
         "application/pdf"
     ];
 
-    if (
-        allowedTypes.includes(
-            file.mimetype
-        )
-    ) {
-        cb(
-            null,
-            true
-        );
-    } else {
-        cb(
-            new Error(
-                "Only JPG, PNG, WEBP and PDF files are allowed."
-            )
-        );
+    if (allowedTypes.includes(file.mimetype)) {
+        return cb(null, true);
     }
+
+    return cb(
+        new Error(
+            "Only JPG, PNG, WEBP and PDF files are allowed."
+        ),
+        false
+    );
 }
 
+/* ======================================================
+   PARTNER DOCUMENT UPLOAD
+====================================================== */
 
-const uploadPartnerDocs =
-    multer({
-        storage: partnerDocStorage,
-        fileFilter: partnerDocFilter,
+const uploadPartnerDocs = multer({
+    storage: partnerDocStorage,
 
-        limits: {
-            fileSize:
-                5 * 1024 * 1024
-        }
-    });
+    fileFilter: partnerDocFilter,
 
+    limits: {
+        fileSize: 5 * 1024 * 1024
+    }
+});
+
+/* ======================================================
+   EXPORTS
+====================================================== */
 
 module.exports = upload;
+
 module.exports.partnerDocs = uploadPartnerDocs;
+
 module.exports.media = uploadMedia;
+
+module.exports.cloudinary = cloudinary;
