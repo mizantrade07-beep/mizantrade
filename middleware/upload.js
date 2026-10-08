@@ -17,7 +17,7 @@ cloudinary.config({
 const storage = new CloudinaryStorage({
     cloudinary: cloudinary,
     params: {
-        folder: 'mizantrade/uploads',
+        folder: 'mizantrade/products',
         allowed_formats: ['jpg', 'png', 'jpeg', 'webp']
     }
 });
