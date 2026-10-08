@@ -322,12 +322,22 @@
     function specRowHtml() {
         return (
             '<div class="spec-row">' +
-            '<input type="text" name="specKey[]" placeholder="Attribute — e.g. Warranty">' +
-            '<input type="text" name="specValue[]" placeholder="Value — e.g. 3 Years Official">' +
+            '<input type="text" name="specKey[]" list="specKeyOptions" class="spec-key-input" placeholder="Attribute — e.g. Warranty">' +
+            '<input type="text" name="specValue[]" class="spec-value-input" placeholder="Value — e.g. 3 Years Official">' +
             '<button type="button" class="mini-button danger spec-remove" title="Remove row">' +
             '<i class="fa-solid fa-trash"></i></button>' +
             "</div>"
         );
+    }
+
+    /* Point a value input at the saved-values datalist for its key. */
+    function syncSpecValueList(keyInput) {
+        var row = keyInput.closest(".spec-row");
+        if (!row) return;
+        var valueInput = row.querySelector(".spec-value-input");
+        if (!valueInput) return;
+        var maps = window.SPEC_VALUE_LISTS || {};
+        valueInput.setAttribute("list", maps[keyInput.value.trim()] || "");
     }
 
     if (addSpecBtn && specRows) {
@@ -338,6 +348,12 @@
         specRows.addEventListener("click", function (event) {
             var btn = event.target.closest(".spec-remove");
             if (btn) btn.closest(".spec-row").remove();
+        });
+
+        specRows.addEventListener("input", function (event) {
+            if (event.target.classList.contains("spec-key-input")) {
+                syncSpecValueList(event.target);
+            }
         });
     }
 

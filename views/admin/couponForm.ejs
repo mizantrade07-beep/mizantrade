@@ -98,34 +98,48 @@
 
                         <div class="form-grid">
                             <div class="form-group form-full">
-                                <label for="productSelect">
+                                <label>
                                     Specific products
                                     <span class="label-hint">— leave empty to apply to all products</span>
                                 </label>
-                                <select id="productSelect" name="applicableProducts" multiple size="8">
-                                    <% products.forEach(function (p) { %>
-                                        <option value="<%= p._id %>"
-                                            <%= selectedProducts.indexOf(String(p._id)) !== -1 ? 'selected' : '' %>>
-                                            <%= p.title %><%= p.sku ? ' (' + p.sku + ')' : '' %>
-                                        </option>
-                                    <% }); %>
-                                </select>
-                                <div class="tag-input-hint">Hold Ctrl or Cmd to select multiple.</div>
+
+                                <div class="chip-picker"
+                                     data-field="applicableProducts"
+                                     data-items='<%- JSON.stringify(products.map(function (p) {
+                                         return { id: String(p._id), label: p.title + (p.sku ? " (" + p.sku + ")" : "") };
+                                     })) %>'
+                                     data-selected='<%- JSON.stringify(selectedProducts) %>'>
+                                    <div class="chip-picker-search">
+                                        <input type="text" class="chip-picker-input" placeholder="Search a product…" autocomplete="off">
+                                        <datalist></datalist>
+                                        <button type="button" class="chip-picker-add secondary-button">Add</button>
+                                    </div>
+                                    <div class="chip-picker-list"></div>
+                                </div>
+
+                                <div class="tag-input-hint">Type to search, click Add. Click × on a chip to remove it.</div>
                             </div>
 
                             <div class="form-group form-full">
-                                <label for="customerSelect">
+                                <label>
                                     Specific customers
                                     <span class="label-hint">— leave empty so everyone (including guests) can use it</span>
                                 </label>
-                                <select id="customerSelect" name="applicableCustomers" multiple size="8">
-                                    <% customers.forEach(function (cu) { %>
-                                        <option value="<%= cu._id %>"
-                                            <%= selectedCustomers.indexOf(String(cu._id)) !== -1 ? 'selected' : '' %>>
-                                            <%= cu.name %> — <%= cu.email %>
-                                        </option>
-                                    <% }); %>
-                                </select>
+
+                                <div class="chip-picker"
+                                     data-field="applicableCustomers"
+                                     data-items='<%- JSON.stringify(customers.map(function (cu) {
+                                         return { id: String(cu._id), label: cu.name + " — " + cu.email };
+                                     })) %>'
+                                     data-selected='<%- JSON.stringify(selectedCustomers) %>'>
+                                    <div class="chip-picker-search">
+                                        <input type="text" class="chip-picker-input" placeholder="Search a customer…" autocomplete="off">
+                                        <datalist></datalist>
+                                        <button type="button" class="chip-picker-add secondary-button">Add</button>
+                                    </div>
+                                    <div class="chip-picker-list"></div>
+                                </div>
+
                                 <div class="tag-input-hint">If selected, only those customers (while logged in) can use the coupon.</div>
                             </div>
                         </div>
@@ -186,5 +200,111 @@
     </main>
 
 </div>
+
+<style>
+    .chip-picker-search { display: flex; gap: 8px; align-items: center; }
+    .chip-picker-input { flex: 1; }
+    .chip-picker-add { flex-shrink: 0; white-space: nowrap; }
+    .chip-picker-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+    .chip-picker-list:empty { display: none; }
+    .chip {
+        display: inline-flex; align-items: center; gap: 8px;
+        background: #eef2ff; border: 1px solid #c7d2fe; color: #3730a3;
+        border-radius: 999px; padding: 5px 10px; font-size: 13px; max-width: 100%;
+    }
+    .chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 260px; }
+    .chip button {
+        background: none; border: none; color: #6366f1; cursor: pointer;
+        font-size: 15px; line-height: 1; padding: 0 2px;
+    }
+    .chip button:hover { color: #dc2626; }
+</style>
+
+<script>
+    (function () {
+        document.querySelectorAll(".chip-picker").forEach(function (picker) {
+            var field = picker.dataset.field;
+            var items = JSON.parse(picker.dataset.items || "[]");
+            var selected = JSON.parse(picker.dataset.selected || "[]");
+            var byId = {};
+            items.forEach(function (it) { byId[it.id] = it.label; });
+
+            var input = picker.querySelector(".chip-picker-input");
+            var addBtn = picker.querySelector(".chip-picker-add");
+            var list = picker.querySelector(".chip-picker-list");
+            var datalist = picker.querySelector("datalist");
+            datalist.id = "dl-" + field;
+            input.setAttribute("list", datalist.id);
+
+            function renderDatalist() {
+                datalist.innerHTML = "";
+                items.forEach(function (it) {
+                    if (selected.indexOf(it.id) === -1) {
+                        var o = document.createElement("option");
+                        o.value = it.label;
+                        datalist.appendChild(o);
+                    }
+                });
+            }
+
+            function render() {
+                list.innerHTML = "";
+                selected.forEach(function (id) {
+                    var chip = document.createElement("div");
+                    chip.className = "chip";
+
+                    var hidden = document.createElement("input");
+                    hidden.type = "hidden";
+                    hidden.name = field;
+                    hidden.value = id;
+
+                    var label = document.createElement("span");
+                    label.textContent = byId[id] || id;
+
+                    var rm = document.createElement("button");
+                    rm.type = "button";
+                    rm.innerHTML = "&times;";
+                    rm.addEventListener("click", function () {
+                        selected = selected.filter(function (s) { return s !== id; });
+                        render();
+                        renderDatalist();
+                    });
+
+                    chip.appendChild(hidden);
+                    chip.appendChild(label);
+                    chip.appendChild(rm);
+                    list.appendChild(chip);
+                });
+            }
+
+            function add() {
+                var q = input.value.trim();
+                if (!q) return;
+                var match = items.find(function (it) {
+                    return it.label.toLowerCase() === q.toLowerCase();
+                });
+                if (!match) {
+                    match = items.find(function (it) {
+                        return it.label.toLowerCase().indexOf(q.toLowerCase()) !== -1;
+                    });
+                }
+                if (match && selected.indexOf(match.id) === -1) {
+                    selected.push(match.id);
+                    render();
+                    renderDatalist();
+                }
+                input.value = "";
+            }
+
+            addBtn.addEventListener("click", add);
+            input.addEventListener("keydown", function (e) {
+                if (e.key === "Enter") { e.preventDefault(); add(); }
+            });
+
+            render();
+            renderDatalist();
+        });
+    })();
+</script>
 
 <%- include("partials/footer") %>

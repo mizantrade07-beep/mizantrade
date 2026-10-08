@@ -114,6 +114,34 @@ function parseSpecs(body) {
 }
 
 
+/* Saved attribute keys/values so the next product can reuse them. */
+async function syncAttributeRegistry(specs) {
+    const grouped = new Map();
+
+    (specs || []).forEach(function (spec) {
+        if (!grouped.has(spec.key)) grouped.set(spec.key, new Set());
+        grouped.get(spec.key).add(spec.value);
+    });
+
+    for (const [key, valueSet] of grouped) {
+        const doc = await Attribute.findOne({ key: key });
+
+        if (doc) {
+            valueSet.forEach(function (v) {
+                if (doc.values.indexOf(v) === -1) doc.values.push(v);
+            });
+            await doc.save();
+        } else {
+            await Attribute.create({ key: key, values: Array.from(valueSet) });
+        }
+    }
+}
+
+async function getAttributeRegistry() {
+    return Attribute.find({}).sort({ key: 1 }).lean();
+}
+
+
 async function getCategoryOptions() {
     const all = await Category.find({})
         .sort({ order: 1, name: 1 })
@@ -235,12 +263,16 @@ exports.getAdminProducts = async (req, res) => {
 
 exports.getAddProductPage = async (req, res) => {
     try {
-        const categories = await getCategoryOptions();
+        const [categories, attrRegistry] = await Promise.all([
+            getCategoryOptions(),
+            getAttributeRegistry()
+        ]);
 
         return res.render(
             "admin/addProduct",
             {
                 categories,
+                attrRegistry,
                 pageTitle: "Add Product"
             }
         );
@@ -349,6 +381,8 @@ exports.postAddProduct = async (req, res) => {
            CREATE PRODUCT
         ------------------------------------------------ */
 
+        const specList = parseSpecs(req.body);
+
         await Product.create({
             title: title.trim(),
 
@@ -398,13 +432,14 @@ exports.postAddProduct = async (req, res) => {
             longDesc:
                 sanitizeHtml(longDesc),
 
-            specs: parseSpecs(req.body),
+            specs: specList,
 
             isActive:
                 isActive === "on" ||
                 isActive === "true"
         });
 
+        await syncAttributeRegistry(specList);
 
         return res.redirect(
             "/admin/products"
@@ -452,13 +487,17 @@ exports.getEditProductPage =
                 );
             }
 
-            const categories = await getCategoryOptions();
+            const [categories, attrRegistry] = await Promise.all([
+                getCategoryOptions(),
+                getAttributeRegistry()
+            ]);
 
             return res.render(
                 "admin/editProduct",
                 {
                     product,
                     categories,
+                    attrRegistry,
                     pageTitle: "Edit Product"
                 }
             );
@@ -613,6 +652,7 @@ exports.postEditProduct =
                 }
             );
 
+            await syncAttributeRegistry(updateData.specs || []);
 
             return res.redirect(
                 "/admin/products"
@@ -655,6 +695,22 @@ exports.postUploadImage = (req, res) => {
     return res.json({
         success: true,
         url: "/uploads/" + req.file.filename
+    });
+};
+
+
+exports.postUploadMedia = (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({
+            success: false,
+            message: "No file received."
+        });
+    }
+
+    return res.json({
+        success: true,
+        url: "/uploads/" + req.file.filename,
+        type: req.file.mimetype.indexOf("video/") === 0 ? "video" : "image"
     });
 };
 

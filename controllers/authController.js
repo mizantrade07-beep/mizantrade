@@ -40,15 +40,30 @@ async function showLogin(req, res) {
 
 async function login(req, res) {
     try {
+
+        /* -----------------------------------------------
+           GET EMAIL
+        ----------------------------------------------- */
+
         const email = String(
             req.body.email || ""
         )
             .trim()
             .toLowerCase();
 
+
+        /* -----------------------------------------------
+           GET PASSWORD
+        ----------------------------------------------- */
+
         const password = String(
             req.body.password || ""
         );
+
+
+        /* -----------------------------------------------
+           VALIDATION
+        ----------------------------------------------- */
 
         if (!email || !password) {
             return res.status(400).render(
@@ -61,9 +76,15 @@ async function login(req, res) {
             );
         }
 
+
+        /* -----------------------------------------------
+           FIND ADMIN
+        ----------------------------------------------- */
+
         const admin = await Admin.findOne({
             email
         }).select("+password");
+
 
         if (!admin) {
             return res.status(401).render(
@@ -76,6 +97,11 @@ async function login(req, res) {
             );
         }
 
+
+        /* -----------------------------------------------
+           CHECK ACTIVE STATUS
+        ----------------------------------------------- */
+
         if (!admin.isActive) {
             return res.status(403).render(
                 "admin/auth/login",
@@ -87,11 +113,17 @@ async function login(req, res) {
             );
         }
 
+
+        /* -----------------------------------------------
+           CHECK PASSWORD
+        ----------------------------------------------- */
+
         const passwordMatched =
             await bcrypt.compare(
                 password,
                 admin.password
             );
+
 
         if (!passwordMatched) {
             return res.status(401).render(
@@ -111,8 +143,10 @@ async function login(req, res) {
 
         await new Promise(
             (resolve, reject) => {
+
                 req.session.regenerate(
                     (error) => {
+
                         if (error) {
                             reject(error);
                             return;
@@ -147,13 +181,15 @@ async function login(req, res) {
 
 
         /* ==================================================
-           SAVE SESSION
+           SAVE SESSION TO MONGODB
         ================================================== */
 
         await new Promise(
             (resolve, reject) => {
+
                 req.session.save(
                     (error) => {
+
                         if (error) {
                             reject(error);
                             return;
@@ -167,7 +203,7 @@ async function login(req, res) {
 
 
         /* ==================================================
-           REDIRECT
+           REDIRECT TO DASHBOARD
         ================================================== */
 
         return res.redirect(
@@ -222,6 +258,10 @@ async function logout(req, res) {
     );
 }
 
+
+/* ======================================================
+   EXPORTS
+====================================================== */
 
 module.exports = {
     showLogin,

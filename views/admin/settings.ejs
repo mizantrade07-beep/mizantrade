@@ -1,0 +1,220 @@
+<%- include("partials/head", { title: "Site Settings | MizanTrade Admin" }) %>
+
+<%- include("partials/sidebar") %>
+
+<div class="admin-main">
+
+    <%- include("partials/topbar", { title: "Site Settings" }) %>
+
+    <main class="admin-content">
+
+        <div class="dashboard-header">
+            <div>
+                <h1 class="dashboard-title">Website Settings</h1>
+                <p class="dashboard-subtitle">
+                    Contact details, shipping charges, payment information and social links used across the whole website.
+                </p>
+            </div>
+        </div>
+
+        <% if (message === "saved") { %>
+            <div style="margin-bottom:16px;padding:12px 16px;border-radius:8px;background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;font-weight:600;">
+                <i class="fa-solid fa-circle-check"></i> Settings saved successfully.
+            </div>
+        <% } else if (message === "error") { %>
+            <div style="margin-bottom:16px;padding:12px 16px;border-radius:8px;background:#fef2f2;border:1px solid #fecaca;color:#991b1b;font-weight:600;">
+                <i class="fa-solid fa-triangle-exclamation"></i> Could not save settings. Please try again.
+            </div>
+        <% } %>
+
+        <form action="/admin/settings" method="POST">
+
+            <div class="cms-two-col">
+
+                <!-- ===== Left column ===== -->
+                <div class="side-stack">
+
+                    <section class="dashboard-card">
+                        <div class="card-header">
+                            <h2 class="card-title"><i class="fa-solid fa-store card-icon"></i> General</h2>
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="form-group form-full">
+                                <label for="siteName">Site Name</label>
+                                <input type="text" id="siteName" name="siteName" value="<%= settings.siteName || '' %>" placeholder="Mizan Trade">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="hotline">Hotline</label>
+                                <input type="text" id="hotline" name="hotline" value="<%= settings.hotline || '' %>" placeholder="+8801XXXXXXXXX">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="email">Support Email</label>
+                                <input type="email" id="email" name="email" value="<%= settings.email || '' %>" placeholder="support@example.com">
+                            </div>
+
+                            <div class="form-group form-full">
+                                <label for="address">Address</label>
+                                <input type="text" id="address" name="address" value="<%= settings.address || '' %>" placeholder="Shop / office address">
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="dashboard-card">
+                        <div class="card-header">
+                            <h2 class="card-title"><i class="fa-solid fa-truck-fast card-icon"></i> Shipping Charges</h2>
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="shipInside">Inside Dhaka (৳)</label>
+                                <input type="number" id="shipInside" name="shipping.insideDhaka" min="0" step="1" value="<%= settings.shipping.insideDhaka %>">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="shipOutside">Outside Dhaka (৳)</label>
+                                <input type="number" id="shipOutside" name="shipping.outsideDhaka" min="0" step="1" value="<%= settings.shipping.outsideDhaka %>">
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="dashboard-card">
+                        <div class="card-header">
+                            <h2 class="card-title"><i class="fa-solid fa-mobile-screen card-icon"></i> bKash</h2>
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="bkashNumber">bKash Number</label>
+                                <input type="text" id="bkashNumber" name="bkash.number" value="<%= settings.bkash.number || '' %>" placeholder="01XXXXXXXXX">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="bkashType">Account Type</label>
+                                <select id="bkashType" name="bkash.type">
+                                    <option value="Personal" <%= settings.bkash.type === 'Personal' ? 'selected' : '' %>>Personal</option>
+                                    <option value="Merchant" <%= settings.bkash.type === 'Merchant' ? 'selected' : '' %>>Merchant</option>
+                                    <option value="Agent" <%= settings.bkash.type === 'Agent' ? 'selected' : '' %>>Agent</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="bkashCharge">Charge (%)</label>
+                                <input type="number" id="bkashCharge" name="bkash.chargePercent" min="0" step="0.01" value="<%= settings.bkash.chargePercent %>">
+                                <div class="tag-input-hint">Added to the order total for bKash payments.</div>
+                            </div>
+                        </div>
+                    </section>
+
+                </div>
+
+                <!-- ===== Right column ===== -->
+                <div class="side-stack">
+
+                    <section class="dashboard-card">
+                        <div class="card-header">
+                            <h2 class="card-title"><i class="fa-solid fa-building-columns card-icon"></i> Bank Transfer</h2>
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="form-group form-full">
+                                <label for="bankName">Bank Name</label>
+                                <input type="text" id="bankName" name="bank.bankName" value="<%= settings.bank.bankName || '' %>">
+                            </div>
+
+                            <div class="form-group form-full">
+                                <label for="bankBranch">Branch</label>
+                                <input type="text" id="bankBranch" name="bank.branch" value="<%= settings.bank.branch || '' %>">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="bankAccName">Account Name</label>
+                                <input type="text" id="bankAccName" name="bank.accountName" value="<%= settings.bank.accountName || '' %>">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="bankAccNumber">Account Number</label>
+                                <input type="text" id="bankAccNumber" name="bank.accountNumber" value="<%= settings.bank.accountNumber || '' %>">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="bankRouting">Routing Number</label>
+                                <input type="text" id="bankRouting" name="bank.routingNumber" value="<%= settings.bank.routingNumber || '' %>">
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="dashboard-card">
+                        <div class="card-header">
+                            <h2 class="card-title"><i class="fa-solid fa-share-nodes card-icon"></i> Social Links</h2>
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="form-group form-full">
+                                <label for="socFb">Facebook</label>
+                                <input type="url" id="socFb" name="social.facebook" value="<%= settings.social.facebook || '' %>" placeholder="https://facebook.com/…">
+                            </div>
+
+                            <div class="form-group form-full">
+                                <label for="socIg">Instagram</label>
+                                <input type="url" id="socIg" name="social.instagram" value="<%= settings.social.instagram || '' %>" placeholder="https://instagram.com/…">
+                            </div>
+
+                            <div class="form-group form-full">
+                                <label for="socYt">YouTube</label>
+                                <input type="url" id="socYt" name="social.youtube" value="<%= settings.social.youtube || '' %>" placeholder="https://youtube.com/…">
+                            </div>
+
+                            <div class="form-group form-full">
+                                <label for="socWa">WhatsApp</label>
+                                <input type="url" id="socWa" name="social.whatsapp" value="<%= settings.social.whatsapp || '' %>" placeholder="https://wa.me/8801…">
+                            </div>
+
+                            <div class="form-group form-full">
+                                <label for="socLi">LinkedIn</label>
+                                <input type="url" id="socLi" name="social.linkedin" value="<%= settings.social.linkedin || '' %>" placeholder="https://linkedin.com/company/…">
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="dashboard-card">
+                        <div class="card-header">
+                            <h2 class="card-title"><i class="fa-solid fa-magnifying-glass card-icon"></i> SEO &amp; Footer</h2>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="metaTitle">Default Meta Title</label>
+                            <input type="text" id="metaTitle" name="metaTitle" value="<%= settings.metaTitle || '' %>" placeholder="Shown in search results">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="metaDescription">Default Meta Description</label>
+                            <textarea id="metaDescription" name="metaDescription" rows="3" placeholder="A short summary for search engines"><%= settings.metaDescription || '' %></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="footerText">Footer Copyright Text</label>
+                            <input type="text" id="footerText" name="footerText" value="<%= settings.footerText || '' %>" placeholder="© 2026 Mizan Trade. All rights reserved.">
+                        </div>
+                    </section>
+
+                    <div class="form-actions">
+                        <button type="submit" class="primary-button">
+                            <i class="fa-solid fa-floppy-disk"></i>
+                            Save Settings
+                        </button>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </main>
+
+</div>
+
+<%- include("partials/footer") %>

@@ -288,6 +288,28 @@
 
                 <div class="rte-wrap">
                     <div class="rte-toolbar" data-editor="shortEditor">
+                        <select class="rte-select" data-fontname title="Font name">
+                            <option value="">Font</option>
+                            <option value="Arial">Arial</option>
+                            <option value="Helvetica">Helvetica</option>
+                            <option value="Verdana">Verdana</option>
+                            <option value="Tahoma">Tahoma</option>
+                            <option value="Trebuchet MS">Trebuchet MS</option>
+                            <option value="Georgia">Georgia</option>
+                            <option value="Times New Roman">Times New Roman</option>
+                            <option value="Courier New">Courier New</option>
+                        </select>
+                        <select class="rte-select" data-fontsize title="Font size">
+                            <option value="">Size</option>
+                            <option value="12px">12</option>
+                            <option value="14px">14</option>
+                            <option value="16px">16</option>
+                            <option value="18px">18</option>
+                            <option value="20px">20</option>
+                            <option value="24px">24</option>
+                            <option value="28px">28</option>
+                            <option value="32px">32</option>
+                        </select>
                         <button type="button" class="rte-btn" data-cmd="bold" title="Bold"><i class="fa-solid fa-bold"></i></button>
                         <button type="button" class="rte-btn" data-cmd="italic" title="Italic"><i class="fa-solid fa-italic"></i></button>
                         <button type="button" class="rte-btn" data-cmd="underline" title="Underline"><i class="fa-solid fa-underline"></i></button>
@@ -322,6 +344,28 @@
 
                 <div class="rte-wrap">
                     <div class="rte-toolbar" data-editor="longEditor">
+                        <select class="rte-select" data-fontname title="Font name">
+                            <option value="">Font</option>
+                            <option value="Arial">Arial</option>
+                            <option value="Helvetica">Helvetica</option>
+                            <option value="Verdana">Verdana</option>
+                            <option value="Tahoma">Tahoma</option>
+                            <option value="Trebuchet MS">Trebuchet MS</option>
+                            <option value="Georgia">Georgia</option>
+                            <option value="Times New Roman">Times New Roman</option>
+                            <option value="Courier New">Courier New</option>
+                        </select>
+                        <select class="rte-select" data-fontsize title="Font size">
+                            <option value="">Size</option>
+                            <option value="12px">12</option>
+                            <option value="14px">14</option>
+                            <option value="16px">16</option>
+                            <option value="18px">18</option>
+                            <option value="20px">20</option>
+                            <option value="24px">24</option>
+                            <option value="28px">28</option>
+                            <option value="32px">32</option>
+                        </select>
                         <button type="button" class="rte-btn" data-cmd="bold" title="Bold"><i class="fa-solid fa-bold"></i></button>
                         <button type="button" class="rte-btn" data-cmd="italic" title="Italic"><i class="fa-solid fa-italic"></i></button>
                         <button type="button" class="rte-btn" data-cmd="underline" title="Underline"><i class="fa-solid fa-underline"></i></button>
@@ -341,6 +385,7 @@
                         <button type="button" class="rte-btn" data-cmd="unlink" title="Remove link"><i class="fa-solid fa-link-slash"></i></button>
                         <span class="rte-sep"></span>
                         <button type="button" class="rte-btn" data-role="image" title="Upload image from computer"><i class="fa-solid fa-image"></i></button>
+                        <button type="button" class="rte-btn" data-role="video" title="Upload video from computer"><i class="fa-solid fa-video"></i></button>
                         <span class="rte-sep"></span>
                         <button type="button" class="rte-btn" data-cmd="undo" title="Undo"><i class="fa-solid fa-rotate-left"></i></button>
                         <button type="button" class="rte-btn" data-cmd="redo" title="Redo"><i class="fa-solid fa-rotate-right"></i></button>
@@ -383,10 +428,20 @@
 
         <div class="spec-rows" id="specRows">
 
+            <%
+                var registry = (typeof attrRegistry !== 'undefined' && attrRegistry) ? attrRegistry : [];
+                function valListId(key) {
+                    for (var i = 0; i < registry.length; i++) {
+                        if (registry[i].key === key) return "specVals-" + i;
+                    }
+                    return "";
+                }
+            %>
+
             <% if (specs.length === 0) { %>
                 <div class="spec-row">
-                    <input type="text" name="specKey[]" placeholder="Attribute — e.g. Warranty">
-                    <input type="text" name="specValue[]" placeholder="Value — e.g. 3 Years Official">
+                    <input type="text" name="specKey[]" list="specKeyOptions" class="spec-key-input" placeholder="Attribute — e.g. Warranty">
+                    <input type="text" name="specValue[]" class="spec-value-input" placeholder="Value — e.g. 3 Years Official">
                     <button type="button" class="mini-button danger spec-remove" title="Remove row">
                         <i class="fa-solid fa-trash"></i>
                     </button>
@@ -395,8 +450,8 @@
 
             <% specs.forEach(function (spec) { %>
                 <div class="spec-row">
-                    <input type="text" name="specKey[]" value="<%= spec.key %>" placeholder="Attribute">
-                    <input type="text" name="specValue[]" value="<%= spec.value %>" placeholder="Value">
+                    <input type="text" name="specKey[]" list="specKeyOptions" class="spec-key-input" value="<%= spec.key %>" placeholder="Attribute">
+                    <input type="text" name="specValue[]" class="spec-value-input" list="<%= valListId(spec.key) %>" value="<%= spec.value %>" placeholder="Value">
                     <button type="button" class="mini-button danger spec-remove" title="Remove row">
                         <i class="fa-solid fa-trash"></i>
                     </button>
@@ -404,6 +459,18 @@
             <% }) %>
 
         </div>
+
+        <datalist id="specKeyOptions">
+            <% registry.forEach(function (a) { %><option value="<%= a.key %>"><% }); %>
+        </datalist>
+        <% registry.forEach(function (a, i) { %>
+            <datalist id="specVals-<%= i %>">
+                <% a.values.forEach(function (v) { %><option value="<%= v %>"><% }); %>
+            </datalist>
+        <% }); %>
+        <script>
+            window.SPEC_VALUE_LISTS = <%- JSON.stringify(registry.reduce(function (m, a, i) { m[a.key] = "specVals-" + i; return m; }, {})) %>;
+        </script>
 
         <p class="section-note">
             Information given here will appear as a specification table on the product page.

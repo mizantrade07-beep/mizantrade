@@ -7,8 +7,12 @@
             
             <p style="color: #bbb; font-size: 13px; line-height: 1.6; margin-bottom: 15px;">
                 <strong style="color: #fff;">Address</strong><br>
-                Shop No 301-303, Level 3, 69-71<br>
-                New Elephant Road, Dhaka.
+                <% if (site.address) { %>
+                    <%= site.address %>
+                <% } else { %>
+                    Shop No 301-303, Level 3, 69-71<br>
+                    New Elephant Road, Dhaka.
+                <% } %>
             </p>
 
             <p style="color: #bbb; font-size: 13px; line-height: 1.6;">
@@ -78,11 +82,23 @@
             </div>
             
             <!-- Social Icons with Links -->
-            <div style="display: flex; gap: 10px; margin-top: 15px;">
-                <a href="https://www.facebook.com/mizantrade/" target="_blank" rel="noopener" style="background: #3b5998; color: #fff; width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border-radius: 4px; text-decoration: none;"><i class="fab fa-facebook-f"></i></a>
-                <a href="https://www.youtube.com/@MIZANTRADE-s3z" target="_blank" rel="noopener" style="background: #ff0000; color: #fff; width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border-radius: 4px; text-decoration: none;"><i class="fab fa-youtube"></i></a>
-                <a href="mailto:support@mizantrade.com" style="background: #555; color: #fff; width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border-radius: 4px; text-decoration: none;"><i class="fas fa-envelope"></i></a>
-                <a href="https://wa.me/8801709867815" target="_blank" rel="noopener" style="background: #25d366; color: #fff; width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border-radius: 4px; text-decoration: none;"><i class="fab fa-whatsapp"></i></a>
+            <%
+                var soc = (typeof site !== "undefined" && site.social) ? site.social : {};
+                var fb = soc.facebook || "https://www.facebook.com/mizantrade/";
+                var yt = soc.youtube || "https://www.youtube.com/@MIZANTRADE-s3z";
+                var wa = soc.whatsapp || "https://wa.me/8801709867815";
+                var ig = soc.instagram || "";
+                var li = soc.linkedin || "";
+                var mailto = "mailto:" + ((typeof site !== "undefined" && site.email) ? site.email : "support@mizantrade.com");
+                var iconStyle = "color: #fff; width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border-radius: 4px; text-decoration: none;";
+            %>
+            <div style="display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
+                <% if (fb) { %><a href="<%= fb %>" target="_blank" rel="noopener" style="background: #3b5998; <%= iconStyle %>"><i class="fab fa-facebook-f"></i></a><% } %>
+                <% if (ig) { %><a href="<%= ig %>" target="_blank" rel="noopener" style="background: #e1306c; <%= iconStyle %>"><i class="fab fa-instagram"></i></a><% } %>
+                <% if (yt) { %><a href="<%= yt %>" target="_blank" rel="noopener" style="background: #ff0000; <%= iconStyle %>"><i class="fab fa-youtube"></i></a><% } %>
+                <% if (li) { %><a href="<%= li %>" target="_blank" rel="noopener" style="background: #0a66c2; <%= iconStyle %>"><i class="fab fa-linkedin-in"></i></a><% } %>
+                <a href="<%= mailto %>" style="background: #555; <%= iconStyle %>"><i class="fas fa-envelope"></i></a>
+                <% if (wa) { %><a href="<%= wa %>" target="_blank" rel="noopener" style="background: #25d366; <%= iconStyle %>"><i class="fab fa-whatsapp"></i></a><% } %>
             </div>
         </div>
 
@@ -91,7 +107,7 @@
     <!-- Bottom Bar with Copyright and Payment Logos -->
     <div style="max-width: 1600px; margin: 40px auto 0 auto; border-top: 1px solid #1a2228; padding-top: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
         <div style="color: #888; font-size: 13px;">
-            &copy; 2026 MizanTrade | All Rights Reserved.
+            <%= (typeof site !== "undefined" && site.footerText) ? site.footerText : "© 2026 MizanTrade | All Rights Reserved." %>
         </div>
         
         <!-- Payment Method Badges -->

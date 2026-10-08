@@ -15,6 +15,7 @@ const commentController = require("../controllers/commentController");
 const couponController = require("../controllers/couponController");
 const reviewController = require("../controllers/reviewController");
 const analyticsController = require("../controllers/analyticsController");
+const settingController = require("../controllers/settingController");
 
 const upload = require("../middleware/upload");
 
@@ -100,6 +101,12 @@ router.post(
     "/upload-image",
     upload.single("image"),
     productController.postUploadImage
+);
+
+router.post(
+    "/upload-media",
+    upload.media.single("media"),
+    productController.postUploadMedia
 );
 
 
@@ -400,6 +407,23 @@ router.post(
     "/reviews/delete/:productId/:reviewId",
     requirePermission("moderate"),
     reviewController.deleteReview
+);
+
+
+/* ======================================================
+   SITE SETTINGS
+====================================================== */
+
+router.get(
+    "/settings",
+    requirePermission("settings.manage"),
+    settingController.getSettingsPage
+);
+
+router.post(
+    "/settings",
+    requirePermission("settings.manage"),
+    settingController.postUpdateSettings
 );
 
 

@@ -34,6 +34,7 @@
         <%- include("partials/productForm", {
             product: null,
             categories: categories,
+            attrRegistry: (typeof attrRegistry !== 'undefined' ? attrRegistry : []),
             formAction: "/admin/product/add"
         }) %>
 

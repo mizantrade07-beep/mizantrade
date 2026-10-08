@@ -206,15 +206,15 @@
 
         <nav class="sidebar-nav">
 
+            <% if (can('settings.manage')) { %>
             <a
-                href="#"
-                class="sidebar-link disabled"
-                title="Coming in a future phase"
+                href="/admin/settings"
+                class="sidebar-link <%= currentPath === '/admin/settings' ? 'active' : '' %>"
             >
                 <span class="nav-icon"><i class="fa-solid fa-gear"></i></span>
                 <span>Settings</span>
-                <span class="later-pill">Soon</span>
             </a>
+            <% } %>
 
         </nav>
     </div>

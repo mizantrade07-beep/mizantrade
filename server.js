@@ -21,7 +21,15 @@ const app = express();
 
 
 // ======================================================
-// COMPRESSION (gzip) — রেসপন্স সাইজ কমানো
+// TRUST PROXY
+// Required for HTTPS + cPanel/Reverse Proxy
+// ======================================================
+
+app.set("trust proxy", 1);
+
+
+// ======================================================
+// COMPRESSION
 // ======================================================
 
 app.use(compression());
@@ -32,6 +40,13 @@ app.use(compression());
 // ======================================================
 
 connectDB();
+
+
+// ======================================================
+// SITE SETTINGS
+// ======================================================
+
+require("./utils/siteSettings").loadSettings();
 
 
 // ======================================================
@@ -66,6 +81,8 @@ app.use(
 
 // ======================================================
 // SESSION
+// IMPORTANT:
+// Session must be loaded before attachAdmin
 // ======================================================
 
 app.use(
@@ -92,7 +109,7 @@ app.use(
 
 
 // ======================================================
-// GLOBAL SITE DATA (categories, cart count)
+// GLOBAL SITE DATA
 // ======================================================
 
 app.use(
@@ -110,10 +127,18 @@ app.use(
         {
             maxAge: "30d",
             etag: true,
+
             setHeaders: function (res, filePath) {
-                // আপলোড করা ছবির ফাইলনাম ইউনিক — দীর্ঘমেয়াদি immutable ক্যাশ
-                if (/[\\/]uploads[\\/]/.test(filePath)) {
-                    res.setHeader("Cache-Control", "public, max-age=31536000, immutable");
+
+                if (
+                    /[\\/]uploads[\\/]/.test(
+                        filePath
+                    )
+                ) {
+                    res.setHeader(
+                        "Cache-Control",
+                        "public, max-age=31536000, immutable"
+                    );
                 }
             }
         }
@@ -128,6 +153,7 @@ app.use(
 app.get(
     "/health",
     (req, res) => {
+
         res.status(200).json({
             success: true,
             status: "OK",
@@ -159,7 +185,7 @@ app.use(
 
 
 // ======================================================
-// CUSTOMER AUTH ROUTES (signup / login / account)
+// CUSTOMER AUTH ROUTES
 // ======================================================
 
 app.use(
@@ -202,11 +228,12 @@ app.use(
 
 const PORT = config.port;
 
-
 const server = app.listen(
     PORT,
     () => {
+
         console.log("");
+
         console.log(
             "=========================================="
         );
@@ -228,15 +255,15 @@ const server = app.listen(
         );
 
         console.log(
-            `Website     : http://localhost:${PORT}`
+            `Website     : ${config.siteUrl}`
         );
 
         console.log(
-            `Health      : http://localhost:${PORT}/health`
+            `Health      : ${config.siteUrl}/health`
         );
 
         console.log(
-            `Admin Login : http://localhost:${PORT}/admin/login`
+            `Admin Login : ${config.siteUrl}/admin/login`
         );
 
         console.log(
@@ -253,17 +280,21 @@ const server = app.listen(
 // ======================================================
 
 const shutdown = () => {
+
     console.log(
         "Shutting down MizanTrade server..."
     );
 
-    server.close(() => {
-        console.log(
-            "Server closed."
-        );
+    server.close(
+        () => {
 
-        process.exit(0);
-    });
+            console.log(
+                "Server closed."
+            );
+
+            process.exit(0);
+        }
+    );
 };
 
 
