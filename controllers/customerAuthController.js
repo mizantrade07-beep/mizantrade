@@ -50,7 +50,7 @@ function nameFromEmail(email) {
         .replace(/\b\w/g, (c) => c.toUpperCase()) || "Customer";
 }
 
-const SIGNUP_OTP_TTL_MS = 10 * 60 * 1000;
+const SIGNUP_OTP_TTL_MS = 60 * 1000;
 const SIGNUP_RESEND_MS = 60 * 1000;
 const SIGNUP_MAX_ATTEMPTS = 5;
 

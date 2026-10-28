@@ -39,7 +39,7 @@ function loginOtpText(code) {
 function signupOtpText(code) {
     return (
         "MizanTrade: Your account verification code is " + code +
-        ". It expires in 10 minutes. Never share this code with anyone."
+        ". It expires in 1 minute. Never share this code with anyone."
     );
 }
 
