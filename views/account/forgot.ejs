@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" href="/images/logo.svg">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forgot Password - Mizan Trade</title>
+    <style>
+        .container.auth-wrap { max-width: 430px; margin: 34px auto 60px; }
+        .auth-card { background:#fff; border-radius:18px; overflow:hidden; box-shadow:0 18px 50px rgba(8,22,33,.12); border:1px solid #eef0f3; }
+        .auth-hero { background: linear-gradient(120deg,#374957,#5a6b7b); color:#fff; padding:26px; text-align:center; }
+        .auth-hero .ah-ic { width:60px; height:60px; border-radius:50%; margin:0 auto 12px; background:rgba(255,255,255,.16); border:1px solid rgba(255,255,255,.3); display:flex; align-items:center; justify-content:center; font-size:24px; }
+        .auth-hero h1 { margin:0; font-size:20px; font-weight:700; }
+        .auth-hero p { margin:6px 0 0; font-size:13px; opacity:.92; }
+        .auth-body { padding:22px 26px 26px; }
+        .auth-field { margin-bottom:15px; }
+        .auth-field label { display:block; font-size:13px; font-weight:600; color:#374957; margin-bottom:6px; }
+        .auth-input { width:100%; padding:12px 14px; border:1.5px solid #e3e8ef; border-radius:10px; font-size:14.5px; color:#081621; background:#fbfcfe; box-sizing:border-box; }
+        .auth-input:focus { outline:none; border-color:#ef4a23; background:#fff; box-shadow:0 0 0 3px rgba(239,74,35,.12); }
+        .auth-btn { width:100%; padding:13px; border:none; border-radius:10px; cursor:pointer; background:linear-gradient(120deg,#ef4a23,#ff7a45); color:#fff; font-size:15px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:9px; margin-top:6px; box-shadow:0 8px 20px rgba(239,74,35,.28); }
+        .auth-btn:hover { filter:brightness(1.05); }
+        .auth-banner { padding:11px 14px; border-radius:10px; margin-bottom:16px; font-size:13.5px; font-weight:600; }
+        .auth-banner.err { background:#fdecea; color:#c0392b; border:1px solid #f5c6cb; }
+        .auth-note { text-align:center; margin-top:20px; font-size:13.5px; color:#666; }
+        .auth-link { color:#ef4a23; font-weight:600; font-size:13px; text-decoration:none; }
+        .q-box { background:#f4f6f9; border:1px solid #e3e8ef; border-radius:10px; padding:12px 14px; font-size:14px; color:#081621; font-weight:600; margin-bottom:15px; }
+        .pw-wrap { position:relative; }
+        .pw-toggle { position:absolute; right:12px; top:50%; transform:translateY(-50%); background:none; border:none; color:#8892a0; cursor:pointer; font-size:15px; }
+    </style>
+</head>
+<body>
+
+    <%- include('../partials/header') %>
+
+    <%
+        var currentStep = (typeof step !== 'undefined' && step) ? step : 'email';
+        var emailVal = (typeof email !== 'undefined' && email) ? email : '';
+        var questionText = (typeof question !== 'undefined' && question) ? question : '';
+        var errorText = (typeof message !== 'undefined' && message) ? message : '';
+    %>
+
+    <div class="container auth-wrap">
+        <div class="auth-card">
+            <div class="auth-hero">
+                <div class="ah-ic"><i class="fa-solid fa-key"></i></div>
+                <h1>Reset Your Password</h1>
+                <p>Answer your security question to set a new password</p>
+            </div>
+
+            <div class="auth-body">
+
+                <% if (errorText) { %>
+                    <div class="auth-banner err"><i class="fa-solid fa-circle-exclamation"></i> <%= errorText %></div>
+                <% } %>
+
+                <% if (currentStep === 'email') { %>
+                    <form action="/forgot-password" method="POST">
+                        <div class="auth-field">
+                            <label>Account Email</label>
+                            <input type="email" name="email" class="auth-input" placeholder="you@example.com" value="<%= emailVal %>" required>
+                        </div>
+                        <button type="submit" class="auth-btn"><i class="fa-solid fa-magnifying-glass"></i> Find My Account</button>
+                    </form>
+                <% } else { %>
+                    <form action="/forgot-password/reset" method="POST">
+                        <input type="hidden" name="email" value="<%= emailVal %>">
+
+                        <div class="q-box">
+                            <i class="fa-solid fa-circle-question" style="color:#ef4a23;"></i>
+                            <%= questionText %>
+                        </div>
+
+                        <div class="auth-field">
+                            <label>Your Answer</label>
+                            <input type="text" name="answer" class="auth-input" placeholder="Your security answer" required>
+                        </div>
+
+                        <div class="auth-field">
+                            <label>New Password</label>
+                            <div class="pw-wrap">
+                                <input type="password" name="newPassword" id="np" class="auth-input" placeholder="At least 6 characters" required>
+                                <button type="button" class="pw-toggle" data-target="np"><i class="fa-regular fa-eye"></i></button>
+                            </div>
+                        </div>
+
+                        <div class="auth-field">
+                            <label>Confirm New Password</label>
+                            <input type="password" name="confirmPassword" class="auth-input" placeholder="Re-enter new password" required>
+                        </div>
+
+                        <button type="submit" class="auth-btn"><i class="fa-solid fa-rotate-right"></i> Reset Password</button>
+                    </form>
+                <% } %>
+
+                <p class="auth-note">
+                    Remembered it? <a href="/login" class="auth-link">Back to Log In</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <%- include('../partials/footer') %>
+
+    <script>
+        document.querySelectorAll('.pw-toggle').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var input = document.getElementById(btn.getAttribute('data-target'));
+                if (!input) return;
+                var show = input.type === 'password';
+                input.type = show ? 'text' : 'password';
+                btn.innerHTML = show ? '<i class="fa-regular fa-eye-slash"></i>' : '<i class="fa-regular fa-eye"></i>';
+            });
+        });
+    </script>
+    <script src="/js/main.js?v=4"></script>
+</body>
+</html>

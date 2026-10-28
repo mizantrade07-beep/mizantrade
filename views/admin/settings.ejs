@@ -1,10 +1,10 @@
-<%- include("partials/head", { title: "Site Settings | MizanTrade Admin" }) %>
+<%- include("partials/head", { title: "Website Settings | MizanTrade Admin" }) %>
 
 <%- include("partials/sidebar") %>
 
 <div class="admin-main">
 
-    <%- include("partials/topbar", { title: "Site Settings" }) %>
+    <%- include("partials/topbar", { title: "Website Settings" }) %>
 
     <main class="admin-content">
 
@@ -12,9 +12,13 @@
             <div>
                 <h1 class="dashboard-title">Website Settings</h1>
                 <p class="dashboard-subtitle">
-                    Contact details, shipping charges, payment information and social links used across the whole website.
+                    General, localization, payment gateways, shipping, tax and security — everything that
+                    controls how the storefront behaves.
                 </p>
             </div>
+            <a href="/admin/seo" class="secondary-button">
+                <i class="fa-solid fa-magnifying-glass-chart"></i> SEO &amp; Marketing
+            </a>
         </div>
 
         <% if (message === "saved") { %>
@@ -27,194 +31,700 @@
             </div>
         <% } %>
 
-        <form action="/admin/settings" method="POST">
+        <%
+            var gateways = settings.paymentGateways || {};
+            var gatewayMeta = [
+                { key: "bkash", label: "bKash", icon: "fa-mobile-screen-button", color: "#e2136e" },
+                { key: "nagad", label: "Nagad", icon: "fa-mobile-screen-button", color: "#f6921e" },
+                { key: "rocket", label: "Rocket", icon: "fa-rocket", color: "#8c3494" },
+                { key: "card", label: "Card / SSLCommerz", icon: "fa-credit-card", color: "#2563eb" },
+                { key: "bank", label: "Bank Transfer", icon: "fa-building-columns", color: "#374957" },
+                { key: "cod", label: "Cash on Delivery", icon: "fa-money-bill-wave", color: "#1f8a3b" }
+            ];
+            var timezones = ["Asia/Dhaka", "Asia/Kolkata", "Asia/Karachi", "Asia/Dubai", "Asia/Singapore", "UTC"];
+            var dateFormats = ["DD/MM/YYYY", "MM/DD/YYYY", "YYYY-MM-DD", "DD MMM YYYY"];
+            var languages = (settings.localization && settings.localization.languages) || [];
+        %>
 
-            <div class="cms-two-col">
+        <style>
+            .st-tabs {
+                display: flex; gap: 6px; flex-wrap: wrap; padding: 6px;
+                background: #fff; border: 1px solid #eef0f3; border-radius: 12px;
+                margin-bottom: 18px; box-shadow: 0 6px 18px rgba(8,22,33,.05);
+            }
+            .st-tab {
+                display: inline-flex; align-items: center; gap: 8px;
+                padding: 10px 16px; border-radius: 8px; border: none; cursor: pointer;
+                background: transparent; color: #5b6b7b; font-size: 13px; font-weight: 700;
+                font-family: inherit; transition: .15s;
+            }
+            .st-tab:hover { background: #f4f6f9; color: #081621; }
+            .st-tab.active { background: #081621; color: #fff; }
+            .st-panel { display: none; }
+            .st-panel.active { display: block; }
+            .st-note { font-size: 12.5px; color: #7b8794; margin: 6px 0 0; line-height: 1.5; }
+            .gw-card {
+                border: 1px solid #e3e8ef; border-radius: 12px; padding: 14px 16px; margin-bottom: 12px;
+                background: #fbfcfe;
+            }
+            .gw-head {
+                display: flex; align-items: center; justify-content: space-between; gap: 10px;
+                flex-wrap: wrap; margin-bottom: 12px;
+            }
+            .gw-name { display: flex; align-items: center; gap: 10px; font-weight: 700; color: #081621; }
+            .gw-name i { width: 30px; height: 30px; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: 14px; }
+            .switch {
+                display: inline-flex; align-items: center; gap: 8px; font-size: 12.5px;
+                font-weight: 700; color: #374957; cursor: pointer;
+            }
+            .switch input { width: 16px; height: 16px; accent-color: #1f8a3b; cursor: pointer; }
+            .sec-status {
+                display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px;
+            }
+            .sec-item {
+                border: 1px solid #eef0f3; border-radius: 10px; padding: 12px 14px; background: #fbfcfe;
+                display: flex; gap: 10px; align-items: flex-start;
+            }
+            .sec-item i { margin-top: 2px; }
+            .sec-item .st-title { font-size: 13px; font-weight: 700; color: #081621; }
+            .sec-item .st-sub { font-size: 11.5px; color: #8892a0; }
+        </style>
 
-                <!-- ===== Left column ===== -->
-                <div class="side-stack">
+        <div class="st-tabs" role="tablist">
+            <button type="button" class="st-tab active" data-tab="general"><i class="fa-solid fa-store"></i> General</button>
+            <button type="button" class="st-tab" data-tab="localization"><i class="fa-solid fa-globe"></i> Localization</button>
+            <button type="button" class="st-tab" data-tab="payment-gateways"><i class="fa-solid fa-credit-card"></i> Payment Gateways</button>
+            <button type="button" class="st-tab" data-tab="shipping"><i class="fa-solid fa-truck-fast"></i> Shipping &amp; Delivery</button>
+            <button type="button" class="st-tab" data-tab="tax"><i class="fa-solid fa-percent"></i> Tax &amp; VAT</button>
+            <button type="button" class="st-tab" data-tab="security"><i class="fa-solid fa-shield-halved"></i> User &amp; Security</button>
+            <button type="button" class="st-tab" data-tab="social-links"><i class="fa-solid fa-share-nodes"></i> Social Links</button>
+        </div>
 
-                    <section class="dashboard-card">
-                        <div class="card-header">
-                            <h2 class="card-title"><i class="fa-solid fa-store card-icon"></i> General</h2>
-                        </div>
+        <form action="/admin/settings" method="POST" id="settingsForm" enctype="application/x-www-form-urlencoded">
 
-                        <div class="form-grid">
-                            <div class="form-group form-full">
-                                <label for="siteName">Site Name</label>
-                                <input type="text" id="siteName" name="siteName" value="<%= settings.siteName || '' %>" placeholder="Mizan Trade">
-                            </div>
-
-                            <div class="form-group">
-                                <label for="hotline">Hotline</label>
-                                <input type="text" id="hotline" name="hotline" value="<%= settings.hotline || '' %>" placeholder="+8801XXXXXXXXX">
-                            </div>
-
-                            <div class="form-group">
-                                <label for="email">Support Email</label>
-                                <input type="email" id="email" name="email" value="<%= settings.email || '' %>" placeholder="support@example.com">
-                            </div>
-
-                            <div class="form-group form-full">
-                                <label for="address">Address</label>
-                                <input type="text" id="address" name="address" value="<%= settings.address || '' %>" placeholder="Shop / office address">
-                            </div>
-                        </div>
-                    </section>
-
-                    <section class="dashboard-card">
-                        <div class="card-header">
-                            <h2 class="card-title"><i class="fa-solid fa-truck-fast card-icon"></i> Shipping Charges</h2>
-                        </div>
-
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label for="shipInside">Inside Dhaka (৳)</label>
-                                <input type="number" id="shipInside" name="shipping.insideDhaka" min="0" step="1" value="<%= settings.shipping.insideDhaka %>">
-                            </div>
-
-                            <div class="form-group">
-                                <label for="shipOutside">Outside Dhaka (৳)</label>
-                                <input type="number" id="shipOutside" name="shipping.outsideDhaka" min="0" step="1" value="<%= settings.shipping.outsideDhaka %>">
-                            </div>
-                        </div>
-                    </section>
-
-                    <section class="dashboard-card">
-                        <div class="card-header">
-                            <h2 class="card-title"><i class="fa-solid fa-mobile-screen card-icon"></i> bKash</h2>
-                        </div>
-
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label for="bkashNumber">bKash Number</label>
-                                <input type="text" id="bkashNumber" name="bkash.number" value="<%= settings.bkash.number || '' %>" placeholder="01XXXXXXXXX">
-                            </div>
-
-                            <div class="form-group">
-                                <label for="bkashType">Account Type</label>
-                                <select id="bkashType" name="bkash.type">
-                                    <option value="Personal" <%= settings.bkash.type === 'Personal' ? 'selected' : '' %>>Personal</option>
-                                    <option value="Merchant" <%= settings.bkash.type === 'Merchant' ? 'selected' : '' %>>Merchant</option>
-                                    <option value="Agent" <%= settings.bkash.type === 'Agent' ? 'selected' : '' %>>Agent</option>
-                                </select>
-                            </div>
-
-                            <div class="form-group">
-                                <label for="bkashCharge">Charge (%)</label>
-                                <input type="number" id="bkashCharge" name="bkash.chargePercent" min="0" step="0.01" value="<%= settings.bkash.chargePercent %>">
-                                <div class="tag-input-hint">Added to the order total for bKash payments.</div>
-                            </div>
-                        </div>
-                    </section>
-
-                </div>
-
-                <!-- ===== Right column ===== -->
-                <div class="side-stack">
-
-                    <section class="dashboard-card">
-                        <div class="card-header">
-                            <h2 class="card-title"><i class="fa-solid fa-building-columns card-icon"></i> Bank Transfer</h2>
-                        </div>
-
-                        <div class="form-grid">
-                            <div class="form-group form-full">
-                                <label for="bankName">Bank Name</label>
-                                <input type="text" id="bankName" name="bank.bankName" value="<%= settings.bank.bankName || '' %>">
-                            </div>
-
-                            <div class="form-group form-full">
-                                <label for="bankBranch">Branch</label>
-                                <input type="text" id="bankBranch" name="bank.branch" value="<%= settings.bank.branch || '' %>">
-                            </div>
-
-                            <div class="form-group">
-                                <label for="bankAccName">Account Name</label>
-                                <input type="text" id="bankAccName" name="bank.accountName" value="<%= settings.bank.accountName || '' %>">
-                            </div>
-
-                            <div class="form-group">
-                                <label for="bankAccNumber">Account Number</label>
-                                <input type="text" id="bankAccNumber" name="bank.accountNumber" value="<%= settings.bank.accountNumber || '' %>">
-                            </div>
-
-                            <div class="form-group">
-                                <label for="bankRouting">Routing Number</label>
-                                <input type="text" id="bankRouting" name="bank.routingNumber" value="<%= settings.bank.routingNumber || '' %>">
-                            </div>
-                        </div>
-                    </section>
-
-                    <section class="dashboard-card">
-                        <div class="card-header">
-                            <h2 class="card-title"><i class="fa-solid fa-share-nodes card-icon"></i> Social Links</h2>
-                        </div>
-
-                        <div class="form-grid">
-                            <div class="form-group form-full">
-                                <label for="socFb">Facebook</label>
-                                <input type="url" id="socFb" name="social.facebook" value="<%= settings.social.facebook || '' %>" placeholder="https://facebook.com/…">
-                            </div>
-
-                            <div class="form-group form-full">
-                                <label for="socIg">Instagram</label>
-                                <input type="url" id="socIg" name="social.instagram" value="<%= settings.social.instagram || '' %>" placeholder="https://instagram.com/…">
-                            </div>
-
-                            <div class="form-group form-full">
-                                <label for="socYt">YouTube</label>
-                                <input type="url" id="socYt" name="social.youtube" value="<%= settings.social.youtube || '' %>" placeholder="https://youtube.com/…">
-                            </div>
-
-                            <div class="form-group form-full">
-                                <label for="socWa">WhatsApp</label>
-                                <input type="url" id="socWa" name="social.whatsapp" value="<%= settings.social.whatsapp || '' %>" placeholder="https://wa.me/8801…">
-                            </div>
-
-                            <div class="form-group form-full">
-                                <label for="socLi">LinkedIn</label>
-                                <input type="url" id="socLi" name="social.linkedin" value="<%= settings.social.linkedin || '' %>" placeholder="https://linkedin.com/company/…">
-                            </div>
-                        </div>
-                    </section>
-
-                    <section class="dashboard-card">
-                        <div class="card-header">
-                            <h2 class="card-title"><i class="fa-solid fa-magnifying-glass card-icon"></i> SEO &amp; Footer</h2>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="metaTitle">Default Meta Title</label>
-                            <input type="text" id="metaTitle" name="metaTitle" value="<%= settings.metaTitle || '' %>" placeholder="Shown in search results">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="metaDescription">Default Meta Description</label>
-                            <textarea id="metaDescription" name="metaDescription" rows="3" placeholder="A short summary for search engines"><%= settings.metaDescription || '' %></textarea>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="footerText">Footer Copyright Text</label>
-                            <input type="text" id="footerText" name="footerText" value="<%= settings.footerText || '' %>" placeholder="© 2026 Mizan Trade. All rights reserved.">
-                        </div>
-                    </section>
-
-                    <div class="form-actions">
-                        <button type="submit" class="primary-button">
-                            <i class="fa-solid fa-floppy-disk"></i>
-                            Save Settings
-                        </button>
+            <!-- ================= GENERAL ================= -->
+            <div class="st-panel active" data-panel="general" id="general">
+                <section class="dashboard-card">
+                    <div class="card-header">
+                        <h2 class="card-title"><i class="fa-solid fa-store card-icon"></i> General Information</h2>
                     </div>
 
-                </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="siteName">Site Title</label>
+                            <input type="text" id="siteName" name="siteName" value="<%= settings.siteName || '' %>" placeholder="Mizan Trade">
+                        </div>
+                        <div class="form-group">
+                            <label for="tagline">Tagline</label>
+                            <input type="text" id="tagline" name="general.tagline" value="<%= settings.general ? settings.general.tagline : '' %>" placeholder="Your trusted computer hardware store">
+                        </div>
 
+                        <div class="form-group">
+                            <label for="logoUrl">Header Logo (URL)</label>
+                            <div style="display:flex; gap:6px;">
+                                <input type="text" id="logoUrl" name="general.logoUrl" value="<%= settings.general ? settings.general.logoUrl : '' %>" class="img-url" placeholder="/images/logo.svg">
+                                <label class="secondary-button" style="cursor:pointer; white-space:nowrap;">
+                                    <i class="fa-solid fa-upload"></i><input type="file" accept="image/*" class="img-file" hidden>
+                                </label>
+                            </div>
+                            <p class="st-note">Used when the Top Header Panel has no logo of its own.</p>
+                        </div>
+                        <div class="form-group">
+                            <label for="faviconUrl">Favicon (URL)</label>
+                            <div style="display:flex; gap:6px;">
+                                <input type="text" id="faviconUrl" name="faviconUrl" value="<%= settings.faviconUrl || '' %>" class="img-url" placeholder="/images/favicon.ico">
+                                <label class="secondary-button" style="cursor:pointer; white-space:nowrap;">
+                                    <i class="fa-solid fa-upload"></i><input type="file" accept="image/x-icon,image/png,image/svg+xml" class="img-file" hidden>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="hotline">Hotline</label>
+                            <input type="text" id="hotline" name="hotline" value="<%= settings.hotline || '' %>" placeholder="+8801709967815">
+                        </div>
+                        <div class="form-group">
+                            <label for="supportPhone">Support Phone</label>
+                            <input type="text" id="supportPhone" name="general.supportPhone" value="<%= settings.general ? settings.general.supportPhone : '' %>" placeholder="+8801XXXXXXXXX">
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Support Email</label>
+                            <input type="email" id="email" name="email" value="<%= settings.email || '' %>" placeholder="support@example.com">
+                        </div>
+                        <div class="form-group">
+                            <label for="operatingHours">Operating Hours</label>
+                            <input type="text" id="operatingHours" name="general.operatingHours" value="<%= settings.general ? settings.general.operatingHours : '' %>" placeholder="Sat – Thu, 10:00 AM – 8:00 PM">
+                        </div>
+
+                        <div class="form-group form-full">
+                            <label for="address">Address</label>
+                            <input type="text" id="address" name="address" value="<%= settings.address || '' %>" placeholder="Shop / office address">
+                        </div>
+                        <div class="form-group form-full">
+                            <label for="mapUrl">Google Maps Link (optional)</label>
+                            <input type="text" id="mapUrl" name="general.mapUrl" value="<%= settings.general ? settings.general.mapUrl : '' %>" placeholder="https://maps.google.com/…">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="timezone">Timezone</label>
+                            <select id="timezone" name="general.timezone">
+                                <% timezones.forEach(function (tz) { %>
+                                    <option value="<%= tz %>" <%= (settings.general && settings.general.timezone) === tz ? 'selected' : '' %>><%= tz %></option>
+                                <% }); %>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="dateFormat">Date Format</label>
+                            <select id="dateFormat" name="general.dateFormat">
+                                <% dateFormats.forEach(function (df) { %>
+                                    <option value="<%= df %>" <%= (settings.general && settings.general.dateFormat) === df ? 'selected' : '' %>><%= df %></option>
+                                <% }); %>
+                            </select>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- ================= LOCALIZATION ================= -->
+            <div class="st-panel" data-panel="localization" id="localization">
+                <section class="dashboard-card">
+                    <div class="card-header">
+                        <h2 class="card-title"><i class="fa-solid fa-globe card-icon"></i> Localization &amp; Language</h2>
+                    </div>
+                    <p class="st-note" style="margin-bottom:12px;">
+                        Country, currency and the languages the storefront supports. Enabled languages appear in
+                        the language switcher.
+                    </p>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="country">Country</label>
+                            <input type="text" id="country" name="localization.country" value="<%= settings.localization ? settings.localization.country : 'Bangladesh' %>">
+                        </div>
+                        <div class="form-group">
+                            <label for="currency">Currency Code</label>
+                            <input type="text" id="currency" name="localization.currency" value="<%= settings.localization ? settings.localization.currency : 'BDT' %>" placeholder="BDT">
+                        </div>
+                        <div class="form-group">
+                            <label for="currencySymbol">Currency Symbol</label>
+                            <input type="text" id="currencySymbol" name="localization.currencySymbol" value="<%= settings.localization ? settings.localization.currencySymbol : '৳' %>" placeholder="৳">
+                        </div>
+                        <div class="form-group">
+                            <label for="defaultLanguage">Default Language</label>
+                            <input type="text" id="defaultLanguage" name="localization.defaultLanguage" value="<%= settings.localization ? settings.localization.defaultLanguage : 'en' %>" placeholder="en">
+                        </div>
+                    </div>
+
+                    <div style="margin-top:18px;">
+                        <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;">
+                            <strong style="color:#081621; font-size:13.5px;">Languages</strong>
+                            <button type="button" class="secondary-button" id="addLanguage">
+                                <i class="fa-solid fa-plus"></i> Add Language
+                            </button>
+                        </div>
+
+                        <div id="languageRows" data-key="languages" style="margin-top:10px;">
+                            <% languages.forEach(function (lang, i) { %>
+                                <div class="hc-row" style="display:grid; grid-template-columns:130px 1.6fr auto auto; gap:10px; align-items:end; border:1px solid #e3e8ef; border-radius:10px; padding:12px; margin-bottom:10px;">
+                                    <div class="form-group" style="margin:0;">
+                                        <label>Code</label>
+                                        <input type="text" name="languages[<%= i %>][code]" value="<%= lang.code %>" placeholder="en">
+                                    </div>
+                                    <div class="form-group" style="margin:0;">
+                                        <label>Name</label>
+                                        <input type="text" name="languages[<%= i %>][name]" value="<%= lang.name %>" placeholder="English">
+                                    </div>
+                                    <label style="display:flex; gap:6px; align-items:center; font-size:13px; padding-bottom:10px;">
+                                        <input type="checkbox" name="languages[<%= i %>][active]" value="on" <%= lang.active !== false ? 'checked' : '' %>> Active
+                                    </label>
+                                    <button type="button" class="mini-button danger st-remove" style="margin-bottom:6px;"><i class="fa-solid fa-trash"></i></button>
+                                </div>
+                            <% }); %>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- ================= PAYMENT GATEWAYS ================= -->
+            <div class="st-panel" data-panel="payment-gateways" id="payment-gateways">
+                <section class="dashboard-card">
+                    <div class="card-header">
+                        <h2 class="card-title"><i class="fa-solid fa-credit-card card-icon"></i> Payment Gateway Settings</h2>
+                        <a href="/admin/payment-methods" class="mini-button" style="text-decoration:none;">
+                            <i class="fa-solid fa-mobile-screen"></i> Accounts
+                        </a>
+                    </div>
+                    <p class="st-note" style="margin-bottom:14px;">
+                        Turn a gateway on or off and store its API credentials. Account numbers, QR codes and
+                        per-account charges are managed separately in
+                        <a href="/admin/payment-methods" style="color:#ef4a23; font-weight:700;">Payment Methods &amp; Accounts</a>.
+                        Leave a secret field blank to keep the stored value.
+                    </p>
+
+                    <% gatewayMeta.forEach(function (g) {
+                        var cfg = gateways[g.key] || {};
+                        var isCod = g.key === "cod";
+                    %>
+                        <div class="gw-card">
+                            <div class="gw-head">
+                                <span class="gw-name">
+                                    <i class="fa-solid <%= g.icon %>" style="background:<%= g.color %>;"></i>
+                                    <%= g.label %>
+                                </span>
+                                <label class="switch">
+                                    <input type="checkbox" name="gateways.<%= g.key %>.enabled" value="on" <%= cfg.enabled !== false ? 'checked' : '' %>>
+                                    <%= cfg.enabled !== false ? 'Enabled' : 'Disabled' %>
+                                </label>
+                            </div>
+
+                            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:10px; align-items:end;">
+                                <div class="form-group" style="margin:0;">
+                                    <label>Mode</label>
+                                    <select name="gateways.<%= g.key %>.mode">
+                                        <option value="sandbox" <%= cfg.mode !== 'live' ? 'selected' : '' %>>Sandbox / Test</option>
+                                        <option value="live" <%= cfg.mode === 'live' ? 'selected' : '' %>>Live</option>
+                                    </select>
+                                </div>
+
+                                <% if (!isCod) { %>
+                                    <div class="form-group" style="margin:0;">
+                                        <label>API Key</label>
+                                        <input type="password" name="gateways.<%= g.key %>.apiKey" value="<%= cfg.apiKey || '' %>" autocomplete="new-password" placeholder="<%= cfg.apiKey ? 'Stored — leave blank to keep' : 'API key' %>">
+                                    </div>
+                                    <div class="form-group" style="margin:0;">
+                                        <label>API Secret</label>
+                                        <input type="password" name="gateways.<%= g.key %>.apiSecret" value="<%= cfg.apiSecret || '' %>" autocomplete="new-password" placeholder="<%= cfg.apiSecret ? 'Stored — leave blank to keep' : 'API secret' %>">
+                                    </div>
+                                    <div class="form-group" style="margin:0;">
+                                        <label>Username</label>
+                                        <input type="text" name="gateways.<%= g.key %>.username" value="<%= cfg.username || '' %>" autocomplete="off">
+                                    </div>
+                                    <div class="form-group" style="margin:0;">
+                                        <label>Password</label>
+                                        <input type="password" name="gateways.<%= g.key %>.password" value="<%= cfg.password || '' %>" autocomplete="new-password">
+                                    </div>
+                                    <div class="form-group" style="margin:0;">
+                                        <label>Merchant / Store ID</label>
+                                        <input type="text" name="gateways.<%= g.key %>.merchantId" value="<%= cfg.merchantId || '' %>" autocomplete="off">
+                                    </div>
+                                <% } else { %>
+                                    <div class="form-group" style="margin:0; grid-column:2 / -1;">
+                                        <label>Note</label>
+                                        <input type="text" value="No API credentials are required for cash on delivery." disabled>
+                                    </div>
+                                <% } %>
+                            </div>
+                        </div>
+                    <% }); %>
+                </section>
+            </div>
+
+            <!-- ================= SHIPPING ================= -->
+            <div class="st-panel" data-panel="shipping" id="shipping">
+                <section class="dashboard-card">
+                    <div class="card-header">
+                        <h2 class="card-title"><i class="fa-solid fa-truck-fast card-icon"></i> Shipping &amp; Delivery</h2>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="shipInside">Inside Dhaka base rate (৳)</label>
+                            <input type="number" id="shipInside" name="shipping.insideDhaka" min="0" step="1" value="<%= settings.shipping.insideDhaka %>">
+                        </div>
+                        <div class="form-group">
+                            <label for="shipOutside">Outside Dhaka base rate (৳)</label>
+                            <input type="number" id="shipOutside" name="shipping.outsideDhaka" min="0" step="1" value="<%= settings.shipping.outsideDhaka %>">
+                        </div>
+                        <div class="form-group">
+                            <label for="freeShipping">Free shipping over (৳)</label>
+                            <input type="number" id="freeShipping" name="courier.freeShippingThreshold" min="0" step="1" value="<%= settings.courier ? settings.courier.freeShippingThreshold : 0 %>">
+                            <p class="st-note">0 = disabled. Otherwise the delivery charge is waived above this subtotal.</p>
+                        </div>
+                        <div class="form-group">
+                            <label for="deliveryTime">Delivery Time</label>
+                            <input type="text" id="deliveryTime" name="courier.deliveryTime" value="<%= settings.courier ? settings.courier.deliveryTime : '' %>" placeholder="2–4 working days">
+                        </div>
+                    </div>
+
+                    <div style="margin-top:18px; padding-top:16px; border-top:1px solid #eef0f3;">
+                        <h3 style="font-size:14px; color:#081621; margin:0 0 10px;">Courier API Integration</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="courierProvider">Courier Provider</label>
+                                <input type="text" id="courierProvider" name="courier.provider" value="<%= settings.courier ? settings.courier.provider : '' %>" placeholder="Steadfast / Pathao / RedX">
+                            </div>
+                            <div class="form-group">
+                                <label for="courierSandbox">Environment</label>
+                                <select id="courierSandbox" name="courier.sandbox">
+                                    <option value="on" <%= settings.courier && settings.courier.sandbox !== false ? 'selected' : '' %>>Sandbox</option>
+                                    <option value="" <%= settings.courier && settings.courier.sandbox === false ? 'selected' : '' %>>Live</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="courierApiKey">API Key</label>
+                                <input type="password" id="courierApiKey" name="courier.apiKey" value="<%= settings.courier ? settings.courier.apiKey : '' %>" autocomplete="new-password" placeholder="Leave blank to keep stored key">
+                            </div>
+                            <div class="form-group">
+                                <label for="courierApiSecret">API Secret</label>
+                                <input type="password" id="courierApiSecret" name="courier.apiSecret" value="<%= settings.courier ? settings.courier.apiSecret : '' %>" autocomplete="new-password" placeholder="Leave blank to keep stored secret">
+                            </div>
+                        </div>
+                        <p class="st-note">Credentials are stored for future courier automation; no courier API calls are made yet.</p>
+                    </div>
+                </section>
+
+                <section class="dashboard-card">
+                    <div class="card-header">
+                        <h2 class="card-title"><i class="fa-solid fa-map-location-dot card-icon"></i> Delivery Zones</h2>
+                        <button type="button" class="secondary-button" id="addZone">
+                            <i class="fa-solid fa-plus"></i> Add Zone
+                        </button>
+                    </div>
+                    <p class="st-note" style="margin-bottom:10px;">
+                        Customers pick a zone at checkout by area, thana or postal code. Inactive zones are hidden.
+                    </p>
+                    <div data-key="shippingZones" id="zoneRows">
+                        <% (shippingZones || []).forEach(function (z, i) { %>
+                            <div class="hc-row" style="display:grid; grid-template-columns:1.2fr 1fr 1fr 1.2fr .8fr auto auto auto; gap:10px; align-items:end; border:1px solid #e3e8ef; border-radius:10px; padding:12px; margin-bottom:10px;">
+                                <div class="form-group" style="margin:0;"><label>Zone name</label>
+                                    <input type="text" name="shippingZones[<%= i %>][name]" value="<%= z.name %>" placeholder="Inside Dhaka"></div>
+                                <div class="form-group" style="margin:0;"><label>Area / District</label>
+                                    <input type="text" name="shippingZones[<%= i %>][area]" value="<%= z.area %>" placeholder="Dhaka"></div>
+                                <div class="form-group" style="margin:0;"><label>Thana</label>
+                                    <input type="text" name="shippingZones[<%= i %>][thana]" value="<%= z.thana %>" placeholder="Dhanmondi"></div>
+                                <div class="form-group" style="margin:0;"><label>Postal codes</label>
+                                    <input type="text" name="shippingZones[<%= i %>][postalCodes]" value="<%= z.postalCodes %>" placeholder="1205, 1209"></div>
+                                <div class="form-group" style="margin:0;"><label>Charge (৳)</label>
+                                    <input type="number" name="shippingZones[<%= i %>][charge]" min="0" step="1" value="<%= z.charge %>"></div>
+                                <label style="display:flex; gap:6px; align-items:center; font-size:13px; padding-bottom:10px;">
+                                    <input type="checkbox" name="shippingZones[<%= i %>][active]" value="on" <%= z.active !== false ? 'checked' : '' %>> Show
+                                </label>
+                                <button type="button" class="mini-button hc-move" data-dir="1" style="margin-bottom:6px;"><i class="fa-solid fa-arrow-down"></i></button>
+                                <button type="button" class="mini-button danger st-remove" style="margin-bottom:6px;"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                        <% }); %>
+                    </div>
+                </section>
+            </div>
+
+            <!-- ================= TAX ================= -->
+            <div class="st-panel" data-panel="tax" id="tax">
+                <section class="dashboard-card">
+                    <div class="card-header">
+                        <h2 class="card-title"><i class="fa-solid fa-percent card-icon"></i> Tax &amp; VAT</h2>
+                    </div>
+                    <p class="st-note" style="margin-bottom:12px;">
+                        Applied at checkout after discounts. Inclusive tax is already inside product prices and is
+                        only shown for information; exclusive tax is added to the order total.
+                    </p>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="taxEnabled">Tax</label>
+                            <select id="taxEnabled" name="tax.enabled">
+                                <option value="on" <%= settings.tax && settings.tax.enabled ? 'selected' : '' %>>Enabled</option>
+                                <option value="" <%= settings.tax && settings.tax.enabled ? '' : 'selected' %>>Disabled</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="taxLabel">Label</label>
+                            <input type="text" id="taxLabel" name="tax.label" value="<%= settings.tax ? settings.tax.label : 'VAT' %>" placeholder="VAT / GST">
+                        </div>
+                        <div class="form-group">
+                            <label for="taxPercent">Rate (%)</label>
+                            <input type="number" id="taxPercent" name="tax.percent" min="0" max="100" step="0.01" value="<%= settings.tax ? settings.tax.percent : 0 %>">
+                        </div>
+                        <div class="form-group">
+                            <label for="taxShipping">Apply to</label>
+                            <select id="taxShipping" name="tax.applyToShipping">
+                                <option value="" <%= settings.tax && settings.tax.applyToShipping ? '' : 'selected' %>>Products only</option>
+                                <option value="on" <%= settings.tax && settings.tax.applyToShipping ? 'selected' : '' %>>Products + delivery</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="taxInclusive">Pricing Mode</label>
+                            <select id="taxInclusive" name="tax.inclusive">
+                                <option value="" <%= settings.tax && settings.tax.inclusive ? '' : 'selected' %>>Exclusive (added at checkout)</option>
+                                <option value="on" <%= settings.tax && settings.tax.inclusive ? 'selected' : '' %>>Inclusive (inside prices)</option>
+                            </select>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- ================= SECURITY ================= -->
+            <div class="st-panel" data-panel="security" id="security">
+                <section class="dashboard-card">
+                    <div class="card-header">
+                        <h2 class="card-title"><i class="fa-solid fa-shield-halved card-icon"></i> User &amp; Security</h2>
+                    </div>
+
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="pwdMin">Minimum Password Length</label>
+                            <input type="number" id="pwdMin" name="userSecurity.passwordMinLength" min="4" max="32" step="1" value="<%= settings.userSecurity ? settings.userSecurity.passwordMinLength : 6 %>">
+                            <p class="st-note">Enforced on password change and reset flows.</p>
+                        </div>
+                        <div class="form-group">
+                            <label for="otpLogin">Password Login</label>
+                            <select id="otpLogin" name="userSecurity.requireOtpLogin">
+                                <option value="" <%= settings.userSecurity && settings.userSecurity.requireOtpLogin ? '' : 'selected' %>>Email OTP always required</option>
+                                <option value="on" <%= settings.userSecurity && settings.userSecurity.requireOtpLogin ? 'selected' : '' %>>Require OTP on every new device</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="socialLogin">Social Login</label>
+                            <select id="socialLogin" name="userSecurity.allowSocialLogin">
+                                <option value="on" <%= settings.userSecurity && settings.userSecurity.allowSocialLogin !== false ? 'selected' : '' %>>Google / Facebook / TikTok allowed</option>
+                                <option value="" <%= settings.userSecurity && settings.userSecurity.allowSocialLogin === false ? 'selected' : '' %>>Disabled</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="sessionTimeout">Session Timeout (minutes)</label>
+                            <input type="number" id="sessionTimeout" name="userSecurity.sessionTimeoutMinutes" min="0" step="5" value="<%= settings.userSecurity ? settings.userSecurity.sessionTimeoutMinutes : 0 %>">
+                            <p class="st-note">0 = browser session. Applies to new logins.</p>
+                        </div>
+                    </div>
+
+                    <div style="margin-top:18px; padding-top:16px; border-top:1px solid #eef0f3;">
+                        <h3 style="font-size:14px; color:#081621; margin:0 0 10px;">Security Stack Status</h3>
+                        <div class="sec-status">
+                            <div class="sec-item">
+                                <i class="fa-solid fa-circle-check" style="color:#1f8a3b;"></i>
+                                <div><div class="st-title">Password hashing</div><div class="st-sub">bcrypt (10 rounds)</div></div>
+                            </div>
+                            <div class="sec-item">
+                                <i class="fa-solid fa-circle-check" style="color:#1f8a3b;"></i>
+                                <div><div class="st-title">Sessions</div><div class="st-sub">HttpOnly cookie + MongoDB store</div></div>
+                            </div>
+                            <div class="sec-item">
+                                <i class="fa-solid fa-circle-check" style="color:#1f8a3b;"></i>
+                                <div><div class="st-title">Role-based access</div><div class="st-sub">Per-action admin permissions</div></div>
+                            </div>
+                            <div class="sec-item">
+                                <i class="fa-solid fa-circle-check" style="color:#1f8a3b;"></i>
+                                <div><div class="st-title">E-mail OTP</div><div class="st-sub">Required for signup + password login</div></div>
+                            </div>
+                            <div class="sec-item">
+                                <i class="fa-solid fa-triangle-exclamation" style="color:#d97706;"></i>
+                                <div><div class="st-title">CSRF tokens</div><div class="st-sub">Not enabled — forms rely on SameSite cookies</div></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- ================= SOCIAL ================= -->
+            <div class="st-panel" data-panel="social-links" id="social-links">
+                <section class="dashboard-card">
+                    <div class="card-header">
+                        <h2 class="card-title"><i class="fa-solid fa-share-nodes card-icon"></i> Social Links</h2>
+                        <button type="button" class="secondary-button" id="addSocial">
+                            <i class="fa-solid fa-plus"></i> Add Social Link
+                        </button>
+                    </div>
+                    <p class="st-note" style="margin-bottom:10px;">
+                        Add any social media pages — Facebook, YouTube, Instagram, TikTok, LinkedIn, WhatsApp,
+                        X, Snapchat, Discord, Threads, Pinterest, Reddit or Telegram. Shown in the footer.
+                    </p>
+
+                    <div id="socialRows">
+                        <% (settings.socials || []).forEach(function (s, i) { %>
+                            <div class="hc-row" style="display:grid; grid-template-columns:1.2fr 2fr 1fr auto; gap:10px; align-items:end; border:1px solid #e3e8ef; border-radius:10px; padding:12px; margin-bottom:10px;">
+                                <div class="form-group" style="margin:0;">
+                                    <label>Platform</label>
+                                    <select name="socials[<%= i %>][platform]">
+                                        <% ["facebook","youtube","instagram","tiktok","linkedin","whatsapp","x","snapchat","discord","threads","pinterest","reddit","telegram"].forEach(function (p) { %>
+                                            <option value="<%= p %>" <%= s.platform === p ? 'selected' : '' %>><%= p.charAt(0).toUpperCase() + p.slice(1) %></option>
+                                        <% }) %>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="margin:0;">
+                                    <label>Profile URL</label>
+                                    <input type="url" name="socials[<%= i %>][url]" value="<%= s.url %>" placeholder="https://…">
+                                </div>
+                                <div class="form-group" style="margin:0;">
+                                    <label>Label (optional)</label>
+                                    <input type="text" name="socials[<%= i %>][label]" value="<%= s.label || '' %>" placeholder="Follow us">
+                                </div>
+                                <button type="button" class="mini-button danger st-remove" style="margin-bottom:6px;">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </div>
+                        <% }); %>
+                    </div>
+                </section>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="primary-button">
+                    <i class="fa-solid fa-floppy-disk"></i> Save Settings
+                </button>
+                <a href="/" target="_blank" class="secondary-button">View Website</a>
             </div>
 
         </form>
+
+        <div class="dashboard-card" style="margin-top:18px;">
+            <div class="card-header">
+                <h2 class="card-title"><i class="fa-solid fa-link card-icon"></i> Related Sections</h2>
+            </div>
+            <div class="card-body" style="display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:10px;">
+                <a href="/admin/footer" class="secondary-button" style="justify-content:flex-start;"><i class="fa-solid fa-shoe-prints"></i> Footer Layout</a>
+                <a href="/admin/payment-methods" class="secondary-button" style="justify-content:flex-start;"><i class="fa-solid fa-credit-card"></i> Payment Methods &amp; Accounts</a>
+                <a href="/admin/seo" class="secondary-button" style="justify-content:flex-start;"><i class="fa-solid fa-magnifying-glass-chart"></i> SEO &amp; Marketing</a>
+                <a href="/admin/rewards" class="secondary-button" style="justify-content:flex-start;"><i class="fa-solid fa-gift"></i> Reward Points</a>
+            </div>
+        </div>
 
     </main>
 
 </div>
 
 <%- include("partials/footer") %>
+
+<script>
+(function () {
+    /* ---------- tabs ---------- */
+    var tabs = Array.prototype.slice.call(document.querySelectorAll(".st-tab"));
+    var panels = Array.prototype.slice.call(document.querySelectorAll(".st-panel"));
+
+    function activate(name) {
+        tabs.forEach(function (t) { t.classList.toggle("active", t.getAttribute("data-tab") === name); });
+        panels.forEach(function (p) { p.classList.toggle("active", p.getAttribute("data-panel") === name); });
+    }
+
+    tabs.forEach(function (tab) {
+        tab.addEventListener("click", function () {
+            var name = tab.getAttribute("data-tab");
+            activate(name);
+            if (history.replaceState) history.replaceState(null, "", "#" + name);
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        });
+    });
+
+    if (location.hash) {
+        var initial = location.hash.replace("#", "");
+        if (document.querySelector('.st-panel[data-panel="' + initial + '"]')) activate(initial);
+    }
+
+    /* ---------- indexed rows ---------- */
+    function reindex(box) {
+        if (!box) return;
+        var key = box.getAttribute("data-key");
+        var rows = box.querySelectorAll(":scope > .hc-row");
+        Array.prototype.forEach.call(rows, function (row, i) {
+            Array.prototype.forEach.call(row.querySelectorAll('[name^="' + key + '["]'), function (input) {
+                input.name = input.name.replace(new RegExp("^" + key + "\\[\\d+\\]"), key + "[" + i + "]");
+            });
+        });
+    }
+
+    function addRow(container, html, indexKey) {
+        if (!container) return;
+        container.insertAdjacentHTML("beforeend", html);
+        reindex(container);
+    }
+
+    document.addEventListener("click", function (e) {
+        var rm = e.target.closest(".st-remove");
+        if (rm) {
+            var row = rm.closest(".hc-row");
+            if (row) {
+                var box = row.closest("[data-key]");
+                row.remove();
+                reindex(box);
+            }
+            return;
+        }
+
+        var mv = e.target.closest(".hc-move");
+        if (mv) {
+            var rowEl = mv.closest(".hc-row");
+            if (!rowEl) return;
+            var parent = rowEl.parentElement;
+            var dir = Number(mv.getAttribute("data-dir")) || 0;
+            if (dir < 0 && rowEl.previousElementSibling) {
+                parent.insertBefore(rowEl, rowEl.previousElementSibling);
+            } else if (dir > 0 && rowEl.nextElementSibling) {
+                parent.insertBefore(rowEl.nextElementSibling, rowEl);
+            }
+            reindex(rowEl.closest("[data-key]"));
+        }
+    });
+
+    /* ---------- languages ---------- */
+    var langBox = document.getElementById("languageRows");
+    document.getElementById("addLanguage").addEventListener("click", function () {
+        addRow(langBox,
+            '<div class="hc-row" style="display:grid; grid-template-columns:130px 1.6fr auto auto; gap:10px; align-items:end; border:1px solid #e3e8ef; border-radius:10px; padding:12px; margin-bottom:10px;">' +
+                '<div class="form-group" style="margin:0;"><label>Code</label><input type="text" name="languages[0][code]" placeholder="bn"></div>' +
+                '<div class="form-group" style="margin:0;"><label>Name</label><input type="text" name="languages[0][name]" placeholder="Bangla"></div>' +
+                '<label style="display:flex; gap:6px; align-items:center; font-size:13px; padding-bottom:10px;"><input type="checkbox" name="languages[0][active]" value="on" checked> Active</label>' +
+                '<button type="button" class="mini-button danger st-remove" style="margin-bottom:6px;"><i class="fa-solid fa-trash"></i></button>' +
+            '</div>');
+    });
+
+    /* ---------- shipping zones ---------- */
+    var zoneBox = document.getElementById("zoneRows");
+    document.getElementById("addZone").addEventListener("click", function () {
+        addRow(zoneBox,
+            '<div class="hc-row" style="display:grid; grid-template-columns:1.2fr 1fr 1fr 1.2fr .8fr auto auto auto; gap:10px; align-items:end; border:1px solid #e3e8ef; border-radius:10px; padding:12px; margin-bottom:10px;">' +
+                '<div class="form-group" style="margin:0;"><label>Zone name</label><input type="text" name="shippingZones[0][name]" placeholder="Inside Dhaka"></div>' +
+                '<div class="form-group" style="margin:0;"><label>Area / District</label><input type="text" name="shippingZones[0][area]"></div>' +
+                '<div class="form-group" style="margin:0;"><label>Thana</label><input type="text" name="shippingZones[0][thana]"></div>' +
+                '<div class="form-group" style="margin:0;"><label>Postal codes</label><input type="text" name="shippingZones[0][postalCodes]"></div>' +
+                '<div class="form-group" style="margin:0;"><label>Charge (৳)</label><input type="number" name="shippingZones[0][charge]" min="0" value="0"></div>' +
+                '<label style="display:flex; gap:6px; align-items:center; font-size:13px; padding-bottom:10px;"><input type="checkbox" name="shippingZones[0][active]" value="on" checked> Show</label>' +
+                '<button type="button" class="mini-button hc-move" data-dir="1" style="margin-bottom:6px;"><i class="fa-solid fa-arrow-down"></i></button>' +
+                '<button type="button" class="mini-button danger st-remove" style="margin-bottom:6px;"><i class="fa-solid fa-trash"></i></button>' +
+            '</div>');
+    });
+
+    /* ---------- socials ---------- */
+    var socialBox = document.getElementById("socialRows");
+    var PLATFORMS = ["facebook","youtube","instagram","tiktok","linkedin","whatsapp","x","snapchat","discord","threads","pinterest","reddit","telegram"];
+
+    document.getElementById("addSocial").addEventListener("click", function () {
+        var opts = PLATFORMS.map(function (p) {
+            return '<option value="' + p + '">' + p.charAt(0).toUpperCase() + p.slice(1) + '</option>';
+        }).join('');
+        addRow(socialBox,
+            '<div class="hc-row" style="display:grid; grid-template-columns:1.2fr 2fr 1fr auto; gap:10px; align-items:end; border:1px solid #e3e8ef; border-radius:10px; padding:12px; margin-bottom:10px;">' +
+                '<div class="form-group" style="margin:0;"><label>Platform</label><select name="socials[0][platform]">' + opts + '</select></div>' +
+                '<div class="form-group" style="margin:0;"><label>Profile URL</label><input type="url" name="socials[0][url]" placeholder="https://…"></div>' +
+                '<div class="form-group" style="margin:0;"><label>Label (optional)</label><input type="text" name="socials[0][label]"></div>' +
+                '<button type="button" class="mini-button danger st-remove" style="margin-bottom:6px;"><i class="fa-solid fa-trash"></i></button>' +
+            '</div>');
+    });
+
+    /* ---------- image uploads ---------- */
+    document.addEventListener("change", function (e) {
+        var fileInput = e.target.closest(".img-file");
+        if (!fileInput || !fileInput.files || !fileInput.files[0]) return;
+
+        var wrap = fileInput.closest("div");
+        var urlInput = wrap ? wrap.querySelector(".img-url") : null;
+        var fd = new FormData();
+        fd.append("media", fileInput.files[0]);
+
+        fetch("/admin/upload-media", { method: "POST", body: fd })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (data && data.success && data.urls && data.urls.length) {
+                    if (urlInput) urlInput.value = data.urls[0];
+                } else {
+                    alert("Upload failed: " + ((data && data.message) || "unknown error"));
+                }
+            })
+            .catch(function (err) { alert("Upload error: " + err.message); });
+    });
+
+    /* ---------- keep row order / indexes on submit ---------- */
+    document.getElementById("settingsForm").addEventListener("submit", function () {
+        reindex(langBox);
+        reindex(zoneBox);
+        reindex(socialBox);
+    });
+})();
+</script>

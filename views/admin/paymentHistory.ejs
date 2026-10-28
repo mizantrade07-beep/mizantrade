@@ -1,0 +1,267 @@
+<%- include("partials/head", {
+    title: "Payment History | MizanTrade Admin"
+}) %>
+
+<%- include("partials/sidebar") %>
+
+<%
+    var fmt = function (value) {
+        return Number(value || 0).toLocaleString("en-US", { maximumFractionDigits: 2 });
+    };
+
+    var statusColors = {
+        Pending: "#b7791f",
+        Confirmed: "#2b6cb0",
+        Processing: "#6b46c1",
+        Shipped: "#0987a0",
+        Delivered: "#2f855a",
+        Cancelled: "#c53030"
+    };
+
+    var methodIcons = {
+        bkash: "fa-solid fa-wallet",
+        nagad: "fa-solid fa-wallet",
+        rocket: "fa-solid fa-rocket",
+        bank: "fa-solid fa-building-columns",
+        cod: "fa-solid fa-money-bill-wave"
+    };
+
+    var reportUrl = function (methodKey) {
+        var params = [];
+        if (from) params.push("from=" + encodeURIComponent(from));
+        if (to) params.push("to=" + encodeURIComponent(to));
+        if (methodKey) params.push("method=" + encodeURIComponent(methodKey));
+        return "/admin/payment-history" + (params.length ? "?" + params.join("&") : "");
+    };
+%>
+
+<div class="admin-main">
+
+    <%- include("partials/topbar", {
+        title: "Payment History"
+    }) %>
+
+    <main class="admin-content">
+
+        <div class="dashboard-header">
+            <div>
+                <h1 class="dashboard-title">Payment History</h1>
+                <p class="dashboard-subtitle">
+                    Money received through each payment method and account, date-wise with customer name and phone.
+                </p>
+            </div>
+        </div>
+
+        <section class="dashboard-card" style="margin-bottom:22px;">
+            <div class="card-body" style="padding:16px 18px;">
+                <form method="GET" action="/admin/payment-history" class="report-filters">
+                    <div class="rf-field">
+                        <label for="phFrom">From</label>
+                        <input type="date" id="phFrom" name="from" value="<%= from %>">
+                    </div>
+                    <div class="rf-field">
+                        <label for="phTo">To</label>
+                        <input type="date" id="phTo" name="to" value="<%= to %>">
+                    </div>
+                    <div class="rf-field">
+                        <label for="phMethod">Payment Method</label>
+                        <select id="phMethod" name="method">
+                            <option value="">All Methods</option>
+                            <option value="bkash" <%= method === "bkash" ? "selected" : "" %>>bKash</option>
+                            <option value="nagad" <%= method === "nagad" ? "selected" : "" %>>Nagad</option>
+                            <option value="rocket" <%= method === "rocket" ? "selected" : "" %>>Rocket</option>
+                            <option value="bank" <%= method === "bank" ? "selected" : "" %>>Bank Transfer</option>
+                            <option value="cod" <%= method === "cod" ? "selected" : "" %>>Cash on Delivery</option>
+                        </select>
+                    </div>
+                    <button type="submit"><i class="fa-solid fa-filter"></i> Apply</button>
+                    <a href="/admin/payment-history" class="report-reset">Reset</a>
+                </form>
+                <p class="stat-note" style="margin:10px 0 0;">
+                    COD is counted once the order is Delivered. Cancelled orders are excluded from all totals.
+                </p>
+            </div>
+        </section>
+
+        <section class="stats-grid">
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-sack-dollar"></i></div>
+                <div class="stat-content">
+                    <span>Total Received</span>
+                    <strong>৳ <%= fmt(summary.total) %></strong>
+                    <span class="stat-note"><%= rangeLabel %></span>
+                </div>
+            </article>
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-receipt"></i></div>
+                <div class="stat-content">
+                    <span>Payments</span>
+                    <strong><%= summary.count %></strong>
+                    <span class="stat-note">successful payment entries</span>
+                </div>
+            </article>
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-chart-simple"></i></div>
+                <div class="stat-content">
+                    <span>Average Payment</span>
+                    <strong>৳ <%= fmt(summary.average) %></strong>
+                    <span class="stat-note">per payment</span>
+                </div>
+            </article>
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-building-columns"></i></div>
+                <div class="stat-content">
+                    <span>Accounts Used</span>
+                    <strong><%= summary.accounts %></strong>
+                    <span class="stat-note">receiving accounts</span>
+                </div>
+            </article>
+        </section>
+
+        <div class="pay-method-grid">
+            <% methodCards.forEach(function (card) { %>
+                <a href="<%= reportUrl(card.key) %>"
+                   class="pay-method-card <%= card.active ? "active" : "" %>">
+                    <span class="pm-label">
+                        <i class="<%= methodIcons[card.key] %>"></i>
+                        <%= card.label %>
+                    </span>
+                    <strong>৳ <%= fmt(card.total) %></strong>
+                    <small><%= card.count %> payment<%= card.count === 1 ? "" : "s" %></small>
+                </a>
+            <% }); %>
+        </div>
+
+        <% if (daily.length > 0) { %>
+            <section class="dashboard-card" style="margin-bottom:22px;">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fa-solid fa-calendar-day card-icon"></i>
+                        Daily Received
+                    </h2>
+                    <span class="stat-note"><%= rangeLabel %></span>
+                </div>
+                <div class="table-wrapper">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Payments</th>
+                                <th>By Method</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% daily.forEach(function (day) { %>
+                                <tr>
+                                    <td><strong><%= day.label %></strong></td>
+                                    <td><%= day.count %></td>
+                                    <td>
+                                        <div class="day-breakdown">
+                                            <% day.breakdown.forEach(function (item) { %>
+                                                <span><%= item.label %> <strong>৳ <%= fmt(item.total) %></strong></span>
+                                            <% }); %>
+                                        </div>
+                                    </td>
+                                    <td><strong>৳ <%= fmt(day.total) %></strong></td>
+                                </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        <% } %>
+
+        <% if (sections.length === 0) { %>
+            <section class="dashboard-card">
+                <div class="report-empty">
+                    <i class="fa-solid fa-money-bill-transfer"></i>
+                    <h3>No payments found</h3>
+                    <p>No received payments match this date range and payment method.</p>
+                </div>
+            </section>
+        <% } %>
+
+        <% sections.forEach(function (section) { %>
+            <section class="dashboard-card" style="margin-bottom:22px;">
+                <div class="card-header report-method-head">
+                    <h2 class="card-title">
+                        <i class="<%= methodIcons[section.key] %> card-icon"></i>
+                        <%= section.label %>
+                        <span class="stat-note">(<%= section.count %> payment<%= section.count === 1 ? "" : "s" %>)</span>
+                    </h2>
+                    <div class="amt">
+                        ৳ <%= fmt(section.total) %>
+                        <small>received</small>
+                    </div>
+                </div>
+
+                <div class="report-account-list">
+                    <% section.accounts.forEach(function (acc) { %>
+                        <div class="report-account-chip">
+                            <strong><%= acc.label %></strong>
+                            <% if (acc.detail) { %><span><%= acc.detail %></span><% } %>
+                            <em>৳ <%= fmt(acc.total) %> · <%= acc.count %> payment<%= acc.count === 1 ? "" : "s" %></em>
+                        </div>
+                    <% }); %>
+                </div>
+
+                <div class="table-wrapper">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Time</th>
+                                <th>Order #</th>
+                                <th>Customer</th>
+                                <th>Phone</th>
+                                <th>TrxID</th>
+                                <th>Account</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% section.days.forEach(function (day) { %>
+                                <tr class="report-day-row">
+                                    <td colspan="8">
+                                        <%= day.label %>
+                                        <span class="day-sum">
+                                            <%= day.orders.length %> payment<%= day.orders.length === 1 ? "" : "s" %>
+                                            · <strong>৳ <%= fmt(day.total) %></strong>
+                                        </span>
+                                    </td>
+                                </tr>
+
+                                <% day.orders.forEach(function (order) { %>
+                                    <tr>
+                                        <td><%= order.timeLabel %></td>
+                                        <td>
+                                            <a href="/admin/order/<%= order._id %>"><strong><%= order.orderNumber %></strong></a>
+                                        </td>
+                                        <td><%= order.customer.name %></td>
+                                        <td><a href="tel:<%= order.customer.phone %>"><%= order.customer.phone %></a></td>
+                                        <td><%= (order.paymentInfo && order.paymentInfo.trxId) ? order.paymentInfo.trxId : "—" %></td>
+                                        <td>
+                                            <strong><%= order.payAccount %></strong>
+                                            <% if (order.payDetail) { %><br><span class="stat-note"><%= order.payDetail %></span><% } %>
+                                        </td>
+                                        <td><strong>৳ <%= fmt(order.total) %></strong></td>
+                                        <td>
+                                            <span style="background:<%= statusColors[order.status] %>; color:#fff; padding:3px 10px; border-radius:12px; font-size:11.5px; font-weight:600; white-space:nowrap;">
+                                                <%= order.status %>
+                                            </span>
+                                        </td>
+                                    </tr>
+                                <% }); %>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        <% }); %>
+
+    </main>
+
+</div>
+
+<%- include("partials/footer") %>

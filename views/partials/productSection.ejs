@@ -1,0 +1,21 @@
+<% if (section.products && section.products.length > 0) { %>
+    <div class="section">
+        <% if (section.title || section.icon) { %>
+        <div class="section-header">
+            <h2>
+                <% if (section.icon) { %><i class="<%= section.icon %>"></i> <% } %>
+                <% if (section.title) { %><%= section.title %><% } %>
+            </h2>
+            <a href="<%= section.viewAll %>" class="view-all">
+                View All <i class="fa-solid fa-angle-right"></i>
+            </a>
+        </div>
+        <% } %>
+
+        <div class="product-grid">
+            <% section.products.forEach(function (product) { %>
+                <%- include('productCard', { product: product }) %>
+            <% }); %>
+        </div>
+    </div>
+<% } %>

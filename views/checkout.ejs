@@ -1,10 +1,82 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="icon" href="/images/logo.svg">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Checkout - Mizan Trade</title>
-    <link rel="icon" href="/images/logo.svg">
+    <style>
+        .verify-badge {
+            display: inline-flex; align-items: center; gap: 6px; background: #e8f7ee; color: #1f8a3b;
+            border: 1px solid #bfe8cd; border-radius: 999px; padding: 5px 11px;
+            font-size: 12px; font-weight: 700;
+        }
+        .verify-row {
+            display: none; margin-top: 10px; padding: 13px 14px; background: #fbfcfe;
+            border: 1.5px dashed #e3e8ef; border-radius: 10px;
+        }
+        .verify-row.open { display: block; }
+        .verify-row .vr-line { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        .verify-row input { max-width: 160px; }
+        .vr-btn {
+            padding: 9px 14px; border-radius: 8px; border: none; cursor: pointer;
+            background: #ef4a23; color: #fff; font-size: 13px; font-weight: 700; transition: .15s;
+        }
+        .vr-btn:hover { filter: brightness(1.06); }
+        .vr-btn.ghost { background: #f4f6f9; color: #374957; border: 1.5px solid #e3e8ef; }
+        .vr-btn:disabled { opacity: .55; cursor: not-allowed; }
+        #otpMsg { font-size: 12.5px; font-weight: 600; margin-top: 8px; display: none; }
+        #otpMsg.ok { display: block; color: #1f8a3b; }
+        #otpMsg.err { display: block; color: #c0392b; }
+        .vr-hint { margin: 9px 0 0; font-size: 12px; color: #64748b; }
+        .vr-hint .fa-whatsapp { color: #25d366; }
+
+        .bkash-box { display: flex; gap: 18px; align-items: flex-start; flex-wrap: wrap; margin-bottom: 12px; }
+        .bkash-qr {
+            border: 2px solid #e2136e; border-radius: 12px; padding: 8px; background: #fff;
+            text-align: center; flex-shrink: 0;
+        }
+        .bkash-qr img { display: block; width: 150px; height: 150px; }
+        .bkash-qr small { display: block; margin-top: 5px; color: #e2136e; font-weight: 700; font-size: 10.5px; }
+        .why-btn {
+            background: none; border: none; color: #e2136e; font-size: 12.5px; font-weight: 700;
+            cursor: pointer; text-decoration: underline; padding: 0;
+        }
+
+        .modal-backdrop {
+            position: fixed; inset: 0; background: rgba(8,22,33,.55); display: none;
+            align-items: center; justify-content: center; z-index: 1200; padding: 16px;
+        }
+        .modal-backdrop.open { display: flex; }
+        .modal-card {
+            background: #fff; border-radius: 16px; max-width: 430px; width: 100%;
+            padding: 22px 24px; box-shadow: 0 24px 60px rgba(8,22,33,.3); max-height: 90vh; overflow: auto;
+            position: relative;
+        }
+        .modal-close {
+            position: absolute; top: 10px; right: 12px; background: none; border: none;
+            font-size: 20px; color: #8892a0; cursor: pointer;
+        }
+        .charge-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 13.5px; }
+        .charge-table td { padding: 7px 4px; border-bottom: 1px solid #eef0f3; }
+        .charge-table td:last-child { text-align: right; font-weight: 600; }
+        .charge-table tr.total td { border-bottom: none; font-weight: 700; color: #e2136e; font-size: 15px; }
+
+        .reward-box {
+            margin: 12px 0; padding: 12px 14px; border: 1px solid #bfe8cd;
+            background: #f3fbf5; border-radius: 10px;
+        }
+        .reward-box.hint { border-color: #e8e2c8; background: #fffdf3; }
+        .reward-box label {
+            display: flex; align-items: center; gap: 9px; font-size: 13px;
+            font-weight: 700; color: #1f6b3a; cursor: pointer; margin: 0;
+        }
+        .reward-box.hint label { color: #8a6d1f; cursor: default; }
+        .reward-box input[type="checkbox"] { width: 16px; height: 16px; accent-color: #1f8a3b; }
+        .reward-box .reward-sub { font-size: 11.5px; color: #5c7a66; margin-top: 4px; }
+        .reward-box.hint .reward-sub { color: #8a7b4f; }
+        .reward-box .reward-earned { font-size: 11.5px; color: #1f8a3b; font-weight: 600; margin-top: 5px; }
+    </style>
 </head>
 <body>
 
@@ -22,6 +94,13 @@
 
         <h1 class="page-title"><i class="fa-solid fa-lock"></i> Checkout</h1>
 
+        <% if (!customer) { %>
+            <div class="alert alert-error" style="background:#fdecea; color:#c0392b; padding:14px 18px; border-radius:10px; margin-bottom:18px;">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                You must <a href="/login" style="color:#c0392b; font-weight:700;">log in</a> to place an order.
+            </div>
+        <% } %>
+
         <form action="/checkout" method="POST">
 
             <div class="cart-layout">
@@ -32,7 +111,7 @@
                     <!-- Shipping Information -->
                     <div class="content-card">
                         <h3 style="color:#081621; margin-bottom:18px; font-size:16px;">
-                            <i class="fa-solid fa-truck" style="color:#ef4a23;"></i> Shipping Information
+                            <i class="fa-solid fa-truck" style="color:#ef4a23;"></i> Delivery Information
                         </h3>
 
                         <div class="form-grid">
@@ -43,29 +122,79 @@
                             </div>
 
                             <div class="form-group">
-                                <label>Mobile Number <span class="req">*</span></label>
-                                <input type="tel" name="phone" class="form-control" placeholder="01XXXXXXXXX" pattern="01[0-9]{9}"
-                                       value="<%= customer ? customer.phone : '' %>" required>
+                                <label>Mobile Number <span class="req">*</span>
+                                    <span id="phoneVerifiedBadge" class="verify-badge" style="margin-left:6px;<%= verifiedPhone ? '' : ' display:none;' %>">
+                                        <i class="fa-solid fa-circle-check"></i> Verified
+                                    </span>
+                                </label>
+                                <input type="tel" name="phone" id="checkoutPhone" class="form-control" placeholder="01XXXXXXXXX"
+                                       pattern="01[0-9]{9}" value="<%= customer ? customer.phone : '' %>"
+                                       data-verified="<%= verifiedPhone %>" required>
+                                <div id="phoneVerifyRow" class="verify-row">
+                                    <div class="vr-line">
+                                        <button type="button" id="sendOtpBtn" class="vr-btn">
+                                            <i class="fa-solid fa-paper-plane"></i> Send OTP Code
+                                        </button>
+                                        <input type="text" id="otpCodeInput" inputmode="numeric" maxlength="6"
+                                               class="form-control" placeholder="6-digit code" style="letter-spacing:4px;">
+                                        <button type="button" id="confirmOtpBtn" class="vr-btn ghost" disabled>
+                                            <i class="fa-solid fa-circle-check"></i> Verify
+                                        </button>
+                                    </div>
+                                    <div id="otpMsg"></div>
+                                    <p class="vr-hint">
+                                        The 6-digit code will arrive by SMS. Order will not be placed until your number is verified.
+                                    </p>
+                                </div>
                             </div>
 
                             <div class="form-group">
-                                <label>Email (optional)</label>
-                                <input type="email" name="email" class="form-control" placeholder="you@example.com"
+                                <label>Email <small style="color:#8892a0; font-weight:600;">(optional)</small></label>
+                                <input type="email" name="email" id="checkoutEmail" class="form-control" placeholder="you@example.com"
                                        value="<%= customer ? customer.email : '' %>">
                             </div>
 
                             <div class="form-group">
                                 <label>Delivery Area <span class="req">*</span></label>
-                                <select name="city" id="citySelect" class="form-control" required
-                                        data-inside="<%= shipping.insideDhaka %>" data-outside="<%= shipping.outsideDhaka %>">
-                                    <option value="dhaka">Inside Dhaka (Delivery &#2547;<%= shipping.insideDhaka %>)</option>
-                                    <option value="outside">Outside Dhaka (Delivery &#2547;<%= shipping.outsideDhaka %>)</option>
+                                <select name="shippingZone" id="citySelect" class="form-control" required>
+                                    <% zones.forEach(function (z, i) { %>
+                                        <option
+                                            value="zone:<%= i %>"
+                                            data-charge="<%= z.charge %>"
+                                            <%= i === initialZoneIndex ? "selected" : "" %>
+                                        >
+                                            <%= z.name || z.area %> (Delivery &#2547;<%= z.charge %>)
+                                        </option>
+                                    <% }); %>
                                 </select>
+                                <small style="color:#8892a0; font-size:11.5px; display:block; margin-top:5px;">
+                                    Delivery charge is set by the admin for each area.
+                                </small>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Village / Area <span class="req">*</span></label>
+                                <input type="text" name="village" class="form-control" placeholder="e.g. Dhanmondi" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Thana <span class="req">*</span></label>
+                                <input type="text" name="thana" class="form-control" placeholder="e.g. Dhanmondi Thana" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Post Office <span class="req">*</span></label>
+                                <input type="text" name="postOffice" class="form-control" placeholder="e.g. Green Road" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label>District <span class="req">*</span></label>
+                                <input type="text" name="district" class="form-control" placeholder="e.g. Dhaka" required>
                             </div>
 
                             <div class="form-group full">
-                                <label>Full Address <span class="req">*</span></label>
-                                <textarea name="address" class="form-control" placeholder="House/Holding, Road, Area, Thana, District" required style="min-height:80px;"></textarea>
+                                <label>Holding / Full Address <span class="req">*</span></label>
+                                <textarea name="address" class="form-control" placeholder="House/Holding No, Road, Floor" required style="min-height:80px;"></textarea>
                             </div>
 
                             <div class="form-group full">
@@ -83,41 +212,124 @@
 
                         <div class="payment-options">
 
-                            <!-- bKash -->
-                            <div class="payment-option selected">
-                                <label class="payment-option-head">
-                                    <input type="radio" name="paymentMethod" value="bkash" checked>
-                                    <i class="fa-solid fa-mobile-screen-button main-icon" style="color:#e2136e;"></i>
-                                    <span>
-                                        <span class="po-title">bKash (Send Money)</span><br>
-                                        <span class="po-sub">Send Money to <%= bkash.number %> (<%= bkash.type %>)</span>
-                                    </span>
-                                </label>
-                                <div class="payment-option-body">
-                                    <div class="info-box">
-                                        <strong>Instructions:</strong> From your bKash app or by dialing
-                                        <strong>*247#</strong>, send <strong>Send Money</strong> to
-                                        <strong><%= bkash.number %></strong>.
-                                        After payment, enter the <strong>Transaction ID (TrxID)</strong> below.
-                                        <br><span style="color:#c0392b;">A payment charge of <%= bkashChargePercent %>% applies to bKash orders.</span>
-                                    </div>
-                                    <div class="form-grid">
-                                        <div class="form-group">
-                                            <label>Transaction ID (TrxID) <span class="req">*</span></label>
-                                            <input type="text" name="trxId" class="form-control" placeholder="e.g. 8HK4A21XT">
-                                        </div>
-                                        <div class="form-group">
-                                            <label>The number you sent from</label>
-                                            <input type="tel" name="senderNumber" class="form-control" placeholder="01XXXXXXXXX">
-                                        </div>
+                            <% paymentOptions.forEach(function (opt, optIndex) { %>
+                                <div
+                                    class="payment-option <%= opt.value === initialPaymentValue ? 'selected' : '' %>"
+                                    data-charge-percent="<%= opt.chargePercent %>"
+                                    data-charge-label="<%= opt.wallet ? opt.walletLabel : 'Bank Transfer' %>"
+                                >
+                                    <label class="payment-option-head">
+                                        <input type="radio" name="paymentMethod" value="<%= opt.value %>" <%= opt.value === initialPaymentValue ? "checked" : "" %>>
+
+                                        <% if (opt.type === "bkash") { %>
+                                            <i class="fa-solid fa-mobile-screen-button main-icon" style="color:#e2136e;"></i>
+                                        <% } else if (opt.type === "nagad") { %>
+                                            <i class="fa-solid fa-mobile-screen-button main-icon" style="color:#f6921e;"></i>
+                                        <% } else if (opt.type === "rocket") { %>
+                                            <i class="fa-solid fa-rocket main-icon" style="color:#8c3494;"></i>
+                                        <% } else { %>
+                                            <i class="fa-solid fa-building-columns main-icon" style="color:#374957;"></i>
+                                        <% } %>
+
+                                        <span>
+                                            <span class="po-title">
+                                                <%= opt.wallet ? opt.walletLabel + (opt.isMerchant ? " (Payment)" : " (Send Money)") : "Bank Transfer" %>
+                                                <% if (opt.chargePercent > 0) { %>
+                                                    <span style="color:#c0392b; font-size:12px; font-weight:700;">· <%= opt.chargePercent %>% charge</span>
+                                                <% } %>
+                                            </span><br>
+                                            <span class="po-sub">
+                                                <% if (opt.wallet) { %>
+                                                    <%= opt.isMerchant ? "Payment to " : "Send Money to " %><%= opt.number %><%= opt.accountType ? " (" + opt.accountType + ")" : "" %>
+                                                <% } else { %>
+                                                    <%= opt.bankName || opt.label %><%= opt.accountName ? " — " + opt.accountName : "" %>
+                                                <% } %>
+                                            </span>
+                                        </span>
+                                    </label>
+
+                                    <div class="payment-option-body">
+                                        <% if (opt.wallet) { %>
+                                            <div class="bkash-box">
+                                                <% if (opt.qr) { %>
+                                                    <div class="bkash-qr" style="border-color:<%= opt.type === 'nagad' ? '#f6921e' : (opt.type === 'rocket' ? '#8c3494' : '#e2136e') %>;">
+                                                        <img src="<%= opt.qr %>" alt="<%= opt.walletLabel %> QR">
+                                                        <small style="color:<%= opt.type === 'nagad' ? '#f6921e' : (opt.type === 'rocket' ? '#8c3494' : '#e2136e') %>;">SCAN · <%= opt.number %></small>
+                                                    </div>
+                                                <% } %>
+
+                                                <div style="flex:1; min-width:200px;">
+                                                    <% if (opt.instructions) { %>
+                                                        <div class="info-box" style="white-space:pre-line;"><%= opt.instructions %></div>
+                                                    <% } else { %>
+                                                        <div class="info-box">
+                                                            <strong>How to pay:</strong>
+                                                            <ol style="margin:6px 0 0; padding-left:18px;">
+                                                                <li>Open the <strong><%= opt.walletApp %></strong> or dial <strong><%= opt.walletDial %></strong></li>
+                                                                <% if (opt.isMerchant) { %>
+                                                                    <li>Choose <strong>Payment</strong> (not Send Money)</li>
+                                                                    <li>Enter the merchant number <strong><%= opt.number %></strong> (or scan the QR)</li>
+                                                                <% } else { %>
+                                                                    <li>Choose <strong>Send Money</strong></li>
+                                                                    <li>Send to <strong><%= opt.number %></strong> (scan the QR to copy the number)</li>
+                                                                <% } %>
+                                                                <li>Enter the exact <strong>Total</strong> shown in Your Order</li>
+                                                                <li>Enter the <strong>Transaction ID (TrxID)</strong> below</li>
+                                                            </ol>
+                                                        </div>
+                                                    <% } %>
+
+                                                    <% if (opt.chargePercent > 0) { %>
+                                                        <p style="margin:8px 0 0; font-size:12.5px; color:#c0392b;">
+                                                            <i class="fa-solid fa-circle-info"></i>
+                                                            A <strong><%= opt.chargePercent %>%</strong> <%= opt.walletLabel %> charge is added to the total.
+                                                            <button type="button" class="why-btn why-charge-btn">Why?</button>
+                                                        </p>
+                                                    <% } %>
+                                                </div>
+                                            </div>
+
+                                            <div class="form-grid">
+                                                <div class="form-group">
+                                                    <label>Transaction ID (TrxID) <span class="req">*</span></label>
+                                                    <input type="text" name="trxId" class="form-control" placeholder="e.g. 8HK4A21XT">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label><%= opt.isMerchant ? "The number you paid from" : "The number you sent from" %></label>
+                                                    <input type="tel" name="senderNumber" class="form-control" placeholder="01XXXXXXXXX">
+                                                </div>
+                                            </div>
+                                        <% } else { %>
+                                            <div class="info-box">
+                                                <% if (opt.bankName) { %><strong>Bank:</strong> <%= opt.bankName %><br><% } %>
+                                                <% if (opt.branch) { %><strong>Branch:</strong> <%= opt.branch %><br><% } %>
+                                                <% if (opt.accountName) { %><strong>Account Name:</strong> <%= opt.accountName %><br><% } %>
+                                                <% if (opt.accountNumber) { %><strong>Account Number:</strong> <%= opt.accountNumber %><br><% } %>
+                                                <% if (opt.routingNumber) { %><strong>Routing Number:</strong> <%= opt.routingNumber %><% } %>
+                                                <% if (opt.instructions) { %>
+                                                    <div style="margin-top:8px; white-space:pre-line;"><%= opt.instructions %></div>
+                                                <% } %>
+                                            </div>
+                                            <div class="form-grid">
+                                                <div class="form-group">
+                                                    <label>Transaction ID / Slip Number</label>
+                                                    <input type="text" name="trxId" class="form-control" placeholder="TrxID after the transfer">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label>Your bank / account number</label>
+                                                    <input type="text" name="accountNumber" class="form-control" placeholder="The account you sent from">
+                                                </div>
+                                            </div>
+                                        <% } %>
                                     </div>
                                 </div>
-                            </div>
+                            <% }); %>
 
                             <!-- Cash on Delivery -->
-                            <div class="payment-option">
+                            <% if (codEnabled) { %>
+                            <div class="payment-option <%= initialPaymentValue === 'cod' ? 'selected' : '' %>" data-charge-percent="0" data-charge-label="">
                                 <label class="payment-option-head">
-                                    <input type="radio" name="paymentMethod" value="cod">
+                                    <input type="radio" name="paymentMethod" value="cod" <%= initialPaymentValue === 'cod' ? "checked" : "" %>>
                                     <i class="fa-solid fa-money-bill-wave main-icon" style="color:#82b440;"></i>
                                     <span>
                                         <span class="po-title">Cash on Delivery</span><br>
@@ -127,41 +339,12 @@
                                 <div class="payment-option-body">
                                     <div class="info-box" style="margin-bottom:0;">
                                         Pay the courier directly at the time of delivery.
+                                        The delivery charge for your selected area is shown in Your Order.
                                         We will call you to confirm the order.
                                     </div>
                                 </div>
                             </div>
-
-                            <!-- Bank Transfer -->
-                            <div class="payment-option">
-                                <label class="payment-option-head">
-                                    <input type="radio" name="paymentMethod" value="bank">
-                                    <i class="fa-solid fa-building-columns main-icon" style="color:#374957;"></i>
-                                    <span>
-                                        <span class="po-title">Bank Transfer</span><br>
-                                        <span class="po-sub"><%= bank.bankName %> — <%= bank.accountName %></span>
-                                    </span>
-                                </label>
-                                <div class="payment-option-body">
-                                    <div class="info-box">
-                                        <strong>Bank:</strong> <%= bank.bankName %><br>
-                                        <strong>Branch:</strong> <%= bank.branch %><br>
-                                        <strong>Account Name:</strong> <%= bank.accountName %><br>
-                                        <strong>Account Number:</strong> <%= bank.accountNumber %><br>
-                                        <strong>Routing Number:</strong> <%= bank.routingNumber %>
-                                    </div>
-                                    <div class="form-grid">
-                                        <div class="form-group">
-                                            <label>Transaction ID / Slip Number</label>
-                                            <input type="text" name="trxId" class="form-control" placeholder="TrxID after the transfer">
-                                        </div>
-                                        <div class="form-group">
-                                            <label>Your bank / account number</label>
-                                            <input type="text" name="accountNumber" class="form-control" placeholder="The account you sent from">
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            <% } %>
 
                         </div>
                     </div>
@@ -169,12 +352,33 @@
                 </div>
 
                 <!-- ========== Right: Order Summary ========== -->
-                <div class="summary-card">
+                <div
+                    class="summary-card"
+                    id="checkoutSummary"
+                    data-reward-enabled="<%= reward.enabled ? '1' : '0' %>"
+                    data-reward-balance="<%= reward.balance %>"
+                    data-reward-min="<%= reward.minRedeem %>"
+                    data-reward-point-value="<%= reward.pointValue %>"
+                    data-tax-enabled="<%= tax.enabled ? '1' : '0' %>"
+                    data-tax-percent="<%= tax.percent %>"
+                    data-tax-inclusive="<%= tax.inclusive ? '1' : '0' %>"
+                    data-tax-shipping="<%= tax.applyToShipping ? '1' : '0' %>"
+                    data-free-shipping="<%= freeShippingThreshold %>"
+                >
                     <h3>Your Order</h3>
 
                     <% items.forEach(function(item) { %>
                         <div class="summary-row">
-                            <span style="flex:1;"><%= item.title %> <strong>× <%= item.quantity %></strong></span>
+                            <span style="flex:1;">
+                                <%= item.title %> <strong>× <%= item.quantity %></strong>
+                                <% if (item.regularPrice && item.regularPrice > item.price) { %>
+                                    <br><small>
+                                        <s style="color:#999;">&#2547; <%= item.regularPrice.toLocaleString('en-US') %></s>
+                                        <span style="color:#1f8a3b; font-weight:700;">&#2547; <%= item.price.toLocaleString('en-US') %></span>
+                                        <span style="color:#1f8a3b;">(discount applied)</span>
+                                    </small>
+                                <% } %>
+                            </span>
                             <span>&#2547; <%= (item.price * item.quantity).toLocaleString('en-US') %></span>
                         </div>
                     <% }); %>
@@ -186,8 +390,13 @@
 
                     <div class="summary-row">
                         <span>Delivery Charge</span>
-                        <span id="summaryShipping">&#2547; <%= shipping.insideDhaka %></span>
+                        <span id="summaryShipping">&#2547; <%= initialShipping %></span>
                     </div>
+                    <% if (freeShippingThreshold > 0 && subtotal < freeShippingThreshold) { %>
+                        <div style="font-size:11.5px; color:#1f8a3b; margin:-4px 0 6px;">
+                            Free delivery on orders over ৳ <%= freeShippingThreshold.toLocaleString('en-US') %>.
+                        </div>
+                    <% } %>
 
                     <!-- Coupon -->
                     <div style="margin:14px 0; padding-top:12px; border-top:1px solid #e5e5e5;">
@@ -226,14 +435,52 @@
                     <span id="summaryDiscount" data-value="0" style="display:none;"></span>
                     <% } %>
 
-                    <div class="summary-row" id="summaryChargeRow" style="color:#c0392b;">
-                        <span>Payment Charge (bKash <span id="chargePercentLabel"><%= bkashChargePercent %>%</span>)</span>
-                        <span id="summaryCharge" data-percent="<%= bkashChargePercent %>">&#2547; <%= Number(paymentCharge).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 }) %></span>
+                    <!-- Reward points -->
+                    <% if (reward.enabled && reward.balance >= reward.minRedeem && reward.pointValue > 0) { %>
+                        <div class="reward-box">
+                            <label for="useRewards">
+                                <input type="checkbox" name="useRewards" id="useRewards" value="on">
+                                Use my <%= Number(reward.balance).toLocaleString('en-US') %> <%= reward.label %>
+                                (≈ ৳ <%= (Number(reward.balance) * Number(reward.pointValue)).toLocaleString('en-US', { maximumFractionDigits: 2 }) %>)
+                            </label>
+                            <div class="reward-sub">
+                                Minimum <%= reward.minRedeem %> points to redeem · 1 point = ৳ <%= reward.pointValue %>.
+                                We will apply as many points as this order allows.
+                            </div>
+                        </div>
+                    <% } else if (reward.enabled && reward.balance > 0) { %>
+                        <div class="reward-box hint">
+                            <label>
+                                <i class="fa-solid fa-gift"></i>
+                                You have <%= Number(reward.balance).toLocaleString('en-US') %> <%= reward.label %>
+                            </label>
+                            <div class="reward-sub">
+                                Redeem once you reach <%= reward.minRedeem %> points (1 point = ৳ <%= reward.pointValue %>).
+                            </div>
+                        </div>
+                    <% } %>
+
+                    <div class="summary-row" id="summaryRewardRow" style="color:#1f8a3b; display:none;">
+                        <span><i class="fa-solid fa-gift"></i> Reward points (<span id="summaryRewardPoints">0</span> pts)</span>
+                        <span>− ৳ <span id="summaryReward" data-value="0">0</span></span>
+                    </div>
+
+                    <!-- Tax / VAT -->
+                    <div class="summary-row" id="summaryTaxRow" style="<%= tax.enabled && tax.amount > 0 ? '' : 'display:none;' %>">
+                        <span>
+                            <%= tax.label || 'VAT' %> (<span id="summaryTaxPercent"><%= tax.percent %></span>%<%= tax.inclusive ? ', included' : '' %>)
+                        </span>
+                        <span id="summaryTax" data-value="<%= tax.added %>">৳ <%= Number(tax.amount).toLocaleString('en-US', { maximumFractionDigits: 2 }) %></span>
+                    </div>
+
+                    <div class="summary-row" id="summaryChargeRow" style="color:#c0392b;<%= initialChargePercent > 0 ? '' : ' display:none;' %>">
+                        <span>Payment Charge (<span id="chargeMethodLabel"><%= initialChargeLabel %></span> <span id="chargePercentLabel"><%= initialChargePercent %></span>%)</span>
+                        <span id="summaryCharge" data-percent="<%= initialChargePercent %>">&#2547; <%= Number(paymentCharge).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 }) %></span>
                     </div>
 
                     <div class="summary-row total">
                         <span>Total</span>
-                        <span id="summaryTotal" data-discount="<%= discount %>">&#2547; <%= (subtotal + shipping.insideDhaka - discount + paymentCharge).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 }) %></span>
+                        <span id="summaryTotal" data-discount="<%= discount %>">&#2547; <%= (subtotal + initialShipping - discount + tax.added + paymentCharge).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 }) %></span>
                     </div>
 
                     <button type="submit" class="btn btn-primary" style="width:100%; margin-top:16px; padding:13px;">
@@ -253,10 +500,216 @@
         <form id="applyCouponForm" action="/checkout/apply-coupon" method="POST"></form>
         <form id="removeCouponForm" action="/checkout/remove-coupon" method="POST"></form>
 
+        <!-- ===== bKash 1.15% charge popup ===== -->
+        <div class="modal-backdrop" id="chargeModal">
+            <div class="modal-card">
+                <button type="button" class="modal-close" id="chargeModalClose">&times;</button>
+                <h3 style="margin:0 0 6px; color:#081621;"><i class="fa-solid fa-circle-info" style="color:#e2136e;"></i> Why <span id="cmPercentTitle">0</span>% on <span id="cmMethodTitle">payment</span> orders?</h3>
+                <p style="font-size:13px; color:#555; margin:8px 0 0;">
+                    Mobile banking services apply a cash-out / processing fee on money we receive. To keep
+                    product prices the same for every customer, this government &amp; service fee is passed
+                    on only to the selected payment method as a small charge on the payable amount.
+                    Cash on Delivery carries <strong>no extra charge</strong>.
+                </p>
+                <table class="charge-table">
+                    <tr><td>Subtotal</td><td id="cmSubtotal">&#2547; 0</td></tr>
+                    <tr><td>Delivery Charge</td><td id="cmShipping">&#2547; 0</td></tr>
+                    <tr id="cmDiscountRow"><td>Discount</td><td id="cmDiscount">− &#2547; 0</td></tr>
+                    <tr id="cmRewardRow"><td>Reward points</td><td id="cmReward">− &#2547; 0</td></tr>
+                    <tr id="cmTaxRow"><td><span id="cmTaxLabel">VAT</span></td><td id="cmTax">&#2547; 0</td></tr>
+                    <tr><td>Payable</td><td id="cmPayable">&#2547; 0</td></tr>
+                    <tr><td><span id="cmChargeLabel">Payment</span> charge (<span id="cmChargePercent">0</span>%)</td><td id="cmCharge">&#2547; 0</td></tr>
+                    <tr class="total"><td>Total to send</td><td id="cmTotal">&#2547; 0</td></tr>
+                </table>
+                <p style="font-size:12.5px; color:#8892a0; margin:10px 0 0;">
+                    Send exactly the <strong>Total to send</strong> amount to the selected account and paste the TrxID.
+                </p>
+            </div>
+        </div>
+
     </div>
 
     <%- include('partials/footer') %>
 
-    <script src="/js/main.js?v=2"></script>
+    <script>
+        (function () {
+            /* ---------- Mobile OTP verification (SMS) ---------- */
+            var phoneInput = document.getElementById("checkoutPhone");
+            var badge = document.getElementById("phoneVerifiedBadge");
+            var row = document.getElementById("phoneVerifyRow");
+            var sendBtn = document.getElementById("sendOtpBtn");
+            var codeInput = document.getElementById("otpCodeInput");
+            var confirmBtn = document.getElementById("confirmOtpBtn");
+            var msg = document.getElementById("otpMsg");
+
+            if (phoneInput) {
+                var verified = phoneInput.dataset.verified || "";
+
+                function normalize(v) {
+                    return String(v || "").replace(/[^0-9]/g, "");
+                }
+
+                function refresh() {
+                    var val = normalize(phoneInput.value);
+                    var ok = verified && val === verified;
+                    badge.style.display = ok ? "inline-flex" : "none";
+                    row.classList.toggle("open", !ok && val.length >= 11);
+                }
+
+                function showMsg(text, ok) {
+                    msg.textContent = text;
+                    msg.className = ok ? "ok" : "err";
+                }
+
+                phoneInput.addEventListener("input", refresh);
+
+                sendBtn.addEventListener("click", function () {
+                    var val = normalize(phoneInput.value);
+                    if (!/^01[3-9]\d{8}$/.test(val)) {
+                        showMsg("Please enter a valid mobile number (01XXXXXXXXX).", false);
+                        return;
+                    }
+                    sendBtn.disabled = true;
+                    showMsg("Sending code...", true);
+
+                    fetch("/checkout/otp/send", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                        body: new URLSearchParams({ phone: val }).toString()
+                    })
+                        .then(function (r) { return r.json(); })
+                        .then(function (data) {
+                            if (data.ok) {
+                                showMsg(data.message + " Enter it below.", true);
+                                codeInput.focus();
+                            } else {
+                                showMsg(data.error || "Could not send the code.", false);
+                            }
+                        })
+                        .catch(function () { showMsg("Network error. Please try again.", false); })
+                        .finally(function () { sendBtn.disabled = false; });
+                });
+
+                codeInput.addEventListener("input", function () {
+                    confirmBtn.disabled = codeInput.value.trim().length !== 6;
+                });
+
+                confirmBtn.addEventListener("click", function () {
+                    var val = normalize(phoneInput.value);
+                    confirmBtn.disabled = true;
+                    showMsg("Verifying...", true);
+
+                    fetch("/checkout/otp/verify", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                        body: new URLSearchParams({ phone: val, code: codeInput.value.trim() }).toString()
+                    })
+                        .then(function (r) { return r.json(); })
+                        .then(function (data) {
+                            if (data.ok) {
+                                verified = val;
+                                phoneInput.dataset.verified = val;
+                                showMsg("", true);
+                                codeInput.value = "";
+                                refresh();
+                            } else {
+                                showMsg(data.error || "Verification failed.", false);
+                            }
+                        })
+                        .catch(function () { showMsg("Network error. Please try again.", false); })
+                        .finally(function () { confirmBtn.disabled = codeInput.value.trim().length !== 6; });
+                });
+
+                refresh();
+            }
+
+            /* ---------- Payment charge popup ---------- */
+            var modal = document.getElementById("chargeModal");
+            var openBtns = document.querySelectorAll(".why-charge-btn");
+            var closeBtn = document.getElementById("chargeModalClose");
+
+            function money(n) {
+                return "\u09F3 " + n.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+            }
+
+            function fillModal() {
+                var subtotalEl = document.getElementById("summarySubtotal");
+                var totalEl = document.getElementById("summaryTotal");
+                var zoneSelect = document.getElementById("citySelect");
+                var summary = document.getElementById("checkoutSummary");
+
+                var subtotal = subtotalEl ? parseFloat(subtotalEl.dataset.value || "0") : 0;
+                var shipping = 0;
+                if (zoneSelect && zoneSelect.selectedOptions.length) {
+                    shipping = parseFloat(zoneSelect.selectedOptions[0].dataset.charge || "0");
+                }
+                var discount = totalEl ? parseFloat(totalEl.dataset.discount || "0") : 0;
+
+                var freeShipping = summary ? parseFloat(summary.dataset.freeShipping || "0") : 0;
+                if (freeShipping > 0 && subtotal >= freeShipping) shipping = 0;
+
+                var taxEnabled = summary && summary.dataset.taxEnabled === "1";
+                var taxPercent = summary ? parseFloat(summary.dataset.taxPercent || "0") : 0;
+                var taxInclusive = summary && summary.dataset.taxInclusive === "1";
+                var taxShipping = summary && summary.dataset.taxShipping === "1";
+                var taxBase = Math.max(0, subtotal - discount + (taxShipping ? shipping : 0));
+                var taxAmount = taxEnabled ? Math.round(taxBase * taxPercent) / 100 : 0;
+                var taxAdded = taxEnabled && !taxInclusive ? taxAmount : 0;
+
+                var balance = summary ? parseFloat(summary.dataset.rewardBalance || "0") : 0;
+                var pointValue = summary ? parseFloat(summary.dataset.rewardPointValue || "0") : 0;
+                var minRedeem = summary ? parseFloat(summary.dataset.rewardMin || "0") : 0;
+                var rewardBox = document.getElementById("useRewards");
+                var payableBefore = Math.max(0, subtotal + shipping - discount);
+                var rewardPoints = 0;
+                var rewardAmount = 0;
+
+                if (rewardBox && rewardBox.checked && pointValue > 0 && balance >= minRedeem) {
+                    rewardPoints = Math.min(balance, Math.floor(payableBefore / pointValue));
+                    rewardAmount = Math.round(rewardPoints * pointValue * 100) / 100;
+                }
+
+                var checked = document.querySelector('input[name="paymentMethod"]:checked');
+                var option = checked ? checked.closest(".payment-option") : null;
+                var percent = option ? parseFloat(option.dataset.chargePercent || "0") : 0;
+                var label = option ? (option.dataset.chargeLabel || "Payment") : "Payment";
+                var payable = Math.max(0, payableBefore - rewardAmount + taxAdded);
+                var charge = Math.round(payable * percent) / 100;
+
+                document.getElementById("cmSubtotal").textContent = money(subtotal);
+                document.getElementById("cmShipping").textContent = money(shipping);
+                document.getElementById("cmDiscountRow").style.display = discount > 0 ? "" : "none";
+                document.getElementById("cmDiscount").textContent = "\u2212 " + money(discount);
+                document.getElementById("cmRewardRow").style.display = rewardAmount > 0 ? "" : "none";
+                document.getElementById("cmReward").textContent = "\u2212 " + money(rewardAmount);
+                document.getElementById("cmTaxRow").style.display = taxAmount > 0 ? "" : "none";
+                document.getElementById("cmTaxLabel").textContent = "Tax" + (taxInclusive ? " (included)" : "");
+                document.getElementById("cmTax").textContent = (taxInclusive ? "" : "") + money(taxAmount);
+                document.getElementById("cmPayable").textContent = money(payable);
+                document.getElementById("cmCharge").textContent = money(charge);
+                document.getElementById("cmTotal").textContent = money(payable + charge);
+                document.getElementById("cmChargePercent").textContent = percent;
+                document.getElementById("cmChargeLabel").textContent = label;
+                document.getElementById("cmMethodTitle").textContent = label;
+                document.getElementById("cmPercentTitle").textContent = percent;
+            }
+
+            openBtns.forEach(function (btn) {
+                btn.addEventListener("click", function () {
+                    fillModal();
+                    modal.classList.add("open");
+                });
+            });
+            if (closeBtn) {
+                closeBtn.addEventListener("click", function () { modal.classList.remove("open"); });
+            }
+            if (modal) {
+                modal.addEventListener("click", function (e) {
+                    if (e.target === modal) modal.classList.remove("open");
+                });
+            }
+        })();
+    </script>
+    <script src="/js/main.js?v=6"></script>
 </body>
 </html>

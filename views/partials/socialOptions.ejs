@@ -1,0 +1,17 @@
+<%
+    var selectedPlatform = (typeof selected !== "undefined" && selected) ? String(selected).toLowerCase() : "";
+    var platformOptions = [
+        ["facebook", "Facebook"],
+        ["instagram", "Instagram"],
+        ["tiktok", "TikTok"],
+        ["whatsapp", "WhatsApp"],
+        ["youtube", "YouTube"],
+        ["twitter", "X (Twitter)"],
+        ["linkedin", "LinkedIn"],
+        ["telegram", "Telegram"],
+        ["website", "Website"]
+    ];
+%>
+<% platformOptions.forEach(function (option) { %>
+<option value="<%= option[0] %>" <%= selectedPlatform === option[0] ? "selected" : "" %>><%= option[1] %></option>
+<% }); %>

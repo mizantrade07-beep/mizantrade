@@ -2,6 +2,11 @@ const Category = require("../models/Category");
 const Page = require("../models/Page");
 const siteConfig = require("../config/site");
 const { buildTree } = require("../utils/categoryTree");
+const {
+    buildDefaults,
+    getFooterContent,
+    effectiveFooter
+} = require("../utils/footerContent");
 
 // প্রতিটি পেজে কমন ডেটা (ক্যাটাগরি ট্রি, কার্ট/উইশলিস্ট কাউন্ট) পাঠানোর জন্য
 async function siteData(req, res, next) {
@@ -17,6 +22,17 @@ async function siteData(req, res, next) {
         res.locals.categoryTree = tree;
         res.locals.allCategories = flatCategories;
         res.locals.currentPath = req.path;
+
+        if (!req.path.startsWith("/admin")) {
+            try {
+                res.locals.footer = effectiveFooter(
+                    await getFooterContent()
+                );
+            } catch (err) {
+                console.error("footer content load error:", err.message);
+                res.locals.footer = effectiveFooter(buildDefaults());
+            }
+        }
 
         try {
             res.locals.footerPages = await Page
@@ -36,6 +52,10 @@ async function siteData(req, res, next) {
 
         res.locals.wishlistCount = req.session.wishlist
             ? req.session.wishlist.length
+            : 0;
+
+        res.locals.compareCount = Array.isArray(req.session.compare)
+            ? req.session.compare.length
             : 0;
 
         next();

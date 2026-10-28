@@ -54,69 +54,102 @@ exports.getCart = (req, res) => {
     });
 };
 
+async function addProductToCart(req, productId, quantity) {
+    const product = await Product.findById(productId);
+
+    if (!product || !product.isActive) {
+        return {
+            ok: false,
+            status: 404,
+            message: "Product not found.",
+            redirectTo: "/shop"
+        };
+    }
+
+    const price = getEffectivePrice(product);
+
+    if (price === null) {
+        return {
+            ok: false,
+            status: 400,
+            message: "Please call us for this product.",
+            redirectTo: "/product/" + product.slug
+        };
+    }
+
+    const cart = getCart(req);
+    const qty = Math.max(1, Number(quantity) || 1);
+
+    const existing = cart.items.find(
+        (item) => String(item.productId) === String(product._id)
+    );
+
+    if (existing) {
+        existing.quantity += qty;
+    } else {
+        cart.items.push({
+            productId: String(product._id),
+            title: product.title,
+            slug: product.slug,
+            image: product.mainImage || "",
+            price,
+            regularPrice: product.regularPrice || price,
+            quantity: qty
+        });
+    }
+
+    return { ok: true, count: getCartTotals(cart).count };
+}
+
 exports.addToCart = async (req, res) => {
     try {
-        const productId = req.body.productId || req.params.id;
-        const quantity = Math.max(1, Number(req.body.quantity) || 1);
-
-        const product = await Product.findById(productId);
-
-        if (!product || !product.isActive) {
-            if (wantsJson(req)) {
-                return res.status(404).json({
-                    success: false,
-                    message: "Product not found."
-                });
-            }
-
-            return res.redirect("/shop");
-        }
-
-        const price = getEffectivePrice(product);
-
-        if (price === null) {
-            if (wantsJson(req)) {
-                return res.status(400).json({
-                    success: false,
-                    message: "Please call us for this product."
-                });
-            }
-
-            return res.redirect("/product/" + product.slug);
-        }
-
-        const cart = getCart(req);
-
-        const existing = cart.items.find(
-            (item) => String(item.productId) === String(product._id)
+        const result = await addProductToCart(
+            req,
+            req.body.productId || req.params.id,
+            req.body.quantity
         );
 
-        if (existing) {
-            existing.quantity += quantity;
-        } else {
-            cart.items.push({
-                productId: String(product._id),
-                title: product.title,
-                slug: product.slug,
-                image: product.mainImage || "",
-                price,
-                quantity
-            });
-        }
+        if (!result.ok) {
+            if (wantsJson(req)) {
+                return res.status(result.status).json({
+                    success: false,
+                    message: result.message
+                });
+            }
 
-        const { count } = getCartTotals(cart);
+            return res.redirect(result.redirectTo);
+        }
 
         if (wantsJson(req)) {
             return res.json({
                 success: true,
                 message: "Product has been added to the cart.",
-                cartCount: count
+                cartCount: result.count
             });
         }
 
         return res.redirect("/cart");
     } catch (error) {
         console.error("Add to cart error:", error);
+        return res.status(500).send("Server Error");
+    }
+};
+
+exports.buyNow = async (req, res) => {
+    try {
+        const result = await addProductToCart(
+            req,
+            req.body.productId || req.params.id,
+            req.body.quantity
+        );
+
+        if (!result.ok) {
+            return res.redirect(result.redirectTo);
+        }
+
+        return res.redirect("/checkout");
+    } catch (error) {
+        console.error("Buy now error:", error);
         return res.status(500).send("Server Error");
     }
 };
@@ -177,6 +210,9 @@ exports.getUserCounts = (req, res) => {
         cartCount: count,
         wishlistCount: req.session.wishlist
             ? req.session.wishlist.length
+            : 0,
+        compareCount: Array.isArray(req.session.compare)
+            ? req.session.compare.length
             : 0
     });
 };

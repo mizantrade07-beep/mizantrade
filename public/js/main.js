@@ -55,6 +55,7 @@ document.addEventListener("DOMContentLoaded", function () {
             .then(function (data) {
                 setAll(".js-cart-count", data.cartCount);
                 setAll(".js-wish-count", data.wishlistCount);
+                setAll(".js-compare-count", data.compareCount);
             })
             .catch(function () { /* ignore */ });
     }
@@ -99,6 +100,36 @@ document.addEventListener("DOMContentLoaded", function () {
                     btn.disabled = false;
                 });
         });
+    });
+
+
+    /* --------------------------------------------------
+       ৪.১ কম্পেয়ার বাটন — AJAX (পেজ রিলোড ছাড়াই)
+    -------------------------------------------------- */
+    document.addEventListener("click", function (e) {
+        var btn = e.target.closest(".js-compare");
+
+        if (!btn) return;
+
+        e.preventDefault();
+
+        var id = btn.dataset.id;
+
+        fetch("/compare/add/" + id, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+            body: JSON.stringify({ productId: id })
+        })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                showToast(data.message || "Compare list updated.", !data.success);
+            })
+            .catch(function () {
+                window.location.href = btn.getAttribute("href");
+            });
     });
 
 
@@ -201,37 +232,121 @@ document.addEventListener("DOMContentLoaded", function () {
     var chargeEl = document.getElementById("summaryCharge");
     var chargeRow = document.getElementById("summaryChargeRow");
 
-    function selectedPaymentMethod() {
+    function selectedPaymentOption() {
         var checked = document.querySelector('input[name="paymentMethod"]:checked');
-        return checked ? checked.value : "";
+        return checked ? checked.closest(".payment-option") : null;
+    }
+
+    var checkoutSummary = document.getElementById("checkoutSummary");
+    var useRewards = document.getElementById("useRewards");
+    var rewardRow = document.getElementById("summaryRewardRow");
+    var rewardAmountEl = document.getElementById("summaryReward");
+    var rewardPointsEl = document.getElementById("summaryRewardPoints");
+    var taxRow = document.getElementById("summaryTaxRow");
+    var taxEl = document.getElementById("summaryTax");
+
+    function summaryData() {
+        var d = checkoutSummary ? checkoutSummary.dataset : {};
+        return {
+            rewardEnabled: d.rewardEnabled === "1",
+            balance: parseFloat(d.rewardBalance || "0"),
+            minRedeem: parseFloat(d.rewardMin || "0"),
+            pointValue: parseFloat(d.rewardPointValue || "0"),
+            taxEnabled: d.taxEnabled === "1",
+            taxPercent: parseFloat(d.taxPercent || "0"),
+            taxInclusive: d.taxInclusive === "1",
+            taxShipping: d.taxShipping === "1",
+            freeShipping: parseFloat(d.freeShipping || "0")
+        };
+    }
+
+    function money(n) {
+        return "৳ " + n.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
     }
 
     function updateCheckoutTotals() {
         if (!citySelect || !shippingEl || !totalEl) return;
 
+        var data = summaryData();
         var subtotal = subtotalEl ? parseFloat(subtotalEl.dataset.value || "0") : 0;
-        var shipping = citySelect.value === "dhaka"
-            ? parseFloat(citySelect.dataset.inside || "60")
-            : parseFloat(citySelect.dataset.outside || "120");
+        var shipping = citySelect.selectedOptions.length
+            ? parseFloat(citySelect.selectedOptions[0].dataset.charge || "0")
+            : 0;
+
+        if (data.freeShipping > 0 && subtotal >= data.freeShipping) shipping = 0;
+
         var discount = parseFloat(totalEl.dataset.discount || "0");
+        var payableBefore = Math.max(0, subtotal + shipping - discount);
 
-        var baseTotal = Math.max(0, subtotal + shipping - discount);
-
-        var charge = 0;
-        if (chargeEl) {
-            var percent = parseFloat(chargeEl.dataset.percent || "0");
-            if (selectedPaymentMethod() === "bkash") {
-                charge = Math.round(baseTotal * percent) / 100;
-            }
-            chargeEl.innerText = "৳ " + charge.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+        /* Reward points */
+        var rewardPoints = 0;
+        var rewardDiscount = 0;
+        if (
+            useRewards &&
+            useRewards.checked &&
+            data.rewardEnabled &&
+            data.pointValue > 0 &&
+            data.balance >= data.minRedeem
+        ) {
+            rewardPoints = Math.min(
+                data.balance,
+                Math.floor(payableBefore / data.pointValue)
+            );
+            rewardDiscount = Math.round(rewardPoints * data.pointValue * 100) / 100;
         }
+
+        /* Tax / VAT */
+        var taxAmount = 0;
+        var taxAdded = 0;
+        if (data.taxEnabled && data.taxPercent > 0) {
+            var taxBase = Math.max(
+                0,
+                subtotal - discount + (data.taxShipping ? shipping : 0)
+            );
+            taxAmount = Math.round(taxBase * data.taxPercent) / 100;
+            taxAdded = data.taxInclusive ? 0 : taxAmount;
+        }
+
+        var baseTotal = Math.max(0, payableBefore - rewardDiscount + taxAdded);
+
+        var option = selectedPaymentOption();
+        var percent = option ? parseFloat(option.dataset.chargePercent || "0") : 0;
+        var charge = Math.round(baseTotal * percent) / 100;
+
+        if (chargeEl) {
+            chargeEl.dataset.percent = percent;
+            chargeEl.innerText = money(charge);
+        }
+
+        var labelEl = document.getElementById("chargeMethodLabel");
+        var pctEl = document.getElementById("chargePercentLabel");
+        if (labelEl) labelEl.textContent = (option && option.dataset.chargeLabel) || "Payment";
+        if (pctEl) pctEl.textContent = percent;
+
         if (chargeRow) {
             chargeRow.style.display = charge > 0 ? "" : "none";
         }
 
-        shippingEl.innerText = "৳ " + shipping.toLocaleString("en-US");
+        if (rewardRow) {
+            rewardRow.style.display = rewardDiscount > 0 ? "" : "none";
+        }
+        if (rewardAmountEl) {
+            rewardAmountEl.innerText = rewardDiscount.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+        }
+        if (rewardPointsEl) {
+            rewardPointsEl.innerText = rewardPoints.toLocaleString("en-US");
+        }
+
+        if (taxRow) {
+            taxRow.style.display = taxAmount > 0 ? "" : "none";
+        }
+        if (taxEl) {
+            taxEl.innerText = money(taxAmount);
+        }
+
+        shippingEl.innerText = money(shipping);
         var total = Math.round((baseTotal + charge) * 100) / 100;
-        totalEl.innerText = "৳ " + total.toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+        totalEl.innerText = money(total);
     }
 
     if (citySelect) {
@@ -241,6 +356,10 @@ document.addEventListener("DOMContentLoaded", function () {
     document.querySelectorAll('input[name="paymentMethod"]').forEach(function (radio) {
         radio.addEventListener("change", updateCheckoutTotals);
     });
+
+    if (useRewards) {
+        useRewards.addEventListener("change", updateCheckoutTotals);
+    }
 
     if (citySelect) {
         updateCheckoutTotals();

@@ -8,7 +8,10 @@
     "dev": "nodemon server.js",
     "seed:admin": "node scripts/seedAdmin.js",
     "seed:categories": "node scripts/seedCategories.js",
-    "reset:admin": "node scripts/resetAdminPassword.js"
+    "reset:admin": "node scripts/resetAdminPassword.js",
+    "deploy": "node scripts/deploy.js",
+    "deploy:dry": "node scripts/deploy.js --dry",
+    "deploy:setup": "node -e \"const fs=require('fs');if(fs.existsSync('.env.deploy')){console.log('.env.deploy already exists');}else{fs.copyFileSync('.env.deploy.example','.env.deploy');console.log('created .env.deploy - fill SSH_HOST, SSH_USER and SSH_PASS or SSH_KEY_PATH');}\""
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -18,14 +21,19 @@
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "ejs": "^3.1.10",
+    "exceljs": "^4.4.0",
     "express": "^4.21.2",
     "express-session": "^1.18.1",
+    "mammoth": "^1.13.0",
     "mongoose": "^8.24.4",
     "multer": "^1.4.5-lts.2",
     "multer-storage-cloudinary": "^4.0.0",
+    "nodemailer": "^10.1.2",
+    "qrcode": "^1.5.4",
     "zod": "^3.24.1"
   },
   "devDependencies": {
-    "nodemon": "^3.1.14"
+    "nodemon": "^3.1.14",
+    "ssh2": "^1.17.0"
   }
 }

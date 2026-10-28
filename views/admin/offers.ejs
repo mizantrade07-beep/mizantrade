@@ -1,0 +1,234 @@
+<%- include("partials/head", {
+    title: "Offers Manager | MizanTrade Admin"
+}) %>
+
+<%- include("partials/sidebar") %>
+
+<div class="admin-main">
+
+    <%- include("partials/topbar", {
+        title: "Offers Manager"
+    }) %>
+
+    <main class="admin-content">
+
+        <div class="dashboard-header">
+            <div>
+                <h1 class="dashboard-title">Offers Manager</h1>
+                <p class="dashboard-subtitle">
+                    Free-text types, banners, category/product targeting and rich Word/Excel content.
+                    The public Offers page groups offers by type and filters by scope.
+                </p>
+            </div>
+
+            <% if (can('content.create')) { %>
+                <a href="/admin/offers/add" class="primary-button">
+                    <i class="fa-solid fa-plus"></i>
+                    Add Offer
+                </a>
+            <% } %>
+        </div>
+
+        <section class="stats-grid">
+
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-tags"></i></div>
+                <div class="stat-content">
+                    <span>Total Offers</span>
+                    <strong><%= counts.total %></strong>
+                </div>
+            </article>
+
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-eye"></i></div>
+                <div class="stat-content">
+                    <span>Active</span>
+                    <strong><%= counts.active %></strong>
+                </div>
+            </article>
+
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-eye-slash"></i></div>
+                <div class="stat-content">
+                    <span>Hidden</span>
+                    <strong><%= counts.hidden %></strong>
+                </div>
+            </article>
+
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-image"></i></div>
+                <div class="stat-content">
+                    <span>With Banner</span>
+                    <strong><%= counts.withBanner %></strong>
+                </div>
+            </article>
+
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-layer-group"></i></div>
+                <div class="stat-content">
+                    <span>Offer Types</span>
+                    <strong><%= counts.types %></strong>
+                </div>
+            </article>
+
+        </section>
+
+        <section class="dashboard-card">
+
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fa-solid fa-tags card-icon"></i>
+                    All Offers
+                </h2>
+
+                <form method="GET" action="/admin/offers" class="product-search">
+                    <select name="type" style="padding:8px 10px; border:1px solid #ddd; border-radius:6px; font-size:13px;">
+                        <option value="">All Types</option>
+                        <% (offerTypes || []).forEach(function (type) { %>
+                            <option value="<%= type %>" <%= typeFilter === type ? 'selected' : '' %>><%= type %></option>
+                        <% }); %>
+                    </select>
+                    <button type="submit"><i class="fa-solid fa-filter"></i> Filter</button>
+                </form>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Banner</th>
+                            <th>Type</th>
+                            <th>Product / Name</th>
+                            <th>Scope</th>
+                            <th>Offer Qty</th>
+                            <th>Price</th>
+                            <th>Gift</th>
+                            <th>Order</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        <% if (offers.length === 0) { %>
+                            <tr>
+                                <td colspan="10" style="text-align:center; padding:30px; color:#64748b;">
+                                    No offers yet. Start with "Add Offer".
+                                </td>
+                            </tr>
+                        <% } %>
+
+                        <% offers.forEach(function (o) { %>
+                            <tr>
+                                <td>
+                                    <% if (o.hasBanner) { %>
+                                        <img class="offer-thumb" src="<%= o.banner %>" alt="">
+                                    <% } else { %>
+                                        <span class="offer-no-thumb"><i class="fa-regular fa-image"></i></span>
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <span class="badge offer-type-badge"><%= o.type || 'Other' %></span>
+                                </td>
+                                <td style="max-width:260px;">
+                                    <strong style="font-size:13px;"><%= o.name %></strong>
+                                    <% if (o.hasContent) { %>
+                                        <span class="offer-content-flag" title="Has rich content / table">
+                                            <i class="fa-solid fa-table-cells-large"></i>
+                                        </span>
+                                    <% } %>
+                                </td>
+                                <td style="max-width:240px;">
+                                    <% if (!o.scopeLabels || o.scopeLabels.length === 0) { %>
+                                        <span class="offer-scope-none">Everyone</span>
+                                    <% } else { %>
+                                        <div class="offer-scope-chips" title="<%= o.scopeLabels.join(', ') %>">
+                                            <% o.scopeLabels.slice(0, 2).forEach(function (label) { %>
+                                                <span class="offer-scope-chip"><%= label %></span>
+                                            <% }); %>
+                                            <% if (o.scopeLabels.length > 2) { %>
+                                                <span class="offer-scope-chip more">+<%= o.scopeLabels.length - 2 %></span>
+                                            <% } %>
+                                        </div>
+                                    <% } %>
+                                </td>
+                                <td style="font-size:12.5px; color:#475569;"><%= o.offerQty || '—' %></td>
+                                <td style="font-size:13px; font-weight:600; white-space:nowrap;">
+                                    <%= o.priceLabel || '—' %>
+                                </td>
+                                <td style="max-width:190px; font-size:12.5px; color:#2f855a;"><%= o.gift || '—' %></td>
+                                <td style="font-size:13px; color:#475569;">
+                                    <%= o.order %>
+                                    <div style="font-size:11px; color:#94a3b8; margin-top:2px;">
+                                        <%= o.layout === 'half' ? '1/2 width' : o.layout === 'third' ? '1/3 width' : o.layout === 'quarter' ? '1/4 width' : 'Full width' %>
+                                    </div>
+                                </td>
+                                <td>
+                                    <% if (o.isActive) { %>
+                                        <span class="badge badge-approved">Active</span>
+                                    <% } else { %>
+                                        <span class="badge badge-pending">Hidden</span>
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <div class="product-actions">
+                                        <% if (can('content.edit')) { %>
+                                            <a href="/admin/offers/toggle/<%= o._id %>" class="action-edit"
+                                               title="<%= o.isActive ? 'Hide' : 'Show' %>"
+                                               onclick="return confirm('<%= o.isActive ? 'Hide' : 'Show' %> this offer?');">
+                                                <i class="fa-solid <%= o.isActive ? 'fa-eye-slash' : 'fa-eye' %>"></i>
+                                            </a>
+                                            <a href="/admin/offers/edit/<%= o._id %>" class="action-edit" title="Edit">
+                                                <i class="fa-solid fa-pen"></i>
+                                            </a>
+                                        <% } %>
+                                        <% if (can('content.delete')) { %>
+                                            <a href="/admin/offers/delete/<%= o._id %>" class="action-delete" title="Delete"
+                                               onclick="return confirm('Delete this offer?');">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </a>
+                                        <% } %>
+                                    </div>
+                                </td>
+                            </tr>
+                        <% }); %>
+
+                    </tbody>
+                </table>
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+<style>
+    .dashboard-card .admin-table thead th,
+    .dashboard-card .admin-table tbody td {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+    .offer-thumb {
+        width: 64px; height: 40px; border-radius: 7px;
+        background: #f1f5f9; border: 1px solid #e2e8f0;
+        object-fit: contain; display: block;
+    }
+    .offer-no-thumb {
+        width: 64px; height: 40px; border-radius: 7px;
+        background: #f8fafc; border: 1px dashed #dbe3ec; color: #cbd5e1;
+        display: inline-flex; align-items: center; justify-content: center;
+    }
+    .offer-type-badge { background: #eef2f6; color: #374957; }
+    .offer-scope-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+    .offer-scope-chip {
+        background: #eef2ff; border: 1px solid #dbe4ff; color: #3730a3;
+        border-radius: 999px; padding: 2px 8px; font-size: 11px;
+        max-width: 130px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .offer-scope-chip.more { background: #f1f5f9; color: #475569; border-color: #e2e8f0; }
+    .offer-scope-none { font-size: 11.5px; color: #64748b; }
+    .offer-content-flag { color: #0f766e; font-size: 11px; margin-left: 5px; }
+</style>
+
+<%- include("partials/footer") %>

@@ -161,6 +161,8 @@ exports.getAnalytics = async (req, res) => {
 
         const paymentLabels = {
             bkash: "bKash",
+            nagad: "Nagad",
+            rocket: "Rocket",
             cod: "Cash on Delivery",
             bank: "Bank Transfer"
         };

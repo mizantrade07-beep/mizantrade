@@ -31,14 +31,14 @@ function buildSeo(opts) {
     const path = opts.path || "/";
     const siteName = siteConfig.siteName || "Mizan Trade";
 
-    let title = opts.title || siteName;
+    let title = opts.title || siteConfig.metaTitle || siteName;
     // টাইটেলে সাইট নাম না থাকলে যোগ করা (ব্র্যান্ডিং + SEO)
     if (opts.appendSiteName !== false && title.indexOf(siteName) === -1) {
         title = title + " | " + siteName;
     }
     title = String(title).slice(0, 70);
 
-    let description = opts.description || "";
+    let description = opts.description || siteConfig.metaDescription || "";
     if (!description && opts.content) {
         description = stripHtml(opts.content);
     }
@@ -47,9 +47,9 @@ function buildSeo(opts) {
     return {
         title,
         description,
-        keywords: opts.keywords || "",
+        keywords: opts.keywords || siteConfig.metaKeywords || "",
         canonical: opts.canonical || (base + path),
-        image: absoluteUrl(opts.image || ""),
+        image: absoluteUrl(opts.image || siteConfig.ogImage || ""),
         type: opts.type || "website",
         noindex: !!opts.noindex,
         siteName,

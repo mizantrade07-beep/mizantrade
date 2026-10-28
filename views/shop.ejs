@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <%- include('partials/seo') %>
-    <link rel="icon" href="/images/logo.svg">
     <style>
         .filter-acc { border-top: 1px solid #eef0f3; }
         .filter-acc summary {
@@ -26,12 +25,30 @@
 
     <div class="container">
 
-        <!-- Breadcrumb -->
+        <!-- Breadcrumb: Home > Main > Sub > Child/Brand -->
         <div class="breadcrumb">
             <a href="/"><i class="fa-solid fa-house"></i> Home</a>
-            <i class="fa-solid fa-angle-right" style="margin:0 6px; font-size:10px;"></i>
-            <span>Shop</span>
+            <% if (activeCategory && categoryTrail.length) { %>
+                <% categoryTrail.forEach(function (node, i) { %>
+                    <i class="fa-solid fa-angle-right" style="margin:0 6px; font-size:10px;"></i>
+                    <% if (i === categoryTrail.length - 1) { %>
+                        <span><%= node.name %></span>
+                    <% } else { %>
+                        <a href="/category/<%= node.slug %>"><%= node.name %></a>
+                    <% } %>
+                <% }); %>
+            <% } else { %>
+                <i class="fa-solid fa-angle-right" style="margin:0 6px; font-size:10px;"></i>
+                <span>Shop</span>
+            <% } %>
         </div>
+
+        <% if (pageHeading) { %>
+            <div class="shop-head">
+                <h1 class="shop-title"><%= pageHeading %></h1>
+                <span class="shop-count">(<%= total %> Products found)</span>
+            </div>
+        <% } %>
 
         <div class="shop-layout">
 
@@ -39,13 +56,13 @@
             <aside class="filter-card">
 
                 <div class="filter-title" style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
-                    <span><i class="fa-solid fa-filter" style="color:#ef4a23;"></i> Filter Products</span>
-                    <a href="/shop<%= (typeof catSlug !== 'undefined' && catSlug) ? '?cat=' + encodeURIComponent(catSlug) : '' %>"
+                    <span><i class="fa-solid fa-filter" style="color:#ef4a23;"></i> Filter By</span>
+                    <a href="<%= activeCategory ? '/category/' + encodeURIComponent(activeCategory.slug) : '/shop' %>"
                        style="font-size:12px; color:#ef4a23; font-weight:600;">Reset</a>
                 </div>
 
-                <form method="GET" action="/shop" class="shop-filter-form">
-                    <% if (typeof catSlug !== 'undefined' && catSlug) { %><input type="hidden" name="cat" value="<%= catSlug %>"><% } %>
+                <form method="GET" action="<%= activeCategory ? '/category/' + encodeURIComponent(activeCategory.slug) : '/shop' %>" class="shop-filter-form">
+                    <% if (!activeCategory && typeof catSlug !== 'undefined' && catSlug) { %><input type="hidden" name="cat" value="<%= catSlug %>"><% } %>
                     <% if (search) { %><input type="hidden" name="search" value="<%= search %>"><% } %>
                     <% if (sort && sort !== 'latest') { %><input type="hidden" name="sort" value="<%= sort %>"><% } %>
 
@@ -64,6 +81,22 @@
                             </label>
                         </div>
                     </details>
+
+                    <!-- Brand (from active category's products) -->
+                    <% if (brandOptions && brandOptions.length > 0) { %>
+                        <details class="filter-acc" <%= brandOptions.some(function (b) { return b.selected; }) ? 'open' : '' %>>
+                            <summary>Brand</summary>
+                            <div class="filter-acc-body">
+                                <% brandOptions.forEach(function (b) { %>
+                                    <label class="spec-check">
+                                        <input type="checkbox" name="brand" value="<%= b.name %>"
+                                               <%= b.selected ? 'checked' : '' %>>
+                                        <span><%= b.name %> <span class="filter-count">(<%= b.count %>)</span></span>
+                                    </label>
+                                <% }); %>
+                            </div>
+                        </details>
+                    <% } %>
 
                     <!-- Specification / filter attributes, in serial order -->
                     <% specFacets.forEach(function (f) { %>
@@ -104,19 +137,25 @@
 
                 <div class="shop-toolbar">
                     <span>
-                        <strong style="color:#081621;"><%= total %></strong> products found
-                        <% if (search) { %> for search "<%= search %>"<% } %>
+                        <% if (search) { %>
+                            Search results for "<%= search %>"
+                        <% } else if (!pageHeading) { %>
+                            <strong style="color:#081621;"><%= total %></strong> products found
+                        <% } else { %>
+                            Showing <strong style="color:#081621;"><%= total %></strong> products
+                        <% } %>
                     </span>
 
-                    <form method="GET" style="display:flex; gap:8px; align-items:center;">
+                    <form method="GET" class="shop-sort-form">
                         <% if (search) { %><input type="hidden" name="search" value="<%= search %>"><% } %>
-                        <% if (typeof catSlug !== 'undefined' && catSlug) { %><input type="hidden" name="cat" value="<%= catSlug %>"><% } %>
+                        <% if (!activeCategory && typeof catSlug !== 'undefined' && catSlug) { %><input type="hidden" name="cat" value="<%= catSlug %>"><% } %>
                         <% brand.forEach(function (b) { %><input type="hidden" name="brand" value="<%= b %>"><% }); %>
                         <% specSel.forEach(function (s) { %><input type="hidden" name="spec" value="<%= s %>"><% }); %>
                         <% if (min !== '') { %><input type="hidden" name="min" value="<%= min %>"><% } %>
                         <% if (max !== '') { %><input type="hidden" name="max" value="<%= max %>"><% } %>
                         <% if (inStock) { %><input type="hidden" name="stock" value="1"><% } %>
-                        <select name="sort" onchange="this.form.submit()">
+                        <label class="sort-label" for="sortSelect">Sort By</label>
+                        <select id="sortSelect" name="sort" onchange="this.form.submit()">
                             <option value="latest" <%= sort === 'latest' ? 'selected' : '' %>>Latest First</option>
                             <option value="price_asc" <%= sort === 'price_asc' ? 'selected' : '' %>>Price: Low to High</option>
                             <option value="price_desc" <%= sort === 'price_desc' ? 'selected' : '' %>>Price: High to Low</option>
@@ -139,7 +178,7 @@
                             <%
                                 function pageUrl(p) {
                                     var params = new URLSearchParams();
-                                    if (typeof catSlug !== 'undefined' && catSlug) params.set('cat', catSlug);
+                                    if (!activeCategory && typeof catSlug !== 'undefined' && catSlug) params.set('cat', catSlug);
                                     if (search) params.set('search', search);
                                     brand.forEach(function (b) { params.append('brand', b); });
                                     specSel.forEach(function (s) { params.append('spec', s); });
@@ -189,6 +228,21 @@
 
     <%- include('partials/footer') %>
 
-    <script src="/js/main.js?v=2"></script>
+    <script>
+        /* Auto-apply attribute, brand & availability filters on click (price
+           range still uses the Apply button since it is typed). */
+        (function () {
+            var form = document.querySelector('.shop-filter-form');
+            if (!form) return;
+            form.addEventListener('change', function (e) {
+                var t = e.target;
+                if (t && t.matches && t.matches('input[name="spec"], input[name="brand"], input[name="stock"]')) {
+                    form.submit();
+                }
+            });
+        })();
+    </script>
+
+    <script src="/js/main.js?v=4"></script>
 </body>
 </html>

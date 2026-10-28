@@ -1,0 +1,32 @@
+<div class="hc-row fb-item" style="display:grid; grid-template-columns:110px 1.4fr 1.6fr 1.4fr auto; gap:10px; align-items:end; border:1px dashed #d6dde6; border-radius:10px; padding:10px; margin-bottom:10px; background:#fafbfd;">
+    <div class="form-group" style="margin:0;">
+        <label>Type</label>
+        <select name="footerBlocks[<%= i %>][items][<%= j %>][type]" class="fb-type">
+            <option value="text" <%= it.type === 'text' ? 'selected' : '' %>>Text</option>
+            <option value="link" <%= it.type === 'link' ? 'selected' : '' %>>Link</option>
+            <option value="image" <%= it.type === 'image' ? 'selected' : '' %>>Image</option>
+            <option value="video" <%= it.type === 'video' ? 'selected' : '' %>>Video embed</option>
+        </select>
+    </div>
+    <div class="form-group" style="margin:0;">
+        <label>Text / Label</label>
+        <input type="text" name="footerBlocks[<%= i %>][items][<%= j %>][text]" class="fb-text" value="<%= it.text %>" placeholder="Display text">
+    </div>
+    <div class="form-group" style="margin:0;">
+        <label class="fb-url-label">Link / embed URL</label>
+        <input type="text" name="footerBlocks[<%= i %>][items][<%= j %>][url]" class="fb-url" value="<%= it.url %>" placeholder="/page/… or https://…">
+    </div>
+    <div class="form-group" style="margin:0;">
+        <label class="fb-image-label">Image (for image type)</label>
+        <div style="display:flex; gap:6px;">
+            <input type="text" name="footerBlocks[<%= i %>][items][<%= j %>][image]" class="fb-image img-url" value="<%= it.image %>" placeholder="https://… or upload">
+            <label class="secondary-button" style="cursor:pointer; white-space:nowrap;">
+                <i class="fa-solid fa-upload"></i>
+                <input type="file" accept="image/*" class="img-file" hidden>
+            </label>
+        </div>
+    </div>
+    <button type="button" class="mini-button danger st-remove" style="margin-bottom:6px;">
+        <i class="fa-solid fa-trash"></i>
+    </button>
+</div>

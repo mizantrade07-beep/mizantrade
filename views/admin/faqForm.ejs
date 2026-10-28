@@ -1,0 +1,134 @@
+<%
+    const f = faq || {};
+    const formAction = faq ? "/admin/faqs/edit/" + faq._id : "/admin/faqs/add";
+%>
+
+<%- include("partials/head", {
+    title: (faq ? "Edit FAQ" : "Add FAQ") + " | MizanTrade Admin"
+}) %>
+
+<%- include("partials/sidebar") %>
+
+<div class="admin-main">
+
+    <%- include("partials/topbar", {
+        title: faq ? "Edit FAQ" : "Add FAQ"
+    }) %>
+
+    <main class="admin-content">
+
+        <div class="dashboard-header">
+            <div>
+                <h1 class="dashboard-title"><%= faq ? "Edit FAQ" : "Add New FAQ" %></h1>
+                <p class="dashboard-subtitle">
+                    Add a question and answer. FAQs are grouped by category on the public FAQ page.
+                </p>
+            </div>
+
+            <a href="/admin/faqs" class="secondary-button">
+                <i class="fa-solid fa-arrow-left"></i>
+                Back to FAQs
+            </a>
+        </div>
+
+        <form action="<%= formAction %>" method="POST" id="faqForm">
+
+            <div class="cms-two-col">
+
+                <!-- বাম কলাম -->
+                <div class="side-stack">
+
+                    <section class="dashboard-card">
+                        <div class="card-header">
+                            <h2 class="card-title"><i class="fa-solid fa-circle-question card-icon"></i> FAQ Content</h2>
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="form-group form-full">
+                                <label for="categoryInput">Category *</label>
+                                <input type="text" id="categoryInput" name="category" required list="faqCategories"
+                                       value="<%= f.category || '' %>" placeholder="Example: General Information">
+                                <datalist id="faqCategories">
+                                    <option value="General Information">
+                                    <option value="Dealer Registration &amp; Wholesale Pricing">
+                                    <option value="Product Pricing &amp; Availability">
+                                    <option value="Ordering Process">
+                                    <option value="Payment Methods">
+                                    <option value="Delivery &amp; Shipping">
+                                    <option value="Warranty &amp; After-Sales Support">
+                                    <option value="Authenticity &amp; Support">
+                                </datalist>
+                                <div class="tag-input-hint">Existing categories are suggested as you type. Use the same name to group FAQs together.</div>
+                            </div>
+
+                            <div class="form-group form-full">
+                                <label for="questionInput">Question *</label>
+                                <input type="text" id="questionInput" name="question" required
+                                       value="<%= f.question || '' %>" placeholder="Example: What is Mizan Trade?">
+                            </div>
+
+                            <div class="form-group form-full">
+                                <label>Answer *</label>
+                                <div class="rte-wrap">
+                                    <div class="rte-toolbar" data-editor="answerEditor">
+                                        <button type="button" class="rte-btn" data-cmd="bold" title="Bold"><i class="fa-solid fa-bold"></i></button>
+                                        <button type="button" class="rte-btn" data-cmd="italic" title="Italic"><i class="fa-solid fa-italic"></i></button>
+                                        <button type="button" class="rte-btn" data-cmd="underline" title="Underline"><i class="fa-solid fa-underline"></i></button>
+                                        <span class="rte-sep"></span>
+                                        <button type="button" class="rte-btn" data-cmd="insertUnorderedList" title="Bullet list"><i class="fa-solid fa-list-ul"></i></button>
+                                        <button type="button" class="rte-btn" data-cmd="insertOrderedList" title="Numbered list"><i class="fa-solid fa-list-ol"></i></button>
+                                        <span class="rte-sep"></span>
+                                        <button type="button" class="rte-btn" data-cmd="createLink" title="Insert link"><i class="fa-solid fa-link"></i></button>
+                                        <button type="button" class="rte-btn" data-cmd="unlink" title="Remove link"><i class="fa-solid fa-link-slash"></i></button>
+                                        <span class="rte-sep"></span>
+                                        <button type="button" class="rte-btn" data-role="image" title="Upload image"><i class="fa-solid fa-image"></i></button>
+                                    </div>
+                                    <div class="rte-area tall" id="answerEditor" contenteditable="true"></div>
+                                </div>
+                                <textarea name="answer" class="hidden-source" data-rte-source="answerEditor"><%= f.answer || '' %></textarea>
+                            </div>
+                        </div>
+                    </section>
+
+                </div>
+
+                <!-- ডান কলাম -->
+                <div class="side-stack">
+
+                    <section class="dashboard-card">
+                        <div class="card-header">
+                            <h2 class="card-title"><i class="fa-solid fa-sliders card-icon"></i> Display Settings</h2>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="orderInput">Sort Order</label>
+                            <input type="number" id="orderInput" name="order" value="<%= typeof f.order !== 'undefined' ? f.order : 0 %>">
+                            <div class="tag-input-hint">Lower numbers appear first within a category.</div>
+                        </div>
+
+                        <label class="checkbox-row">
+                            <input type="checkbox" name="isActive" <%= f.isActive === false ? '' : 'checked' %>>
+                            <span>Show on the public FAQ page</span>
+                        </label>
+                    </section>
+
+                    <div class="form-actions">
+                        <button type="submit" class="primary-button">
+                            <i class="fa-solid fa-floppy-disk"></i>
+                            <%= faq ? "Update FAQ" : "Create FAQ" %>
+                        </button>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </main>
+
+</div>
+
+<%- include("partials/footer") %>
+
+<script src="/admin/js/rte.js"></script>

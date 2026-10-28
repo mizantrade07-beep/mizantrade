@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <%- include('partials/seo') %>
+    <link rel="stylesheet" href="/css/offers-team.css?v=6">
+</head>
+<body>
+
+    <%- include('partials/header') %>
+
+    <div class="container">
+
+        <div class="breadcrumb">
+            <a href="/"><i class="fa-solid fa-house"></i> Home</a>
+            <i class="fa-solid fa-angle-right" style="margin:0 6px; font-size:10px;"></i>
+            <a href="/offers">Offers</a>
+            <i class="fa-solid fa-angle-right" style="margin:0 6px; font-size:10px;"></i>
+            <span><%= offer.name %></span>
+        </div>
+
+        <% if (typeof partner !== 'undefined' && partner) { %>
+            <div class="offer-partner-bar">
+                <span style="font-size:13.5px;">
+                    <i class="fa-solid fa-handshake" style="color:#ff7a45;"></i>
+                    Signed in as <strong><%= partner.company %></strong> — partner pricing &amp; offers
+                </span>
+                <form action="/partner/logout" method="POST" style="margin:0;">
+                    <button type="submit">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i> Partner Logout
+                    </button>
+                </form>
+            </div>
+        <% } %>
+
+        <%- include('partials/promoTabs', { active: 'offers' }) %>
+
+        <article class="offer-detail">
+
+            <header class="offer-detail-head">
+                <div class="odh-copy">
+                    <span class="odh-type">
+                        <i class="fa-solid <%= offer.typeIcon %>"></i>
+                        <%= typeLabel %>
+                    </span>
+                    <h1><%= offer.name %></h1>
+                    <div class="odh-meta">
+                        <% if (offer.offerQty) { %>
+                            <span><i class="fa-solid fa-cubes"></i> Offer Qty: <strong><%= offer.offerQty %></strong></span>
+                        <% } %>
+                        <% if (offer.gift) { %>
+                            <span class="odh-gift"><i class="fa-solid fa-gift"></i> Gift: <strong><%= offer.gift %></strong></span>
+                        <% } %>
+                        <% if (offer.priceLabel) { %>
+                            <span><i class="fa-solid fa-tag"></i> Price: <strong><%= offer.priceLabel %></strong></span>
+                        <% } %>
+                    </div>
+                </div>
+
+                <div class="odh-actions">
+                    <a href="tel:<%= hotline.replace(/[^\d+]/g, '') %>" class="odh-call">
+                        <i class="fa-solid fa-phone-volume"></i>
+                        <span><small>Call for this offer</small><strong><%= hotline %></strong></span>
+                    </a>
+                    <a href="mailto:<%= email %>" class="odh-mail">
+                        <i class="fa-solid fa-envelope"></i> E-mail Us
+                    </a>
+                </div>
+            </header>
+
+            <% if (offer.banner) { %>
+                <figure class="offer-detail-banner">
+                    <img src="<%= optimizeImage(offer.banner, 1600) %>" alt="<%= offer.name %> banner">
+                </figure>
+            <% } %>
+
+            <div class="offer-detail-grid">
+
+                <section class="offer-detail-content">
+                    <h2><i class="fa-solid fa-circle-info"></i> Offer Details</h2>
+
+                    <% if (offer.content) { %>
+                        <div class="offer-rich"><%- optimizeHtml(offer.content, 1200) %></div>
+                    <% } else { %>
+                        <div class="offer-empty-copy">
+                            <p><strong><%= offer.name %></strong> is available now at Mizan Trade. Contact our sales team for full product coverage, quantity breaks and delivery timelines.</p>
+                            <p>Our team will confirm stock, partner pricing and payment options before you order.</p>
+                        </div>
+                    <% } %>
+
+                    <div class="offer-detail-cta">
+                        <a href="/shop" class="offer-cta-btn primary"><i class="fa-solid fa-store"></i> Browse Products</a>
+                        <a href="/become-a-partner" class="offer-cta-btn ghost"><i class="fa-solid fa-handshake"></i> Become a Partner</a>
+                    </div>
+                </section>
+
+                <aside class="offer-detail-side">
+                    <div class="ods-card">
+                        <h3>Offer Summary</h3>
+                        <dl>
+                            <div><dt>Campaign</dt><dd><%= offer.type || 'General' %></dd></div>
+                            <div><dt>Offer Qty</dt><dd><%= offer.offerQty || 'As available' %></dd></div>
+                            <div><dt>Price</dt><dd class="ods-price"><%= offer.priceLabel || 'Contact us' %></dd></div>
+                            <div><dt>Gift</dt><dd><%= offer.gift || '—' %></dd></div>
+                        </dl>
+                        <a href="tel:<%= hotline.replace(/[^\d+]/g, '') %>" class="ods-cta">
+                            <i class="fa-solid fa-phone-volume"></i> Call <%= hotline %>
+                        </a>
+                        <p class="ods-note">Prices and quantities are subject to stock availability.</p>
+                    </div>
+                </aside>
+
+            </div>
+
+            <% if (groupOffers.length > 1) { %>
+                <section class="offer-related">
+                    <div class="offer-related-head">
+                        <h2><i class="fa-solid fa-layer-group"></i> More <%= typeLabel %></h2>
+                        <a href="/offers">All Offers <i class="fa-solid fa-arrow-right"></i></a>
+                    </div>
+
+                    <div class="table-wrapper" style="overflow-x:auto;">
+                        <table class="offer-related-table">
+                            <thead>
+                                <tr>
+                                    <th>No</th>
+                                    <th>Offer</th>
+                                    <th>Offer Qty</th>
+                                    <th>Price</th>
+                                    <th>Gift</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <% groupOffers.forEach(function (item, idx) { %>
+                                    <tr class="<%= String(item._id) === String(offer._id) ? 'is-current' : '' %>">
+                                        <td class="ort-no"><%= idx + 1 %></td>
+                                        <td class="ort-name"><%= item.name %></td>
+                                        <td><%= item.offerQty || '—' %></td>
+                                        <td class="ort-price"><%= item.priceLabel || '—' %></td>
+                                        <td class="ort-gift"><%= item.gift || '—' %></td>
+                                        <td class="ort-action">
+                                            <% if (String(item._id) === String(offer._id)) { %>
+                                                <span class="ort-current">Viewing</span>
+                                            <% } else { %>
+                                                <a href="/offers/<%= item._id %>">View <i class="fa-solid fa-arrow-right"></i></a>
+                                            <% } %>
+                                        </td>
+                                    </tr>
+                                <% }); %>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            <% } %>
+
+            <a href="/offers" class="offer-back"><i class="fa-solid fa-arrow-left"></i> Back to all offers</a>
+
+        </article>
+
+    </div>
+
+    <%- include('partials/footer') %>
+
+    <script src="/js/main.js?v=4"></script>
+</body>
+</html>

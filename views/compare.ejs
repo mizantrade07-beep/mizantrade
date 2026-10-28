@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <link rel="icon" href="/images/logo.svg">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compare Products - Mizan Trade</title>
+    <meta name="robots" content="noindex, follow">
+</head>
+<body>
+
+    <%- include('partials/header') %>
+
+    <div class="container">
+
+        <div class="breadcrumb">
+            <a href="/">Home</a>
+            <i class="fa-solid fa-angle-right" style="margin:0 6px; font-size:10px;"></i>
+            <span>Compare</span>
+        </div>
+
+        <div class="compare-bar">
+            <h1 class="page-title" style="margin:0;"><i class="fa-solid fa-code-compare" style="color:#ef4a23;"></i> Compare Products
+                <% if (products.length) { %><span style="font-size:14px; font-weight:600; color:#8892a0;">(<%= products.length %>/<%= maxCompare %>)</span><% } %>
+            </h1>
+            <% if (products.length) { %>
+                <form action="/compare/clear" method="POST" style="margin:0;">
+                    <button type="submit" class="btn" style="background:#fff; border:1px solid #f0c4ba; color:#c0392b; padding:9px 16px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer;">
+                        <i class="fa-solid fa-trash-can"></i> Clear All
+                    </button>
+                </form>
+            <% } %>
+        </div>
+
+        <% if (full) { %>
+            <div class="compare-notice">
+                <i class="fa-solid fa-circle-exclamation"></i> You can compare up to <%= maxCompare %> products. Remove one to add another.
+            </div>
+        <% } %>
+
+        <% if (products.length === 0) { %>
+
+            <div class="empty-box">
+                <i class="fa-solid fa-code-compare"></i>
+                <h3 style="color:#081621; margin-bottom:8px;">Your compare list is empty</h3>
+                <p>Click the compare icon on a product to see it side by side here.</p>
+                <a href="/shop" class="btn btn-primary" style="margin-top:16px;">
+                    <i class="fa-solid fa-store"></i> Start Shopping
+                </a>
+            </div>
+
+        <% } else { %>
+
+            <%
+                var recIndex = recommendation.index;
+            %>
+
+            <% if (recIndex >= 0) { %>
+                <div class="compare-reco-bar">
+                    <div class="compare-reco-head">
+                        <span class="compare-reco-badge"><i class="fa-solid fa-trophy"></i> Recommended</span>
+                        <strong><%= products[recIndex].title %></strong>
+                    </div>
+                    <% if (recommendation.reasons.length) { %>
+                        <div class="compare-reco-why">
+                            <% recommendation.reasons.forEach(function (reason) { %>
+                                <span class="compare-reason"><i class="fa-solid fa-circle-check"></i> <%= reason %></span>
+                            <% }); %>
+                        </div>
+                    <% } %>
+                </div>
+            <% } else if (products.length > 1) { %>
+                <div class="compare-tie-note">
+                    <i class="fa-solid fa-scale-balanced"></i> These products are too close to call — check the full details below.
+                </div>
+            <% } %>
+
+            <div class="compare-scroll" style="margin-bottom:28px;">
+                <table class="compare-table">
+                    <thead>
+                        <tr>
+                            <th class="compare-label">Product</th>
+                            <% products.forEach(function (product, i) { %>
+                                <th class="compare-prod<%= i === recIndex ? ' is-recommended' : '' %>">
+                                    <form action="/compare/remove/<%= product._id %>" method="POST" style="margin:0 0 6px; text-align:right;">
+                                        <button type="submit" title="Remove from compare" style="border:none; background:#fdecea; color:#c0392b; width:26px; height:26px; border-radius:50%; cursor:pointer; font-size:12px;">
+                                            <i class="fa-solid fa-xmark"></i>
+                                        </button>
+                                    </form>
+                                    <a href="/product/<%= product.slug %>">
+                                        <img src="<%= optimizeImage(product.mainImage || product.image || product.imageUrl || (Array.isArray(product.images) && product.images[0]), 400) || '/images/logo.svg' %>" alt="<%= product.title %>" loading="lazy">
+                                    </a>
+                                    <a href="/product/<%= product.slug %>" class="compare-title"><%= product.title %></a>
+                                    <% if (i === recIndex) { %>
+                                        <span class="compare-reco-badge"><i class="fa-solid fa-circle-check"></i> Recommended</span>
+                                    <% } %>
+                                    <% var meta = productMeta[i]; %>
+                                    <div class="compare-meta">
+                                        <% if (meta.stock) { %>
+                                            <span class="stock-<%= meta.tone %>"><%= meta.stock %></span>
+                                        <% } %>
+                                        <% if (meta.brand) { %>
+                                            <span class="compare-brand"><%= meta.brand %></span>
+                                        <% } %>
+                                        <% if (meta.rating) { %>
+                                            <span class="compare-rating"><%= meta.rating %></span>
+                                        <% } %>
+                                    </div>
+                                </th>
+                            <% }); %>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th class="compare-label">Price</th>
+                            <% products.forEach(function (product, i) { var info = priceInfo[i]; %>
+                                <td class="<%= i === recIndex ? 'is-rec-col' : '' %>">
+                                    <% if (info.value !== null) { %>
+                                        <span class="compare-price">৳ <%= Number(info.value).toLocaleString('en-US') %></span>
+                                        <% if (info.regular > info.value) { %>
+                                            <div class="compare-old-price">৳ <%= Number(info.regular).toLocaleString('en-US') %></div>
+                                        <% } %>
+                                        <% if (info.discount > 0) { %>
+                                            <span class="compare-off">-<%= info.discount %>%</span>
+                                        <% } %>
+                                    <% } else { %>
+                                        <a href="tel:<%= site.hotline %>" style="color:#ef4a23; font-weight:600; font-size:13px;">
+                                            <i class="fa-solid fa-phone-volume"></i> Call for Price
+                                        </a>
+                                    <% } %>
+                                </td>
+                            <% }); %>
+                        </tr>
+
+                        <tr class="compare-section-row">
+                            <td colspan="<%= products.length + 1 %>"><i class="fa-solid fa-list-check"></i> Specifications</td>
+                        </tr>
+
+                        <% if (!specRows.length) { %>
+                            <tr>
+                                <td colspan="<%= products.length + 1 %>" class="compare-empty-spec">
+                                    No comparable specifications were found for these products.
+                                </td>
+                            </tr>
+                        <% } %>
+
+                        <% specRows.forEach(function (row) { %>
+                            <tr>
+                                <th class="compare-label"><%= row.label %></th>
+                                <% row.values.forEach(function (value, i) { var isBest = row.best.indexOf(i) >= 0; %>
+                                    <td class="<%= (i === recIndex ? 'is-rec-col ' : '') + (isBest ? 'is-best' : '') %>">
+                                        <%= value || '—' %>
+                                        <% if (isBest) { %><i class="fa-solid fa-circle-check best-mark" title="Better specification"></i><% } %>
+                                    </td>
+                                <% }); %>
+                            </tr>
+                        <% }); %>
+
+                        <tr>
+                            <th class="compare-label">Action</th>
+                            <% products.forEach(function (product, i) { var info = priceInfo[i]; %>
+                                <td class="<%= i === recIndex ? 'is-rec-col' : '' %>">
+                                    <% if (info.value !== null && product.stockStatus !== 'Out of Stock') { %>
+                                        <form action="/cart/add/<%= product._id %>" method="POST" style="margin:0;">
+                                            <input type="hidden" name="quantity" value="1">
+                                            <button type="submit" class="compare-add" style="border:none; cursor:pointer;">
+                                                <i class="fa-solid fa-cart-plus"></i> Add to Cart
+                                            </button>
+                                        </form>
+                                    <% } else { %>
+                                        <a href="/product/<%= product.slug %>" class="compare-add">
+                                            <i class="fa-solid fa-eye"></i> View Details
+                                        </a>
+                                    <% } %>
+                                </td>
+                            <% }); %>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <section class="compare-details">
+                <h2 class="compare-details-title"><i class="fa-solid fa-circle-info" style="color:#ef4a23;"></i> Detailed Description</h2>
+                <div class="compare-detail-grid">
+                    <% products.forEach(function (product, i) { %>
+                        <article class="compare-detail-card<%= i === recIndex ? ' is-recommended' : '' %>">
+                            <div class="compare-detail-top">
+                                <h3><a href="/product/<%= product.slug %>"><%= product.title %></a></h3>
+                                <% if (i === recIndex) { %>
+                                    <span class="compare-reco-badge"><i class="fa-solid fa-trophy"></i> Recommended</span>
+                                <% } %>
+                            </div>
+
+                            <% if (product.shortDesc) { %>
+                                <div class="compare-desc compare-desc-short"><%- optimizeHtml(product.shortDesc, 1200) %></div>
+                            <% } %>
+
+                            <% if (product.longDesc) { %>
+                                <details class="compare-desc-more">
+                                    <summary>Read full description <i class="fa-solid fa-chevron-down"></i></summary>
+                                    <div class="compare-desc"><%- optimizeHtml(product.longDesc, 1200) %></div>
+                                </details>
+                            <% } %>
+
+                            <a href="/product/<%= product.slug %>" class="compare-view-link">
+                                View full product page <i class="fa-solid fa-arrow-right"></i>
+                            </a>
+                        </article>
+                    <% }); %>
+                </div>
+            </section>
+
+        <% } %>
+
+    </div>
+
+    <%- include('partials/footer') %>
+
+    <script src="/js/main.js?v=4"></script>
+</body>
+</html>

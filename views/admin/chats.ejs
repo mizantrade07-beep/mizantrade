@@ -1,0 +1,136 @@
+<%- include("partials/head", {
+    title: "Live Chats | MizanTrade Admin"
+}) %>
+
+<%- include("partials/sidebar") %>
+
+<div class="admin-main">
+
+    <%- include("partials/topbar", {
+        title: "Live Chats"
+    }) %>
+
+    <main class="admin-content">
+
+        <div class="dashboard-header">
+            <div>
+                <h1 class="dashboard-title">Live Chats</h1>
+                <p class="dashboard-subtitle">
+                    Visitor conversations with the website chatbot. When you reply, the bot stops and you take over the chat.
+                </p>
+            </div>
+        </div>
+
+        <section class="stats-grid">
+
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-comments"></i></div>
+                <div class="stat-content">
+                    <span>Total Conversations</span>
+                    <strong><%= conversations.length %></strong>
+                </div>
+            </article>
+
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-user-shield"></i></div>
+                <div class="stat-content">
+                    <span>Handled by Team</span>
+                    <strong><%= totalHuman %></strong>
+                </div>
+            </article>
+
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-bell"></i></div>
+                <div class="stat-content">
+                    <span>With Unread</span>
+                    <strong><%= totalUnread %></strong>
+                </div>
+            </article>
+
+        </section>
+
+        <section class="dashboard-card">
+
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fa-solid fa-comments card-icon"></i>
+                    Conversations
+                </h2>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Visitor</th>
+                            <th>Last Message</th>
+                            <th>Mode</th>
+                            <th>Unread</th>
+                            <th>Last Activity</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        <% if (conversations.length === 0) { %>
+                            <tr>
+                                <td colspan="6" style="text-align:center; padding:30px; color:#64748b;">
+                                    No conversations yet. Chats from the website widget will appear here.
+                                </td>
+                            </tr>
+                        <% } %>
+
+                        <% conversations.forEach(function (c) { %>
+                            <tr>
+                                <td>
+                                    <strong style="font-size:13px;"><%= c.displayName %></strong>
+                                </td>
+                                <td style="max-width:340px; font-size:12.5px; color:#475569;">
+                                    <%= c.lastMessage ? c.lastMessage.slice(0, 90) : '—' %><%= c.lastMessage && c.lastMessage.length > 90 ? '…' : '' %>
+                                </td>
+                                <td>
+                                    <% if (c.mode === 'human') { %>
+                                        <span class="badge" style="background:#fef3e2; color:#b45309;">Team</span>
+                                    <% } else { %>
+                                        <span class="badge" style="background:#e6f4fb; color:#1d6fa5;">Bot</span>
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <% if (c.unreadAdmin > 0) { %>
+                                        <span class="badge badge-rejected"><%= c.unreadAdmin %> new</span>
+                                    <% } else { %>
+                                        <span style="color:#94a3b8; font-size:12.5px;">—</span>
+                                    <% } %>
+                                </td>
+                                <td style="font-size:12.5px; color:#64748b;">
+                                    <%= new Date(c.lastMessageAt).toLocaleString('en-GB') %>
+                                </td>
+                                <td>
+                                    <div style="display:flex; gap:8px; align-items:center;">
+                                        <a href="/admin/chats/<%= c._id %>" class="primary-button" style="padding:7px 14px; font-size:12.5px;">
+                                            <i class="fa-solid fa-eye"></i> Open
+                                        </a>
+                                        <% if (can('orders.manage')) { %>
+                                            <form method="POST" action="/admin/chats/<%= c._id %>/delete" style="margin:0;"
+                                                  onsubmit="return confirm('Delete this conversation and all its messages permanently?');">
+                                                <button type="submit" class="action-delete" title="Delete conversation">
+                                                    <i class="fa-solid fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        <% } %>
+                                    </div>
+                                </td>
+                            </tr>
+                        <% }); %>
+
+                    </tbody>
+                </table>
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+<%- include("partials/footer") %>

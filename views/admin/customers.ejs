@@ -87,6 +87,7 @@
                             <th>Customer</th>
                             <th>Contact</th>
                             <th>Location</th>
+                            <th>Tier</th>
                             <th>Status</th>
                             <th>Joined</th>
                             <th>Action</th>
@@ -96,7 +97,7 @@
 
                         <% if (customers.length === 0) { %>
                             <tr>
-                                <td colspan="6" style="text-align:center; padding:30px; color:#64748b;">
+                                <td colspan="7" style="text-align:center; padding:30px; color:#64748b;">
                                     No customers found.
                                 </td>
                             </tr>
@@ -116,10 +117,32 @@
                                         <% if (c.phone) { %>
                                             <div style="color:#64748b;"><i class="fa-solid fa-phone"></i> <%= c.phone %></div>
                                         <% } %>
+                                        <div style="display:flex; gap:4px; flex-wrap:wrap; margin-top:5px;">
+                                            <span class="badge <%= c.emailVerified ? 'badge-approved' : 'badge-pending' %>" style="font-size:10px; padding:2px 7px;">
+                                                <i class="fa-solid fa-envelope"></i>
+                                                <%= c.emailVerified ? 'E-mail verified' : 'E-mail unverified' %>
+                                            </span>
+                                            <span class="badge <%= c.phoneVerified ? 'badge-approved' : 'badge-pending' %>" style="font-size:10px; padding:2px 7px;">
+                                                <i class="fa-solid fa-mobile-screen"></i>
+                                                <%= c.phoneVerified ? 'Phone verified' : 'Phone unverified' %>
+                                            </span>
+                                            <span class="badge <%= c.hasPassword ? 'badge-info' : 'badge-pending' %>" style="font-size:10px; padding:2px 7px;">
+                                                <i class="fa-solid fa-key"></i>
+                                                <%= c.hasPassword ? 'Password set' : 'No password' %>
+                                            </span>
+                                        </div>
                                     </div>
                                 </td>
                                 <td style="font-size:13px; color:#334155;">
                                     <%= [c.city, c.district].filter(Boolean).join(', ') || '—' %>
+                                </td>
+                                <td>
+                                    <span class="badge tier-<%= String(c.tier || 'Star').toLowerCase() %>"><%= c.tier || 'Star' %></span>
+                                    <% if (c.rewardPoints) { %>
+                                        <div style="font-size:11px; color:#64748b; margin-top:3px;">
+                                            <i class="fa-solid fa-star" style="color:#f59e0b;"></i> <%= c.rewardPoints.toLocaleString() %> pts
+                                        </div>
+                                    <% } %>
                                 </td>
                                 <td>
                                     <% if (c.isActive) { %>

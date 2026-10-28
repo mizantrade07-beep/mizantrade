@@ -1,0 +1,1387 @@
+/* ==========================================================
+   MIZAN TRADE — OFFERS / TEAM PAGES (#140)
+   Loaded only by offers.ejs, offerDetail.ejs and team.ejs
+========================================================== */
+
+/* ---------- promo tab strip (Offers | Team) ---------- */
+
+.promo-tabs {
+    display: flex;
+    gap: 8px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 6px;
+    margin-bottom: 18px;
+    box-shadow: 0 3px 12px rgba(8, 22, 33, .05);
+}
+
+.promo-tab {
+    flex: 1 1 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 11px 16px;
+    border-radius: 9px;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--steel);
+    transition: background .18s ease, color .18s ease;
+}
+
+.promo-tab:hover {
+    background: #f4f6f9;
+    color: var(--orange);
+}
+
+.promo-tab.active {
+    background: var(--orange);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(239, 74, 35, .28);
+}
+
+.offer-partner-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    background: var(--navy);
+    color: #fff;
+    border-radius: 12px;
+    padding: 13px 18px;
+    margin-bottom: 18px;
+}
+
+.offer-partner-bar button {
+    background: rgba(255, 255, 255, .12);
+    border: 1px solid rgba(255, 255, 255, .35);
+    color: #fff;
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 12.5px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+/* ---------- full-width clickable offer banners ---------- */
+
+.offer-banner-list {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    align-items: start;
+    gap: 20px;
+    margin-bottom: 36px;
+}
+
+.offer-banner-card {
+    position: relative;
+    display: block;
+    min-width: 0;
+    grid-column: span 12;
+    background: #fff;
+    border: 1px solid #e7ecf2;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 6px 20px rgba(8, 22, 33, .07);
+    transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+
+/* Width chosen per offer in the admin: 1/1, 1/2, 1/3 or 1/4 of the row. */
+.offer-banner-card[data-layout="half"] {
+    grid-column: span 6;
+}
+
+.offer-banner-card[data-layout="third"] {
+    grid-column: span 4;
+}
+
+.offer-banner-card[data-layout="quarter"] {
+    grid-column: span 3;
+}
+
+/* Narrow cards need slightly tighter type so the banner and CTA still fit. */
+.offer-banner-card[data-layout="third"] .obc-info,
+.offer-banner-card[data-layout="quarter"] .obc-info {
+    padding: 12px 14px 14px;
+    gap: 10px;
+}
+
+.offer-banner-card[data-layout="third"] .obc-info h2 {
+    font-size: 15.5px;
+}
+
+.offer-banner-card[data-layout="quarter"] .obc-info h2 {
+    font-size: 14px;
+}
+
+.offer-banner-card[data-layout="quarter"] .obc-meta {
+    gap: 6px 10px;
+    font-size: 12px;
+}
+
+.offer-banner-card[data-layout="third"] .obc-cta {
+    padding: 9px 14px;
+    font-size: 11.5px;
+}
+
+.offer-banner-card[data-layout="quarter"] .obc-cta {
+    padding: 9px 12px;
+    font-size: 11px;
+}
+
+.offer-banner-card[data-layout="third"] .obc-placeholder,
+.offer-banner-card[data-layout="quarter"] .obc-placeholder {
+    min-height: 140px;
+}
+
+@media (max-width: 1099px) {
+    .offer-banner-card[data-layout="third"],
+    .offer-banner-card[data-layout="quarter"] {
+        grid-column: span 6;
+    }
+}
+
+.offer-banner-card:hover {
+    transform: translateY(-3px);
+    border-color: #f3b7a5;
+    box-shadow: 0 14px 34px rgba(8, 22, 33, .13);
+}
+
+.offer-banner-card .obc-img {
+    display: block;
+    width: 100%;
+    height: auto;
+    background: var(--navy);
+}
+
+.offer-banner-card .obc-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-height: 220px;
+    height: 100%;
+    color: #ffb59f;
+    font-size: 40px;
+    background: linear-gradient(125deg, #081621 0%, #173247 100%);
+}
+
+.offer-banner-card .obc-placeholder span {
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+    color: #fff;
+}
+
+.obc-type {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #fef0eb;
+    color: var(--orange);
+    border-radius: 999px;
+    padding: 4px 11px;
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: .4px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+}
+
+.obc-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    margin-left: auto;
+    background: var(--orange);
+    color: #fff;
+    border-radius: 999px;
+    padding: 11px 18px;
+    font-size: 12.5px;
+    font-weight: 700;
+    box-shadow: 0 6px 16px rgba(239, 74, 35, .24);
+    transition: background .18s ease, gap .18s ease;
+}
+
+.offer-banner-card:hover .obc-cta {
+    background: var(--orange-dark);
+    gap: 11px;
+}
+
+.obc-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+    padding: 15px 20px 17px;
+    border-top: 1px solid #eef2f6;
+}
+
+.obc-info-copy {
+    min-width: 0;
+}
+
+.obc-info h2 {
+    font-size: 17.5px;
+    font-weight: 700;
+    color: var(--navy);
+    overflow-wrap: anywhere;
+    margin-bottom: 4px;
+}
+
+.obc-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px 16px;
+    flex-wrap: wrap;
+    font-size: 13px;
+    color: var(--steel);
+}
+
+.obc-meta .obc-price {
+    color: var(--orange);
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.obc-meta .obc-gift {
+    color: #2f855a;
+    font-weight: 700;
+}
+
+/* ---------- offer detail page ---------- */
+
+.offer-detail {
+    background: #fff;
+    border: 1px solid #e7ecf2;
+    border-radius: 16px;
+    padding: 26px;
+    margin-bottom: 36px;
+    box-shadow: 0 6px 20px rgba(8, 22, 33, .06);
+}
+
+.offer-detail-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #eef2f6;
+}
+
+.odh-copy h1 {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--navy);
+    margin: 8px 0 10px;
+    overflow-wrap: anywhere;
+}
+
+.odh-type {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: #fef0eb;
+    color: var(--orange);
+    border-radius: 999px;
+    padding: 5px 13px;
+    font-size: 11.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+}
+
+.odh-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 18px;
+    font-size: 13.5px;
+    color: var(--steel);
+}
+
+.odh-meta strong {
+    color: var(--navy);
+}
+
+.odh-meta .odh-gift {
+    color: #2f855a;
+}
+
+.odh-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.odh-call {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--orange);
+    color: #fff;
+    border-radius: 10px;
+    padding: 10px 16px;
+    box-shadow: 0 6px 16px rgba(239, 74, 35, .28);
+}
+
+.odh-call small {
+    display: block;
+    font-size: 10.5px;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+    opacity: .9;
+}
+
+.odh-call strong {
+    display: block;
+    font-size: 14px;
+}
+
+.odh-call:hover {
+    background: var(--orange-dark);
+}
+
+.odh-mail {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid #dbe3ec;
+    border-radius: 10px;
+    padding: 10px 16px;
+    color: var(--steel);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.odh-mail:hover {
+    border-color: var(--orange);
+    color: var(--orange);
+}
+
+.offer-detail-banner {
+    margin: 20px 0;
+    background: var(--navy);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.offer-detail-banner img {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.offer-detail-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 300px;
+    gap: 22px;
+    margin-top: 22px;
+}
+
+.offer-detail-content {
+    min-width: 0;
+}
+
+.offer-detail-content h2 {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 14px;
+}
+
+.offer-detail-content h2 i {
+    color: var(--orange);
+}
+
+.offer-rich {
+    font-size: 14px;
+    line-height: 1.75;
+    color: #1f2937;
+    overflow-x: auto;
+}
+
+.offer-rich img,
+.offer-rich video,
+.offer-rich iframe {
+    max-width: 100% !important;
+    height: auto !important;
+}
+
+.offer-rich iframe {
+    aspect-ratio: 16 / 9;
+    width: 100% !important;
+}
+
+.offer-rich table {
+    width: 100% !important;
+    border-collapse: collapse;
+    margin: 12px 0;
+    table-layout: auto;
+}
+
+.offer-rich td,
+.offer-rich th {
+    border: 1px solid #dbe3ec;
+    padding: 8px 10px;
+    vertical-align: top;
+}
+
+.offer-rich h2,
+.offer-rich h3,
+.offer-rich h4 {
+    margin: 16px 0 8px;
+    color: var(--navy);
+}
+
+.offer-rich p {
+    margin: 8px 0;
+}
+
+.offer-empty-copy p {
+    margin-bottom: 10px;
+    color: var(--steel);
+    line-height: 1.7;
+}
+
+.offer-detail-cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 22px;
+    padding-top: 18px;
+    border-top: 1px dashed #e2e8f0;
+}
+
+.offer-cta-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: 9px;
+    padding: 11px 18px;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.offer-cta-btn.primary {
+    background: var(--orange);
+    color: #fff;
+}
+
+.offer-cta-btn.primary:hover {
+    background: var(--orange-dark);
+}
+
+.offer-cta-btn.ghost {
+    border: 1px solid #dbe3ec;
+    color: var(--steel);
+}
+
+.offer-cta-btn.ghost:hover {
+    border-color: var(--orange);
+    color: var(--orange);
+}
+
+.ods-card {
+    background: #f8fafc;
+    border: 1px solid #e7ecf2;
+    border-radius: 12px;
+    padding: 18px;
+    position: sticky;
+    top: 130px;
+}
+
+.ods-card h3 {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #e7ecf2;
+}
+
+.ods-card dl > div {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px dashed #e7ecf2;
+    font-size: 13px;
+}
+
+.ods-card dt {
+    color: var(--muted);
+}
+
+.ods-card dd {
+    color: var(--navy);
+    font-weight: 700;
+    text-align: right;
+    overflow-wrap: anywhere;
+}
+
+.ods-card dd.ods-price {
+    color: var(--orange);
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.ods-cta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 16px;
+    background: var(--navy);
+    color: #fff;
+    border-radius: 9px;
+    padding: 11px 14px;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.ods-cta:hover {
+    background: var(--orange);
+}
+
+.ods-note {
+    margin-top: 10px;
+    font-size: 11.5px;
+    line-height: 1.6;
+    color: #94a3b8;
+    text-align: center;
+}
+
+.offer-related {
+    margin-top: 28px;
+    padding-top: 22px;
+    border-top: 1px solid #eef2f6;
+}
+
+.offer-related-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+}
+
+.offer-related-head h2 {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--navy);
+}
+
+.offer-related-head h2 i {
+    color: var(--orange);
+}
+
+.offer-related-head a {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--orange);
+}
+
+.offer-related-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+}
+
+.offer-related-table th {
+    background: var(--navy);
+    color: #fff;
+    text-align: left;
+    padding: 10px 12px;
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+}
+
+.offer-related-table td {
+    padding: 11px 12px;
+    border-bottom: 1px solid #f0f2f5;
+    color: var(--steel);
+    vertical-align: top;
+}
+
+.offer-related-table tr:nth-child(even) td {
+    background: #fafbfc;
+}
+
+.offer-related-table tr.is-current td {
+    background: #fff7f4;
+}
+
+.offer-related-table .ort-no {
+    width: 46px;
+    font-weight: 700;
+    color: var(--muted);
+}
+
+.offer-related-table .ort-name {
+    font-weight: 700;
+    color: var(--navy);
+}
+
+.offer-related-table .ort-price {
+    font-weight: 700;
+    color: var(--orange);
+    white-space: nowrap;
+}
+
+.offer-related-table .ort-gift {
+    color: #2f855a;
+}
+
+.ort-action a {
+    color: var(--orange);
+    font-weight: 700;
+    font-size: 12.5px;
+    white-space: nowrap;
+}
+
+.ort-current {
+    color: var(--muted);
+    font-size: 11.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+}
+
+.offer-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 24px;
+    color: var(--steel);
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.offer-back:hover {
+    color: var(--orange);
+}
+
+/* ---------- team page ---------- */
+
+.team-page {
+    margin-bottom: 40px;
+}
+
+.team-hero {
+    background: linear-gradient(120deg, #081621 0%, #173247 55%, #2a4a63 100%);
+    color: #fff;
+    border-radius: 16px;
+    padding: 38px 34px 32px;
+    margin-bottom: 22px;
+    box-shadow: 0 12px 34px rgba(8, 22, 33, .18);
+}
+
+.team-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, .1);
+    border: 1px solid rgba(255, 255, 255, .18);
+    border-radius: 999px;
+    padding: 6px 14px;
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+    color: #ffb59f;
+}
+
+.team-hero h1 {
+    font-size: 34px;
+    line-height: 1.18;
+    font-weight: 700;
+    margin: 16px 0 12px;
+    max-width: 760px;
+}
+
+.team-hero p {
+    max-width: 780px;
+    font-size: 14.5px;
+    line-height: 1.75;
+    color: #cbd5e1;
+}
+
+.team-hero-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.team-hero-stats div {
+    flex: 0 1 200px;
+    background: rgba(255, 255, 255, .07);
+    border: 1px solid rgba(255, 255, 255, .12);
+    border-radius: 11px;
+    padding: 13px 16px;
+}
+
+.team-hero-stats strong {
+    display: block;
+    font-size: 22px;
+    font-weight: 700;
+    color: #fff;
+}
+
+.team-hero-stats span {
+    font-size: 12px;
+    color: #94a3b8;
+    letter-spacing: .3px;
+}
+
+.team-promos {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    margin-bottom: 26px;
+}
+
+.team-promo {
+    position: relative;
+    display: block;
+    border-radius: 15px;
+    overflow: hidden;
+    background: var(--navy);
+    aspect-ratio: 3 / 2;
+    box-shadow: 0 8px 24px rgba(8, 22, 33, .12);
+    isolation: isolate;
+}
+
+.team-promo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform .45s ease;
+}
+
+.team-promo:hover img {
+    transform: scale(1.04);
+}
+
+.team-promo::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(4, 14, 21, 0) 28%, rgba(4, 14, 21, .86) 100%);
+    z-index: 1;
+}
+
+.team-promo-overlay {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 2;
+    padding: 22px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    color: #fff;
+}
+
+.team-promo-overlay strong {
+    font-size: 27px;
+    line-height: 1.1;
+    font-weight: 700;
+    letter-spacing: -.4px;
+}
+
+.team-promo-overlay em {
+    font-style: normal;
+    font-size: 13px;
+    line-height: 1.55;
+    color: #dbe4ec;
+    max-width: 380px;
+}
+
+.team-promo-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+    background: var(--orange);
+    color: #fff;
+    border-radius: 999px;
+    padding: 8px 16px;
+    font-size: 12.5px;
+    font-weight: 700;
+    width: fit-content;
+    transition: gap .18s ease, background .18s ease;
+}
+
+.team-promo:hover .team-promo-cta {
+    gap: 11px;
+    background: var(--orange-dark);
+}
+
+.team-intro {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    gap: 22px;
+    background: #fff;
+    border: 1px solid #e7ecf2;
+    border-radius: 15px;
+    padding: 28px;
+    margin-bottom: 26px;
+    box-shadow: 0 5px 18px rgba(8, 22, 33, .05);
+}
+
+.team-intro-copy h2 {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 12px;
+}
+
+.team-intro-copy p {
+    font-size: 13.8px;
+    line-height: 1.8;
+    color: var(--steel);
+    margin-bottom: 12px;
+}
+
+.team-commitments {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.team-commitment {
+    display: flex;
+    gap: 11px;
+    background: #f8fafc;
+    border: 1px solid #edf1f5;
+    border-radius: 11px;
+    padding: 13px 14px;
+}
+
+.team-commitment .tc-icon {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    border-radius: 9px;
+    background: #fef0eb;
+    color: var(--orange);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+}
+
+.team-commitment h3 {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 4px;
+}
+
+.team-commitment p {
+    font-size: 11.8px;
+    line-height: 1.6;
+    color: var(--muted);
+}
+
+.team-roster {
+    margin-bottom: 28px;
+}
+
+.team-roster-head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+}
+
+.team-roster-head h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--navy);
+}
+
+.team-roster-head p {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 4px;
+}
+
+.team-roster-count {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 7px 15px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--steel);
+}
+
+.team-grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.team-card {
+    background: #fff;
+    border: 1px solid #e7ecf2;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(8, 22, 33, .05);
+    transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.team-card:hover {
+    transform: translateY(-3px);
+    border-color: #f3b7a5;
+    box-shadow: 0 12px 28px rgba(8, 22, 33, .11);
+}
+
+.team-photo {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    background:
+        radial-gradient(circle at 50% 38%, rgba(255, 181, 159, .16), transparent 58%),
+        linear-gradient(135deg, #081621 0%, #173247 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.team-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 18%;
+    display: block;
+}
+
+.team-initials {
+    width: 86px;
+    height: 86px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, .07);
+    border: 1px solid rgba(255, 181, 159, .45);
+    box-shadow: 0 0 0 10px rgba(255, 255, 255, .03);
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: #ffb59f;
+}
+
+.team-card-body {
+    padding: 14px 15px 16px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.team-card-body h3 {
+    font-size: 15.5px;
+    font-weight: 700;
+    color: var(--navy);
+    line-height: 1.3;
+}
+
+.team-role {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--orange);
+    margin: 4px 0 10px;
+    line-height: 1.45;
+}
+
+.team-contact {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    flex-wrap: wrap;
+    border-top: 1px solid #eef2f6;
+    padding-top: 11px;
+    margin-top: auto;
+}
+
+.team-phone {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #0f5132;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 999px;
+    padding: 5px 10px;
+    overflow-wrap: anywhere;
+}
+
+.team-phone i {
+    color: var(--green-dark);
+    font-size: 11px;
+}
+
+.team-phone:hover {
+    color: #0b3d26;
+    background: #dcfce7;
+}
+
+.team-socials {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 6px;
+}
+
+.team-socials a,
+.team-admin-socials a {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    color: #fff;
+    transition: transform .15s ease, opacity .15s ease;
+}
+
+.team-socials a:hover,
+.team-admin-socials a:hover {
+    transform: translateY(-2px);
+    opacity: .88;
+}
+
+.ts-facebook {
+    background: #1877f2;
+}
+
+.ts-instagram {
+    background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+}
+
+.ts-tiktok {
+    background: #010101;
+}
+
+.ts-whatsapp {
+    background: #25d366;
+}
+
+.ts-youtube {
+    background: #ff0000;
+}
+
+.ts-twitter {
+    background: #0f1419;
+}
+
+.ts-linkedin {
+    background: #0a66c2;
+}
+
+.ts-telegram {
+    background: #229ed9;
+}
+
+.ts-snapchat {
+    background: #fffc00;
+    color: #081621;
+}
+
+.ts-discord {
+    background: #5865f2;
+}
+
+.ts-threads {
+    background: #101010;
+}
+
+.ts-pinterest {
+    background: #e60023;
+}
+
+.ts-reddit {
+    background: #ff4500;
+}
+
+.ts-website {
+    background: #081621;
+}
+
+.team-cta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    flex-wrap: wrap;
+    background: linear-gradient(120deg, #ef4a23 0%, #ff7a45 100%);
+    color: #fff;
+    border-radius: 15px;
+    padding: 26px 28px;
+    box-shadow: 0 10px 28px rgba(239, 74, 35, .24);
+}
+
+.team-cta h2 {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.team-cta p {
+    font-size: 13.5px;
+    opacity: .95;
+}
+
+.team-cta-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px;
+}
+
+.team-cta-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: 9px;
+    padding: 11px 17px;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.team-cta-btn.primary {
+    background: #fff;
+    color: var(--orange);
+}
+
+.team-cta-btn.primary:hover {
+    background: #fff3ef;
+}
+
+.team-cta-btn.ghost {
+    border: 1px solid rgba(255, 255, 255, .55);
+    color: #fff;
+}
+
+.team-cta-btn.ghost:hover {
+    background: rgba(255, 255, 255, .14);
+}
+
+@media (max-width: 1080px) {
+    .team-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 900px) {
+    .offer-detail-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .ods-card {
+        position: static;
+    }
+
+    .team-intro {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .team-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 640px) {
+    .promo-tab {
+        padding: 10px 10px;
+        font-size: 12.5px;
+    }
+
+    .offer-banner-list {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 14px;
+    }
+
+    .offer-banner-card,
+    .offer-banner-card[data-layout] {
+        grid-column: span 1;
+    }
+
+    .offer-banner-card .obc-img {
+        max-height: none;
+    }
+
+    .obc-cta {
+        flex: 1 1 100%;
+        justify-content: center;
+        padding: 10px 14px;
+        font-size: 12px;
+    }
+
+    .obc-info {
+        padding: 13px 14px 15px;
+    }
+
+    .obc-info h2 {
+        font-size: 15.5px;
+    }
+
+    .offer-detail {
+        padding: 18px 15px;
+    }
+
+    .odh-copy h1 {
+        font-size: 21px;
+    }
+
+    .odh-actions {
+        width: 100%;
+    }
+
+    .odh-call,
+    .odh-mail {
+        flex: 1 1 auto;
+        justify-content: center;
+    }
+
+    .offer-related-table {
+        min-width: 560px;
+        font-size: 12.5px;
+    }
+
+    .team-hero {
+        padding: 26px 20px 24px;
+    }
+
+    .team-hero h1 {
+        font-size: 25px;
+    }
+
+    .team-promos {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 14px;
+    }
+
+    .team-promo-overlay {
+        padding: 18px;
+    }
+
+    .team-promo-overlay strong {
+        font-size: 23px;
+    }
+
+    .team-intro {
+        padding: 20px 16px;
+    }
+
+    .team-commitments {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .team-roster-head h2 {
+        font-size: 21px;
+    }
+
+    .team-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .team-grid .team-card:last-child:nth-child(odd) {
+        grid-column: 1 / -1;
+        width: calc(50% - 6px);
+        justify-self: center;
+    }
+
+    .team-photo {
+        aspect-ratio: 1 / 1;
+    }
+
+    .team-initials {
+        width: 72px;
+        height: 72px;
+        font-size: 22px;
+    }
+
+    .team-card-body {
+        padding: 12px 12px 14px;
+    }
+
+    .team-card-body h3 {
+        font-size: 14px;
+    }
+
+    .team-role {
+        font-size: 11.5px;
+        margin-bottom: 8px;
+    }
+
+    .team-phone {
+        font-size: 11.5px;
+    }
+
+    .team-socials a {
+        width: 27px;
+        height: 27px;
+        font-size: 12px;
+    }
+
+    .team-hero-stats {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+    }
+
+    .team-hero-stats div {
+        padding: 10px 11px;
+    }
+
+    .team-hero-stats strong {
+        font-size: 18px;
+    }
+
+    .team-hero-stats span {
+        font-size: 10.5px;
+        line-height: 1.35;
+    }
+
+    .team-cta {
+        padding: 22px 18px;
+    }
+
+    .team-cta-actions {
+        width: 100%;
+    }
+
+    .team-cta-btn {
+        flex: 1 1 100%;
+        justify-content: center;
+    }
+}

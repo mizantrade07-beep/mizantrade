@@ -19,7 +19,7 @@
 
             <a
                 href="/admin/dashboard"
-                class="sidebar-link active"
+                class="sidebar-link <%= currentPath === '/admin/dashboard' ? 'active' : '' %>"
             >
                 <span class="nav-icon"><i class="fa-solid fa-gauge-high"></i></span>
                 <span>Dashboard</span>
@@ -70,6 +70,14 @@
                 <span>Categories</span>
             </a>
 
+            <a
+                href="/admin/attributes"
+                class="sidebar-link <%= currentPath === '/admin/attributes' ? 'active' : '' %>"
+            >
+                <span class="nav-icon"><i class="fa-solid fa-sliders"></i></span>
+                <span>Filter Attributes</span>
+            </a>
+
         </nav>
     </div>
 
@@ -84,6 +92,14 @@
 
                 <% if (can('content.edit')) { %>
                     <a
+                        href="/admin/homepage"
+                        class="sidebar-link <%= currentPath === '/admin/homepage' ? 'active' : '' %>"
+                    >
+                        <span class="nav-icon"><i class="fa-solid fa-house-laptop"></i></span>
+                        <span>Homepage Content</span>
+                    </a>
+
+                    <a
                         href="/admin/pages"
                         class="sidebar-link"
                     >
@@ -97,6 +113,30 @@
                     >
                         <span class="nav-icon"><i class="fa-solid fa-newspaper"></i></span>
                         <span>Posts / Blog</span>
+                    </a>
+
+                    <a
+                        href="/admin/faqs"
+                        class="sidebar-link <%= currentPath === '/admin/faqs' ? 'active' : '' %>"
+                    >
+                        <span class="nav-icon"><i class="fa-solid fa-circle-question"></i></span>
+                        <span>FAQ Manager</span>
+                    </a>
+
+                    <a
+                        href="/admin/offers"
+                        class="sidebar-link <%= currentPath === '/admin/offers' ? 'active' : '' %>"
+                    >
+                        <span class="nav-icon"><i class="fa-solid fa-tags"></i></span>
+                        <span>Offers Manager</span>
+                    </a>
+
+                    <a
+                        href="/admin/team"
+                        class="sidebar-link <%= currentPath === '/admin/team' ? 'active' : '' %>"
+                    >
+                        <span class="nav-icon"><i class="fa-solid fa-users"></i></span>
+                        <span>Team Members</span>
                     </a>
                 <% } %>
 
@@ -154,6 +194,16 @@
                 <span>Orders</span>
             </a>
 
+            <% if (can('orders.view')) { %>
+                <a
+                    href="/admin/chats"
+                    class="sidebar-link <%= currentPath === '/admin/chats' ? 'active' : '' %>"
+                >
+                    <span class="nav-icon"><i class="fa-solid fa-headset"></i></span>
+                    <span>Live Chats</span>
+                </a>
+            <% } %>
+
             <% if (can('customers.view')) { %>
                 <a
                     href="/admin/customers"
@@ -171,6 +221,34 @@
                 >
                     <span class="nav-icon"><i class="fa-solid fa-tags"></i></span>
                     <span>Coupons</span>
+                </a>
+            <% } %>
+
+            <% if (can('orders.view')) { %>
+                <a
+                    href="/admin/order-history"
+                    class="sidebar-link <%= currentPath === '/admin/order-history' ? 'active' : '' %>"
+                >
+                    <span class="nav-icon"><i class="fa-solid fa-clock-rotate-left"></i></span>
+                    <span>Order History</span>
+                </a>
+            <% } %>
+
+            <% if (can('analytics.view')) { %>
+                <a
+                    href="/admin/payment-history"
+                    class="sidebar-link <%= currentPath === '/admin/payment-history' ? 'active' : '' %>"
+                >
+                    <span class="nav-icon"><i class="fa-solid fa-money-bill-transfer"></i></span>
+                    <span>Payment History</span>
+                </a>
+
+                <a
+                    href="/admin/rewards"
+                    class="sidebar-link <%= currentPath === '/admin/rewards' ? 'active' : '' %>"
+                >
+                    <span class="nav-icon"><i class="fa-solid fa-gift"></i></span>
+                    <span>Reward Points</span>
                 </a>
             <% } %>
 
@@ -206,13 +284,51 @@
 
         <nav class="sidebar-nav">
 
+            <a
+                href="/"
+                target="_blank"
+                rel="noopener"
+                class="sidebar-link"
+            >
+                <span class="nav-icon"><i class="fa-solid fa-globe"></i></span>
+                <span>View Website</span>
+            </a>
+
             <% if (can('settings.manage')) { %>
+            <a
+                href="/admin/footer"
+                class="sidebar-link <%= currentPath === '/admin/footer' ? 'active' : '' %>"
+            >
+                <span class="nav-icon"><i class="fa-solid fa-shoe-prints"></i></span>
+                <span>Footer</span>
+            </a>
+            <a
+                href="/admin/payment-methods"
+                class="sidebar-link <%= currentPath === '/admin/payment-methods' ? 'active' : '' %>"
+            >
+                <span class="nav-icon"><i class="fa-solid fa-credit-card"></i></span>
+                <span>Payment Methods</span>
+            </a>
             <a
                 href="/admin/settings"
                 class="sidebar-link <%= currentPath === '/admin/settings' ? 'active' : '' %>"
             >
                 <span class="nav-icon"><i class="fa-solid fa-gear"></i></span>
                 <span>Settings</span>
+            </a>
+            <a
+                href="/admin/seo"
+                class="sidebar-link <%= currentPath === '/admin/seo' ? 'active' : '' %>"
+            >
+                <span class="nav-icon"><i class="fa-solid fa-magnifying-glass-chart"></i></span>
+                <span>SEO &amp; Marketing</span>
+            </a>
+            <a
+                href="/admin/top-header"
+                class="sidebar-link <%= currentPath === '/admin/top-header' ? 'active' : '' %>"
+            >
+                <span class="nav-icon"><i class="fa-solid fa-bullhorn"></i></span>
+                <span>Top Header Panel</span>
             </a>
             <% } %>
 

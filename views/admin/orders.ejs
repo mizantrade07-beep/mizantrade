@@ -49,6 +49,7 @@
                             <th>Payment</th>
                             <th>Total</th>
                             <th>Status</th>
+                            <th>Docs</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -56,7 +57,7 @@
 
                         <% if (orders.length === 0) { %>
                             <tr>
-                                <td colspan="8" class="empty-state">No orders found.</td>
+                                <td colspan="9" class="empty-state">No orders found.</td>
                             </tr>
                         <% } %>
 
@@ -69,7 +70,7 @@
                                 Delivered: '#2f855a',
                                 Cancelled: '#c53030'
                             };
-                            var paymentLabels = { bkash: 'bKash', cod: 'Cash on Delivery', bank: 'Bank Transfer' };
+                            var paymentLabels = { bkash: 'bKash', nagad: 'Nagad', rocket: 'Rocket', cod: 'Cash on Delivery', bank: 'Bank Transfer' };
                         %>
 
                         <% orders.forEach(function(order) { %>
@@ -84,6 +85,13 @@
                                     <span style="background:<%= statusColors[order.status] %>; color:#fff; padding:3px 10px; border-radius:12px; font-size:11.5px; font-weight:600;">
                                         <%= order.status %>
                                     </span>
+                                </td>
+                                <td>
+                                    <div class="doc-links">
+                                        <a href="/admin/order/<%= order._id %>/print/invoice" target="_blank" title="Print Invoice">Invoice</a>
+                                        <a href="/admin/order/<%= order._id %>/print/delivery-challan" target="_blank" title="Print Delivery Challan">Challan</a>
+                                        <a href="/admin/order/<%= order._id %>/print/delivery-slip" target="_blank" title="Print Delivery Slip">Slip</a>
+                                    </div>
                                 </td>
                                 <td>
                                     <a href="/admin/order/<%= order._id %>" class="action-edit" title="View Details">👁</a>

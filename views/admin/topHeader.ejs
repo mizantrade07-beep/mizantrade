@@ -1,0 +1,445 @@
+<%- include("partials/head", { title: "Top Header Panel | MizanTrade Admin" }) %>
+
+<%- include("partials/sidebar") %>
+
+<div class="admin-main">
+
+    <%- include("partials/topbar", { title: "Top Header Panel" }) %>
+
+    <main class="admin-content">
+
+        <div class="dashboard-header">
+            <div>
+                <h1 class="dashboard-title">Top Header Panel</h1>
+                <p class="dashboard-subtitle">
+                    Control the scrolling notice bar, contact items and header action buttons (Offer, Partner, Wishlist, Cart, etc.) shown on the public website — with custom links, icons and colors.
+                </p>
+            </div>
+        </div>
+
+        <% if (message === "saved") { %>
+            <div style="margin-bottom:16px;padding:12px 16px;border-radius:8px;background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;font-weight:600;">
+                <i class="fa-solid fa-circle-check"></i> Top header saved successfully.
+            </div>
+        <% } %>
+
+        <form action="/admin/top-header" method="POST">
+
+            <!-- ===== LOGO & SEARCH ===== -->
+            <section class="dashboard-card" style="margin-top:18px;">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fa-solid fa-image card-icon"></i> Logo &amp; Search Bar</h2>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group form-full">
+                        <label>Logo image URL</label>
+                        <div style="display:flex; gap:6px;">
+                            <input type="text" name="logoUrl" class="img-url" value="<%= logoUrl %>" placeholder="/images/logo.svg or https://…">
+                            <label class="secondary-button" style="cursor:pointer; white-space:nowrap;"><i class="fa-solid fa-upload"></i><input type="file" accept="image/*" class="img-file" hidden></label>
+                        </div>
+                        <div class="tag-input-hint">Leave empty to use the default logo (/images/logo.svg).</div>
+                    </div>
+
+                    <div class="form-group form-full">
+                        <label>Search bar placeholder text</label>
+                        <input type="text" name="searchPlaceholder" value="<%= searchPlaceholder %>" placeholder="Search motherboard, SSD, RAM, graphics card...">
+                        <div class="tag-input-hint">Leave empty to use the default hint text.</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ===== BAR COLORS ===== -->
+            <section class="dashboard-card" style="margin-top:18px;">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fa-solid fa-palette card-icon"></i> Bar Colors</h2>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Notice bar background</label>
+                        <div class="th-color">
+                            <input type="color" class="th-pick" value="#081621">
+                            <input type="text" class="th-hex" name="colors.topbarBg" value="<%= colors.topbarBg || '' %>" placeholder="Default">
+                            <button type="button" class="th-clear" title="Reset to default">&times;</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Notice bar text</label>
+                        <div class="th-color">
+                            <input type="color" class="th-pick" value="#ffffff">
+                            <input type="text" class="th-hex" name="colors.topbarText" value="<%= colors.topbarText || '' %>" placeholder="Default">
+                            <button type="button" class="th-clear" title="Reset to default">&times;</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Main header background (logo + search row)</label>
+                        <div class="th-color">
+                            <input type="color" class="th-pick" value="#111111">
+                            <input type="text" class="th-hex" name="colors.headerBg" value="<%= colors.headerBg || '' %>" placeholder="Default">
+                            <button type="button" class="th-clear" title="Reset to default">&times;</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="tag-input-hint" style="margin-top:10px;">
+                    Leave a color empty to keep the theme default. Click the square to pick, or type a hex code like #ef4a23.
+                </div>
+            </section>
+
+            <!-- ===== SCROLLING NOTICES ===== -->
+            <section class="dashboard-card" style="margin-top:18px;">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fa-solid fa-bullhorn card-icon"></i> Scrolling Notices (Marquee)</h2>
+                </div>
+
+                <div class="tag-input-hint" style="margin-bottom:10px;">
+                    Each notice scrolls inside the top bar. Add an optional link and per-notice text / background colors. Remove all notices to hide the marquee.
+                </div>
+
+                <div id="noticeRows">
+                    <% notices.forEach(function (n, i) { %>
+                        <div class="th-row" style="border:1px solid #e3e8ef; border-radius:10px; padding:12px; margin-bottom:10px;">
+                            <div style="display:grid; grid-template-columns:1.6fr 1.3fr auto auto auto; gap:10px; align-items:end;">
+                                <div class="form-group" style="margin:0;">
+                                    <label>Notice text</label>
+                                    <input type="text" name="notices[<%= i %>][text]" value="<%= n.text %>" placeholder="e.g. Free delivery inside Dhaka!">
+                                </div>
+                                <div class="form-group" style="margin:0;">
+                                    <label>Link (optional)</label>
+                                    <input type="text" name="notices[<%= i %>][link]" value="<%= n.link || '' %>" placeholder="https://… or /offers">
+                                </div>
+                                <div class="form-group" style="margin:0;">
+                                    <label>Text color</label>
+                                    <div class="th-color">
+                                        <input type="color" class="th-pick" value="#ffffff">
+                                        <input type="text" class="th-hex" name="notices[<%= i %>][textColor]" value="<%= n.textColor || '' %>" placeholder="Default">
+                                        <button type="button" class="th-clear" title="Reset to default">&times;</button>
+                                    </div>
+                                </div>
+                                <div class="form-group" style="margin:0;">
+                                    <label>Background</label>
+                                    <div class="th-color">
+                                        <input type="color" class="th-pick" value="#ef4a23">
+                                        <input type="text" class="th-hex" name="notices[<%= i %>][bgColor]" value="<%= n.bgColor || '' %>" placeholder="Default">
+                                        <button type="button" class="th-clear" title="Reset to default">&times;</button>
+                                    </div>
+                                </div>
+                                <button type="button" class="mini-button danger st-remove" style="margin-bottom:6px;">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+
+                <button type="button" class="secondary-button" id="addNotice">
+                    <i class="fa-solid fa-plus"></i> Add Notice
+                </button>
+            </section>
+
+            <!-- ===== CONTACT ITEMS ===== -->
+            <section class="dashboard-card" style="margin-top:18px;">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fa-solid fa-address-book card-icon"></i> Contact Items</h2>
+                </div>
+
+                <div class="tag-input-hint" style="margin-bottom:10px;">
+                    Shown on the right side of the notice bar — email, hotline, custom links. Example icon classes: fa-solid fa-phone, fa-solid fa-envelope, fa-brands fa-whatsapp.
+                </div>
+
+                <div id="contactRows">
+                    <% contacts.forEach(function (c, i) { %>
+                        <div class="th-row" style="border:1px solid #e3e8ef; border-radius:10px; padding:12px; margin-bottom:10px;">
+                            <div style="display:grid; grid-template-columns:1.1fr 0.8fr 1.2fr 1.3fr auto; gap:10px; align-items:end;">
+                                <div class="form-group" style="margin:0;">
+                                    <label>Icon class</label>
+                                    <input type="text" name="contacts[<%= i %>][icon]" value="<%= c.icon || 'fa-solid fa-phone' %>" placeholder="fa-solid fa-phone">
+                                </div>
+                                <div class="form-group" style="margin:0;">
+                                    <label>Label</label>
+                                    <input type="text" name="contacts[<%= i %>][label]" value="<%= c.label || '' %>" placeholder="Hotline">
+                                </div>
+                                <div class="form-group" style="margin:0;">
+                                    <label>Text</label>
+                                    <input type="text" name="contacts[<%= i %>][text]" value="<%= c.text %>" placeholder="01709867815">
+                                </div>
+                                <div class="form-group" style="margin:0;">
+                                    <label>Link</label>
+                                    <input type="text" name="contacts[<%= i %>][link]" value="<%= c.link || '' %>" placeholder="tel:01709867815">
+                                </div>
+                                <button type="button" class="mini-button danger st-remove" style="margin-bottom:6px;">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </div>
+                            <div style="display:grid; grid-template-columns:220px 220px; gap:10px; margin-top:10px;">
+                                <div class="form-group" style="margin:0;">
+                                    <label>Text color</label>
+                                    <div class="th-color">
+                                        <input type="color" class="th-pick" value="#ffffff">
+                                        <input type="text" class="th-hex" name="contacts[<%= i %>][textColor]" value="<%= c.textColor || '' %>" placeholder="Default">
+                                        <button type="button" class="th-clear" title="Reset to default">&times;</button>
+                                    </div>
+                                </div>
+                                <div class="form-group" style="margin:0;">
+                                    <label>Background</label>
+                                    <div class="th-color">
+                                        <input type="color" class="th-pick" value="#ef4a23">
+                                        <input type="text" class="th-hex" name="contacts[<%= i %>][bgColor]" value="<%= c.bgColor || '' %>" placeholder="Default">
+                                        <button type="button" class="th-clear" title="Reset to default">&times;</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+
+                <button type="button" class="secondary-button" id="addContact">
+                    <i class="fa-solid fa-plus"></i> Add Contact Item
+                </button>
+            </section>
+
+            <!-- ===== HEADER ACTIONS ===== -->
+            <section class="dashboard-card" style="margin-top:18px;">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fa-solid fa-hand-pointer card-icon"></i> Header Action Buttons</h2>
+                </div>
+
+                <div class="tag-input-hint" style="margin-bottom:10px;">
+                    Icon buttons shown next to the search bar — the title appears below the icon. Use the badge column to attach the live wishlist / cart count to a button. Uncheck "Desktop" or "Mobile" to hide a button on that device.
+                </div>
+
+                <div id="actionRows">
+                    <% actions.forEach(function (a, i) { %>
+                        <div class="th-row" style="border:1px solid #e3e8ef; border-radius:10px; padding:12px; margin-bottom:10px;">
+                            <div style="display:grid; grid-template-columns:1fr 1fr 1.4fr 0.9fr auto; gap:10px; align-items:end;">
+                                <div class="form-group" style="margin:0;">
+                                    <label>Icon class</label>
+                                    <input type="text" name="actions[<%= i %>][icon]" value="<%= a.icon || 'fa-solid fa-star' %>" placeholder="fa-solid fa-fire">
+                                </div>
+                                <div class="form-group" style="margin:0;">
+                                    <label>Title (below icon)</label>
+                                    <input type="text" name="actions[<%= i %>][title]" value="<%= a.title %>" placeholder="Offer">
+                                </div>
+                                <div class="form-group" style="margin:0;">
+                                    <label>Link</label>
+                                    <input type="text" name="actions[<%= i %>][link]" value="<%= a.link || '' %>" placeholder="/offers">
+                                </div>
+                                <div class="form-group" style="margin:0;">
+                                    <label>Badge</label>
+                                    <select name="actions[<%= i %>][badge]">
+                                        <option value="none" <%= a.badge === 'none' ? 'selected' : '' %>>None</option>
+                                        <option value="wishlist" <%= a.badge === 'wishlist' ? 'selected' : '' %>>Wishlist count</option>
+                                        <option value="cart" <%= a.badge === 'cart' ? 'selected' : '' %>>Cart count</option>
+                                        <option value="compare" <%= a.badge === 'compare' ? 'selected' : '' %>>Compare count</option>
+                                    </select>
+                                </div>
+                                <button type="button" class="mini-button danger st-remove" style="margin-bottom:6px;">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </div>
+                            <div style="display:grid; grid-template-columns:200px 200px 1fr 1fr 1fr; gap:10px; margin-top:10px; align-items:end;">
+                                <div class="form-group" style="margin:0;">
+                                    <label>Text color</label>
+                                    <div class="th-color">
+                                        <input type="color" class="th-pick" value="#ffffff">
+                                        <input type="text" class="th-hex" name="actions[<%= i %>][textColor]" value="<%= a.textColor || '' %>" placeholder="Default">
+                                        <button type="button" class="th-clear" title="Reset to default">&times;</button>
+                                    </div>
+                                </div>
+                                <div class="form-group" style="margin:0;">
+                                    <label>Background</label>
+                                    <div class="th-color">
+                                        <input type="color" class="th-pick" value="#ef4a23">
+                                        <input type="text" class="th-hex" name="actions[<%= i %>][bgColor]" value="<%= a.bgColor || '' %>" placeholder="Default">
+                                        <button type="button" class="th-clear" title="Reset to default">&times;</button>
+                                    </div>
+                                </div>
+                                <label style="display:flex; gap:7px; align-items:center; font-size:13px; color:#333; font-weight:600; padding-bottom:8px; cursor:pointer;">
+                                    <input type="checkbox" name="actions[<%= i %>][highlight]" <%= a.highlight ? 'checked' : '' %>> Eye-catching button
+                                </label>
+                                <label style="display:flex; gap:7px; align-items:center; font-size:13px; color:#333; font-weight:600; padding-bottom:8px; cursor:pointer;">
+                                    <input type="checkbox" name="actions[<%= i %>][showDesktop]" <%= a.showDesktop ? 'checked' : '' %>> Show on desktop
+                                </label>
+                                <label style="display:flex; gap:7px; align-items:center; font-size:13px; color:#333; font-weight:600; padding-bottom:8px; cursor:pointer;">
+                                    <input type="checkbox" name="actions[<%= i %>][showMobile]" <%= a.showMobile ? 'checked' : '' %>> Show on mobile
+                                </label>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+
+                <button type="button" class="secondary-button" id="addAction">
+                    <i class="fa-solid fa-plus"></i> Add Action Button
+                </button>
+            </section>
+
+            <div class="form-actions" style="margin-top:18px;">
+                <button type="submit" class="primary-button">
+                    <i class="fa-solid fa-floppy-disk"></i>
+                    Save Top Header
+                </button>
+            </div>
+
+        </form>
+
+    </main>
+
+</div>
+
+<%- include("partials/footer") %>
+
+<style>
+    .th-color { display: flex; gap: 6px; align-items: center; }
+    .th-color .th-pick { width: 38px; height: 38px; padding: 3px; border: 1px solid #e3e8ef; border-radius: 8px; background: #fff; cursor: pointer; flex-shrink: 0; }
+    .th-color .th-hex { width: 120px; }
+    .th-color .th-clear { width: 26px; height: 26px; border: 1px solid #e3e8ef; background: #fff; border-radius: 6px; color: #98a2b3; cursor: pointer; font-size: 15px; line-height: 1; flex-shrink: 0; }
+    .th-color .th-clear:hover { color: #ef4a23; border-color: #ef4a23; }
+</style>
+
+<script>
+(function () {
+    var counters = {};
+
+    function nextIndex(key) {
+        if (counters[key] === undefined) counters[key] = document.querySelectorAll('[name^="' + key + '["]').length;
+        var idx = counters[key];
+        counters[key] = idx + 1;
+        return idx;
+    }
+
+    function colorField(labelText, nameAttr) {
+        return '<div class="form-group" style="margin:0;"><label>' + labelText + '</label>' +
+            '<div class="th-color">' +
+                '<input type="color" class="th-pick" value="#ef4a23">' +
+                '<input type="text" class="th-hex" name="' + nameAttr + '" placeholder="Default">' +
+                '<button type="button" class="th-clear" title="Reset to default">&times;</button>' +
+            '</div></div>';
+    }
+
+    /* ---- notices ---- */
+    document.getElementById("addNotice").addEventListener("click", function () {
+        var i = nextIndex("notices");
+        var html = '' +
+        '<div class="th-row" style="border:1px solid #e3e8ef; border-radius:10px; padding:12px; margin-bottom:10px;">' +
+            '<div style="display:grid; grid-template-columns:1.6fr 1.3fr auto auto auto; gap:10px; align-items:end;">' +
+                '<div class="form-group" style="margin:0;"><label>Notice text</label><input type="text" name="notices[' + i + '][text]" placeholder="e.g. Free delivery inside Dhaka!"></div>' +
+                '<div class="form-group" style="margin:0;"><label>Link (optional)</label><input type="text" name="notices[' + i + '][link]" placeholder="https://… or /offers"></div>' +
+                colorField("Text color", "notices[" + i + "][textColor]") +
+                colorField("Background", "notices[" + i + "][bgColor]") +
+                '<button type="button" class="mini-button danger st-remove" style="margin-bottom:6px;"><i class="fa-solid fa-trash"></i></button>' +
+            '</div>' +
+        '</div>';
+        document.getElementById("noticeRows").insertAdjacentHTML("beforeend", html);
+    });
+
+    /* ---- contacts ---- */
+    document.getElementById("addContact").addEventListener("click", function () {
+        var i = nextIndex("contacts");
+        var html = '' +
+        '<div class="th-row" style="border:1px solid #e3e8ef; border-radius:10px; padding:12px; margin-bottom:10px;">' +
+            '<div style="display:grid; grid-template-columns:1.1fr 0.8fr 1.2fr 1.3fr auto; gap:10px; align-items:end;">' +
+                '<div class="form-group" style="margin:0;"><label>Icon class</label><input type="text" name="contacts[' + i + '][icon]" value="fa-solid fa-phone"></div>' +
+                '<div class="form-group" style="margin:0;"><label>Label</label><input type="text" name="contacts[' + i + '][label]"></div>' +
+                '<div class="form-group" style="margin:0;"><label>Text</label><input type="text" name="contacts[' + i + '][text]"></div>' +
+                '<div class="form-group" style="margin:0;"><label>Link</label><input type="text" name="contacts[' + i + '][link]"></div>' +
+                '<button type="button" class="mini-button danger st-remove" style="margin-bottom:6px;"><i class="fa-solid fa-trash"></i></button>' +
+            '</div>' +
+            '<div style="display:grid; grid-template-columns:220px 220px; gap:10px; margin-top:10px;">' +
+                colorField("Text color", "contacts[" + i + "][textColor]") +
+                colorField("Background", "contacts[" + i + "][bgColor]") +
+            '</div>' +
+        '</div>';
+        document.getElementById("contactRows").insertAdjacentHTML("beforeend", html);
+    });
+
+    /* ---- actions ---- */
+    document.getElementById("addAction").addEventListener("click", function () {
+        var i = nextIndex("actions");
+        var html = '' +
+        '<div class="th-row" style="border:1px solid #e3e8ef; border-radius:10px; padding:12px; margin-bottom:10px;">' +
+            '<div style="display:grid; grid-template-columns:1fr 1fr 1.4fr 0.9fr auto; gap:10px; align-items:end;">' +
+                '<div class="form-group" style="margin:0;"><label>Icon class</label><input type="text" name="actions[' + i + '][icon]" value="fa-solid fa-star"></div>' +
+                '<div class="form-group" style="margin:0;"><label>Title (below icon)</label><input type="text" name="actions[' + i + '][title]"></div>' +
+                '<div class="form-group" style="margin:0;"><label>Link</label><input type="text" name="actions[' + i + '][link]"></div>' +
+                '<div class="form-group" style="margin:0;"><label>Badge</label>' +
+                    '<select name="actions[' + i + '][badge]">' +
+                        '<option value="none" selected>None</option>' +
+                        '<option value="wishlist">Wishlist count</option>' +
+                        '<option value="cart">Cart count</option>' +
+                        '<option value="compare">Compare count</option>' +
+                    '</select></div>' +
+                '<button type="button" class="mini-button danger st-remove" style="margin-bottom:6px;"><i class="fa-solid fa-trash"></i></button>' +
+            '</div>' +
+            '<div style="display:grid; grid-template-columns:200px 200px 1fr 1fr 1fr; gap:10px; margin-top:10px; align-items:end;">' +
+                colorField("Text color", "actions[" + i + "][textColor]") +
+                colorField("Background", "actions[" + i + "][bgColor]") +
+                '<label style="display:flex; gap:7px; align-items:center; font-size:13px; color:#333; font-weight:600; padding-bottom:8px; cursor:pointer;">' +
+                    '<input type="checkbox" name="actions[' + i + '][highlight]"> Eye-catching button</label>' +
+                '<label style="display:flex; gap:7px; align-items:center; font-size:13px; color:#333; font-weight:600; padding-bottom:8px; cursor:pointer;">' +
+                    '<input type="checkbox" name="actions[' + i + '][showDesktop]" checked> Show on desktop</label>' +
+                '<label style="display:flex; gap:7px; align-items:center; font-size:13px; color:#333; font-weight:600; padding-bottom:8px; cursor:pointer;">' +
+                    '<input type="checkbox" name="actions[' + i + '][showMobile]" checked> Show on mobile</label>' +
+            '</div>' +
+        '</div>';
+        document.getElementById("actionRows").insertAdjacentHTML("beforeend", html);
+    });
+
+    /* ---- shared: remove row ---- */
+    document.addEventListener("click", function (e) {
+        var rm = e.target.closest(".st-remove");
+        if (rm) {
+            var row = rm.closest(".th-row");
+            if (row) row.remove();
+        }
+    });
+
+    /* ---- shared: color picker <-> hex sync + clear ---- */
+    document.addEventListener("input", function (e) {
+        if (!e.target.classList) return;
+        if (e.target.classList.contains("th-pick")) {
+            var hex = e.target.parentElement.querySelector(".th-hex");
+            if (hex) hex.value = e.target.value;
+        } else if (e.target.classList.contains("th-hex")) {
+            var v = e.target.value.trim();
+            if (/^#[0-9a-fA-F]{6}$/.test(v)) {
+                var pick = e.target.parentElement.querySelector(".th-pick");
+                if (pick) pick.value = v;
+            }
+        }
+    });
+
+    document.addEventListener("click", function (e) {
+        var clr = e.target.closest(".th-clear");
+        if (clr) {
+            var hex = clr.parentElement.querySelector(".th-hex");
+            if (hex) hex.value = "";
+        }
+    });
+
+    /* ---- logo image upload ---- */
+    document.addEventListener("change", function (e) {
+        if (!e.target.classList || !e.target.classList.contains("img-file")) return;
+        var file = e.target.files && e.target.files[0];
+        if (!file) return;
+        var urlInput = document.querySelector(".img-url");
+        if (!urlInput) return;
+
+        var fd = new FormData();
+        fd.append("media", file);
+
+        fetch("/admin/upload-media", { method: "POST", body: fd })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (data && data.success && data.urls && data.urls[0]) {
+                    urlInput.value = data.urls[0];
+                } else {
+                    alert("Upload failed. Please paste the image URL manually.");
+                }
+            })
+            .catch(function () { alert("Upload failed. Please paste the image URL manually."); });
+    });
+})();
+</script>

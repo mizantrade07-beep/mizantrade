@@ -12,6 +12,18 @@
 
     <main class="admin-content">
 
+        <%
+            var providerLabels = {
+                password: "Password",
+                email: "E-mail OTP",
+                phone: "Phone OTP",
+                google: "Google",
+                facebook: "Facebook",
+                tiktok: "TikTok"
+            };
+            var providerLabel = providerLabels[customer.authProvider] || "Password";
+        %>
+
         <div class="dashboard-header">
             <div>
                 <h1 class="dashboard-title"><%= customer.name %></h1>
@@ -53,6 +65,22 @@
                 <div class="stat-content">
                     <span>Total Spent</span>
                     <strong>৳ <%= totalSpent.toLocaleString() %></strong>
+                </div>
+            </article>
+
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-award"></i></div>
+                <div class="stat-content">
+                    <span>Membership Tier</span>
+                    <strong><%= customer.tier || 'Star' %></strong>
+                </div>
+            </article>
+
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-star"></i></div>
+                <div class="stat-content">
+                    <span>Reward Points</span>
+                    <strong><%= (customer.rewardPoints || 0).toLocaleString() %></strong>
                 </div>
             </article>
 
@@ -125,8 +153,223 @@
                     <span class="detail-label">Joined</span>
                     <span class="detail-value"><%= new Date(customer.createdAt).toLocaleString() %></span>
                 </div>
+                <div class="detail-item">
+                    <span class="detail-label">Membership Tier</span>
+                    <span class="detail-value"><%= customer.tier || 'Star' %></span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Reward Points</span>
+                    <span class="detail-value"><%= (customer.rewardPoints || 0).toLocaleString() %> pts</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Store Credit</span>
+                    <span class="detail-value">৳ <%= (customer.storeCredit || 0).toLocaleString() %></span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Account Updated</span>
+                    <span class="detail-value"><%= customer.updatedAt ? new Date(customer.updatedAt).toLocaleString() : '—' %></span>
+                </div>
+                <% if (customer.notes) { %>
+                    <div class="detail-item" style="grid-column:1 / -1;">
+                        <span class="detail-label">Internal Notes</span>
+                        <span class="detail-value" style="white-space:pre-line;"><%= customer.notes %></span>
+                    </div>
+                <% } %>
             </div>
         </section>
+
+        <section class="dashboard-card" id="security">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fa-solid fa-shield-halved card-icon"></i>
+                    Security &amp; Verification
+                </h2>
+                <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                    <% if (customer.emailVerified) { %>
+                        <span class="badge badge-approved">E-mail Verified</span>
+                    <% } else { %>
+                        <span class="badge badge-pending">E-mail Unverified</span>
+                    <% } %>
+                    <% if (customer.phoneVerified) { %>
+                        <span class="badge badge-approved">Phone Verified</span>
+                    <% } else { %>
+                        <span class="badge badge-pending">Phone Unverified</span>
+                    <% } %>
+                </div>
+            </div>
+
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <span class="detail-label">Login Method</span>
+                    <span class="detail-value"><%= providerLabel %></span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Password</span>
+                    <span class="detail-value">
+                        <% if (customer.hasPassword) { %>
+                            <span class="badge badge-approved"><i class="fa-solid fa-key"></i> Set</span>
+                            <span style="display:block; font-size:12px; color:#64748b; margin-top:4px;">
+                                Stored as a one-way bcrypt hash — the original password cannot be displayed.
+                            </span>
+                        <% } else { %>
+                            <span class="badge badge-pending">Not Set</span>
+                            <span style="display:block; font-size:12px; color:#64748b; margin-top:4px;">
+                                This account signs in with OTP or a social provider only.
+                            </span>
+                        <% } %>
+                    </span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">E-mail Verification</span>
+                    <span class="detail-value"><%= customer.emailVerified ? 'Verified' : 'Not verified' %></span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Phone Verification</span>
+                    <span class="detail-value"><%= customer.phoneVerified ? 'Verified' : 'Not verified' %></span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Last Login</span>
+                    <span class="detail-value">
+                        <%= customer.lastLoginAt ? new Date(customer.lastLoginAt).toLocaleString() : '— never —' %>
+                    </span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Account Created</span>
+                    <span class="detail-value"><%= new Date(customer.createdAt).toLocaleString() %></span>
+                </div>
+            </div>
+
+            <% if (passwordNotice) { %>
+                <div style="margin-top:20px; padding:16px 18px; border:1px solid #fcd34d; background:#fffbeb; border-radius:12px;">
+                    <h3 style="margin:0 0 8px; font-size:15px; font-weight:700; color:#92400e;">
+                        <i class="fa-solid fa-key"></i> New Password Generated
+                    </h3>
+                    <p style="font-size:13.5px; color:#92400e; margin:0 0 12px;">
+                        A new password was generated for <strong><%= passwordNotice.name %></strong>.
+                        Copy it now — it will not be shown again after you leave this page.
+                    </p>
+
+                    <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                        <code id="newPasswordValue" style="font-size:20px; font-weight:700; letter-spacing:2px; background:#fff; border:1.5px dashed #f59e0b; border-radius:10px; padding:10px 16px; color:#081621;"><%= passwordNotice.password %></code>
+                        <button type="button" class="primary-button" id="copyPasswordBtn">
+                            <i class="fa-regular fa-copy"></i>
+                            Copy Password
+                        </button>
+                    </div>
+
+                    <p class="section-note" style="margin-bottom:0;">
+                        Share this password with the customer through a secure channel. They can change it
+                        anytime from Account Settings after logging in.
+                    </p>
+                </div>
+
+                <script>
+                    (function () {
+                        var btn = document.getElementById("copyPasswordBtn");
+                        var value = document.getElementById("newPasswordValue");
+
+                        if (!btn || !value) return;
+
+                        btn.addEventListener("click", function () {
+                            var text = value.textContent.trim();
+                            var done = function () {
+                                btn.innerHTML = '<i class="fa-solid fa-check"></i> Copied';
+                            };
+
+                            if (navigator.clipboard && navigator.clipboard.writeText) {
+                                navigator.clipboard.writeText(text).then(done).catch(function () {});
+                            } else {
+                                var area = document.createElement("textarea");
+                                area.value = text;
+                                document.body.appendChild(area);
+                                area.select();
+                                try { document.execCommand("copy"); done(); } catch (e) {}
+                                document.body.removeChild(area);
+                            }
+                        });
+                    })();
+                </script>
+            <% } %>
+
+            <% if (can('customers.manage')) { %>
+                <div style="margin-top:20px; padding-top:18px; border-top:1px solid #eef0f3;">
+                    <h3 style="margin:0 0 6px; font-size:15px; font-weight:700; color:#081621;">
+                        Generate a New Password
+                    </h3>
+                    <p class="section-note" style="margin:0 0 12px;">
+                        For security, the current password is stored as a one-way hash and cannot be shown.
+                        Generating a new password immediately replaces the old one and shows the new password
+                        only once on this page. If e-mail verification is still pending, the customer will still
+                        need to verify by OTP before signing in.
+                    </p>
+                    <form method="POST" action="/admin/customers/<%= customer._id %>/reset-password"
+                          onsubmit="return confirm('Generate a new password? The current password will stop working immediately.');">
+                        <button type="submit" class="primary-button">
+                            <i class="fa-solid fa-key"></i>
+                            Generate New Password
+                        </button>
+                    </form>
+                </div>
+            <% } %>
+        </section>
+
+        <% if (can('customers.manage')) { %>
+        <section class="dashboard-card">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fa-solid fa-award card-icon"></i>
+                    Membership
+                </h2>
+            </div>
+
+            <form method="POST" action="/admin/customers/<%= customer._id %>/membership" class="form-grid">
+                <div class="form-group">
+                    <label for="tierSelect">Tier</label>
+                    <select id="tierSelect" name="tier">
+                        <% ["Star", "Silver", "Platinum"].forEach(function (t) { %>
+                            <option value="<%= t %>" <%= (customer.tier || 'Star') === t ? 'selected' : '' %>><%= t %></option>
+                        <% }) %>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="pointsInput">Reward Points Balance</label>
+                    <input
+                        type="number"
+                        id="pointsInput"
+                        name="rewardPoints"
+                        min="0"
+                        step="1"
+                        value="<%= customer.rewardPoints || 0 %>"
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="creditInput">Store Credit Balance (৳)</label>
+                    <input
+                        type="number"
+                        id="creditInput"
+                        name="storeCredit"
+                        min="0"
+                        step="1"
+                        value="<%= customer.storeCredit || 0 %>"
+                    >
+                </div>
+
+                <div class="form-group form-full">
+                    <button type="submit" class="primary-button">
+                        <i class="fa-solid fa-floppy-disk"></i>
+                        Save Membership
+                    </button>
+                </div>
+            </form>
+
+            <p class="section-note">
+                Points are added automatically when this customer places an order — each product
+                carries its own "Reward Points per unit" value. Adjust here only for corrections or bonuses.
+            </p>
+        </section>
+        <% } %>
 
 
         <section class="dashboard-card">

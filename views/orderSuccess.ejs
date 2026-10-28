@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
+    <link rel="icon" href="/images/logo.svg">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Order Confirmed - Mizan Trade</title>
-    <link rel="icon" href="/images/logo.svg">
 </head>
 <body>
 
@@ -27,17 +27,28 @@
                 </span>
             </p>
 
-            <% if (order.paymentMethod === 'bkash') { %>
+            <%
+                var method = order.paymentMethod;
+                var info = order.paymentInfo || {};
+                var walletName = method === 'bkash' ? 'bKash' : (method === 'nagad' ? 'Nagad' : (method === 'rocket' ? 'Rocket' : ''));
+            %>
+            <% if (walletName) { %>
                 <div class="info-box" style="text-align:left;">
-                    <strong><i class="fa-solid fa-mobile-screen-button" style="color:#e2136e;"></i> bKash Payment:</strong><br>
-                    TrxID: <strong><%= order.paymentInfo.trxId || '—' %></strong><br>
-                    We will verify the payment and confirm your order by phone. If you did not provide a TrxID, please
-                    Send Money to <strong><%= bkash.number %></strong> now and let us know.
+                    <strong><i class="fa-solid fa-mobile-screen-button" style="color:#e2136e;"></i> <%= walletName %> Payment:</strong><br>
+                    TrxID: <strong><%= info.trxId || '—' %></strong><br>
+                    <% if (info.receiverNumber) { %>
+                        We will verify the payment sent to <strong><%= info.receiverNumber %></strong> and confirm your order by phone.
+                    <% } else { %>
+                        We will verify the payment and confirm your order by phone.
+                    <% } %>
                 </div>
-            <% } else if (order.paymentMethod === 'bank') { %>
+            <% } else if (method === 'bank') { %>
                 <div class="info-box" style="text-align:left;">
                     <strong><i class="fa-solid fa-building-columns"></i> Bank Transfer:</strong><br>
-                    <%= bank.bankName %>, Account: <%= bank.accountNumber %> (<%= bank.accountName %>)<br>
+                    <% if (info.receiverBankName) { %><%= info.receiverBankName %><% } %>
+                    <% if (info.receiverAccountNumber) { %>, Account: <strong><%= info.receiverAccountNumber %></strong><% } %>
+                    <% if (info.receiverAccountName) { %> (<%= info.receiverAccountName %>)<% } %>
+                    <% if (info.trxId) { %><br>Reference: <strong><%= info.trxId %></strong><% } %><br>
                     After transferring, please call our hotline to let us know — your order will be confirmed.
                 </div>
             <% } else { %>
@@ -67,13 +78,44 @@
                         </tr>
                     <% }); %>
                     <tr>
-                        <td colspan="3" style="text-align:right;">Delivery Charge</td>
+                        <td colspan="3" style="text-align:right;">Delivery Charge (<%= order.customer.city %>)</td>
                         <td>৳ <%= order.shippingFee.toLocaleString('en-US') %></td>
                     </tr>
+                    <% if (order.discount > 0) { %>
+                        <tr>
+                            <td colspan="3" style="text-align:right; color:#1f8a3b;">Discount <%= order.couponCode ? '(' + order.couponCode + ')' : '' %></td>
+                            <td style="color:#1f8a3b;">− ৳ <%= order.discount.toLocaleString('en-US') %></td>
+                        </tr>
+                    <% } %>
+                    <% if (order.rewardPointsRedeemed > 0) { %>
+                        <tr>
+                            <td colspan="3" style="text-align:right; color:#1f8a3b;">Reward Points (<%= order.rewardPointsRedeemed %> pts)</td>
+                            <td style="color:#1f8a3b;">− ৳ <%= Number(order.rewardDiscount || 0).toLocaleString('en-US') %></td>
+                        </tr>
+                    <% } %>
+                    <% if (order.taxAmount > 0) { %>
+                        <tr>
+                            <td colspan="3" style="text-align:right;"><%= order.taxLabel || 'Tax' %><%= order.taxIncluded ? ' (included)' : '' %></td>
+                            <td><%= order.taxIncluded ? '' : '+ ' %>৳ <%= Number(order.taxAmount).toLocaleString('en-US') %></td>
+                        </tr>
+                    <% } %>
+                    <% if (order.paymentCharge > 0) { %>
+                        <tr>
+                            <td colspan="3" style="text-align:right;">Payment Charge</td>
+                            <td>৳ <%= order.paymentCharge.toLocaleString('en-US') %></td>
+                        </tr>
+                    <% } %>
                     <tr>
                         <td colspan="3" style="text-align:right; font-weight:700;">Grand Total</td>
                         <td style="font-weight:700; color:#ef4a23;">৳ <%= order.total.toLocaleString('en-US') %></td>
                     </tr>
+                    <% if (order.rewardPointsEarned > 0) { %>
+                        <tr>
+                            <td colspan="4" style="text-align:right; font-size:12.5px; color:#1f8a3b;">
+                                <i class="fa-solid fa-gift"></i> You earned <strong><%= order.rewardPointsEarned %></strong> reward points with this order.
+                            </td>
+                        </tr>
+                    <% } %>
                 </tbody>
             </table>
 
@@ -88,6 +130,6 @@
 
     <%- include('partials/footer') %>
 
-    <script src="/js/main.js?v=2"></script>
+    <script src="/js/main.js?v=4"></script>
 </body>
 </html>

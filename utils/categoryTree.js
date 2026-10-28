@@ -91,6 +91,96 @@ function collectFamilyNames(flat, rootSlug) {
     return names;
 }
 
+/* একটি ক্যাটাগরি (slug) + তার সব বংশধরের FULL PATH (main/sub/child name)
+   রিটার্ন করে। শুধু name-এর বদলে path ব্যবহার করলে একই brand-name
+   (যেমন "Unika") একাধিক শাখায় থাকলেও ভুল শাখায় প্রোডাক্ট leak করে না। */
+function collectFamilyPaths(flat, rootSlug) {
+    const list = flat || [];
+    const bySlug = {};
+    const byParent = {};
+
+    list.forEach(function (cat) {
+        bySlug[cat.slug] = cat;
+        const key = cat.parent || "";
+        if (!byParent[key]) byParent[key] = [];
+        byParent[key].push(cat);
+    });
+
+    function levelAndPath(slug) {
+        const chain = [];
+        const guard = new Set();
+        let cur = slug;
+        while (cur && !guard.has(cur)) {
+            guard.add(cur);
+            const n = bySlug[cur];
+            if (!n) break;
+            chain.unshift(n);
+            cur = n.parent || null;
+        }
+        const p = { main: "", sub: "", child: "" };
+        chain.forEach(function (n, i) {
+            if (i === 0) p.main = n.name;
+            else if (i === 1) p.sub = n.name;
+            else if (i === 2) p.child = n.name;
+        });
+        return { path: p, level: chain.length || 1 };
+    }
+
+    const results = [];
+    const seen = new Set();
+
+    function walk(slug, level, path) {
+        const node = bySlug[slug];
+        if (!node) return;
+
+        const p = { main: path.main, sub: path.sub, child: path.child };
+        if (level === 1) { p.main = node.name; p.sub = ""; p.child = ""; }
+        else if (level === 2) { p.sub = node.name; p.child = ""; }
+        else if (level === 3) { p.child = node.name; }
+
+        const key = level + "|" + p.main + "|" + p.sub + "|" + p.child;
+        if (!seen.has(key)) {
+            seen.add(key);
+            results.push({
+                main: p.main,
+                sub: p.sub,
+                child: p.child,
+                level: level
+            });
+        }
+
+        if (level < 3) {
+            (byParent[slug] || []).forEach(function (kid) {
+                walk(kid.slug, level + 1, p);
+            });
+        }
+    }
+
+    const root = levelAndPath(rootSlug);
+    walk(rootSlug, root.level, root.path);
+    return results;
+}
+
+/* root → current পর্যন্ত ক্যাটাগরির চেইন (parent আগে, current শেষে) */
+function categoryTrail(flat, slug) {
+    const bySlug = {};
+    (flat || []).forEach(function (cat) {
+        bySlug[cat.slug] = cat;
+    });
+
+    const chain = [];
+    const guard = new Set();
+    let current = slug ? bySlug[slug] : null;
+
+    while (current && !guard.has(current.slug)) {
+        guard.add(current.slug);
+        chain.unshift(current);
+        current = current.parent ? bySlug[current.parent] : null;
+    }
+
+    return chain;
+}
+
 /* এডিটের সময় নিজের + নিজের বংশধরের slug লিস্ট (cycle এড়াতে) */
 function collectDescendantSlugs(flat, rootSlug) {
     const list = flat || [];
@@ -115,5 +205,7 @@ function collectDescendantSlugs(flat, rootSlug) {
 module.exports = {
     buildTree: buildTree,
     collectFamilyNames: collectFamilyNames,
+    collectFamilyPaths: collectFamilyPaths,
+    categoryTrail: categoryTrail,
     collectDescendantSlugs: collectDescendantSlugs
 };

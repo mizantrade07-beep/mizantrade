@@ -43,7 +43,9 @@ const productStorage = new CloudinaryStorage({
 
         transformation: [
             {
-                quality: "auto",
+                width: 1600,
+                crop: "limit",
+                quality: "auto:good",
                 fetch_format: "auto"
             }
         ]
@@ -88,23 +90,75 @@ const upload = multer({
 });
 
 /* ======================================================
+   TEAM PHOTO STORAGE
+====================================================== */
+
+const teamStorage = new CloudinaryStorage({
+    cloudinary,
+
+    params: {
+        folder: "mizantrade/team",
+        resource_type: "image",
+        allowed_formats: ["jpg", "jpeg", "png", "webp"],
+
+        transformation: [
+            {
+                width: 600,
+                height: 600,
+                crop: "fill",
+                gravity: "face",
+                quality: "auto",
+                fetch_format: "auto"
+            }
+        ]
+    }
+});
+
+const uploadTeam = multer({
+    storage: teamStorage,
+
+    fileFilter: productFileFilter,
+
+    limits: {
+        fileSize: 15 * 1024 * 1024
+    }
+});
+
+/* ======================================================
    RICH TEXT MEDIA STORAGE
 ====================================================== */
 
 const mediaStorage = new CloudinaryStorage({
     cloudinary,
 
-    params: {
-        folder: "mizantrade/media",
-        resource_type: "auto",
-        allowed_formats: [
-            "jpg",
-            "jpeg",
-            "png",
-            "webp",
-            "mp4",
-            "webm"
-        ]
+    params: async (req, file) => {
+        const base = {
+            folder: "mizantrade/media",
+            resource_type: "auto",
+            allowed_formats: [
+                "jpg",
+                "jpeg",
+                "png",
+                "webp",
+                "mp4",
+                "webm"
+            ]
+        };
+
+        /* Images are downscaled to a sane width and re-compressed on
+           upload; videos are stored as-is. */
+        if (String(file.mimetype || "").indexOf("image/") === 0) {
+            base.transformation = [
+                {
+                    width: 1600,
+                    crop: "limit",
+                    quality: "auto:good",
+                    fetch_format: "auto"
+                }
+            ];
+        }
+
+        return base;
     }
 });
 
@@ -206,13 +260,45 @@ const uploadPartnerDocs = multer({
 });
 
 /* ======================================================
+   WORD / EXCEL IMPORT (in-memory)
+====================================================== */
+
+const importFile = multer({
+    storage: multer.memoryStorage(),
+
+    fileFilter: function (req, file, cb) {
+        const ext = String(file.originalname || "")
+            .toLowerCase()
+            .split(".")
+            .pop();
+
+        if (ext === "docx" || ext === "xlsx") {
+            return cb(null, true);
+        }
+
+        return cb(
+            new Error("Only Word (.docx) and Excel (.xlsx) files are allowed."),
+            false
+        );
+    },
+
+    limits: {
+        fileSize: 15 * 1024 * 1024
+    }
+});
+
+/* ======================================================
    EXPORTS
 ====================================================== */
 
 module.exports = upload;
 
+module.exports.team = uploadTeam;
+
 module.exports.partnerDocs = uploadPartnerDocs;
 
 module.exports.media = uploadMedia;
+
+module.exports.importFile = importFile;
 
 module.exports.cloudinary = cloudinary;

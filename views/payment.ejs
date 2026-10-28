@@ -1,12 +1,31 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="icon" href="/images/logo.svg">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Payment Methods - Mizan Trade</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/style.css?v=26">
+    <style>
+        .pay-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        .pay-grid > div {
+            min-width: 0;
+        }
+        @media (max-width: 768px) {
+            .pay-grid {
+                grid-template-columns: 1fr;
+                gap: 18px;
+            }
+            .pay-grid > div {
+                padding: 20px !important;
+            }
+        }
+    </style>
 </head>
 <body>
     <%- include('partials/header') %>
@@ -14,7 +33,7 @@
     <div class="container" style="max-width: 1200px; margin: 30px auto; padding: 0 20px; min-height: 500px;">
         <h2 style="font-size: 26px; color: #081621; margin-bottom: 25px; font-weight: 700;">Payment & Delivery Methods</h2>
         
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+        <div class="pay-grid">
             
             <!-- ১. বিকাশ মার্চেন্ট পেমেন্ট ও কিউআর কোড -->
             <div style="background: #fff; padding: 30px; border-radius: 8px; border: 1px solid #e5e5e5; box-shadow: 0 2px 5px rgba(0,0,0,0.05); text-align: center;">
@@ -29,7 +48,7 @@
                     <img src="/uploads/1789990432945-579056997.webp" alt="bKash Bangla QR" style="max-width: 220px; border: 1px solid #ddd; padding: 10px; border-radius: 8px;">
                 </div>
                 <p style="font-size: 13px; color: #666; line-height: 1.6;">
-                    Scan the QR code from the bKash app, or Send Money / make a payment, then provide the Transaction ID (TrxID) when placing your order. <em>(A cash-out charge may apply where applicable.)</em>
+                    Scan the QR code using the bKash app or use the 'Payment' option, and provide the Transaction ID (TrxID) when placing your order. <em>(Charges may apply if applicable.)</em>
                 </p>
             </div>
 
@@ -53,7 +72,7 @@
                 </div>
 
                 <p style="font-size: 12px; color: #770000; margin-top: 20px;">
-                    * For heavy computers or gaming chairs, an additional charge may apply depending on the courier.
+                    * For heavy items, additional charges may apply depending on the courier service.
                 </p>
             </div>
 
@@ -61,6 +80,6 @@
     </div>
 
     <%- include('partials/footer') %>
-<script src="/js/main.js?v=2"></script>
+<script src="/js/main.js?v=4"></script>
 </body>
 </html>

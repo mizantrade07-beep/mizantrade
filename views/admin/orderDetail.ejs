@@ -23,6 +23,21 @@
             <a href="/admin/orders" class="secondary-button">← Back to Orders</a>
         </div>
 
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin:-4px 0 16px;">
+            <a href="/admin/order/<%= order._id %>/print/invoice" target="_blank" class="secondary-button" style="border-color:#f0b9a6; color:#ef4a23;">
+                <i class="fa-solid fa-file-invoice"></i> Print Invoice
+            </a>
+            <a href="/admin/order/<%= order._id %>/print/delivery-challan" target="_blank" class="secondary-button">
+                <i class="fa-solid fa-truck-fast"></i> Delivery Challan
+            </a>
+            <a href="/admin/order/<%= order._id %>/print/delivery-slip" target="_blank" class="secondary-button">
+                <i class="fa-solid fa-clipboard-check"></i> Delivery Slip
+            </a>
+            <a href="/admin/order/<%= order._id %>/print/packing-challan" target="_blank" class="secondary-button">
+                <i class="fa-solid fa-boxes-packing"></i> Packing Challan
+            </a>
+        </div>
+
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:18px; align-items:start;">
 
             <!-- কাস্টমার ইনফো -->
@@ -37,6 +52,18 @@
                         <strong>Email:</strong> <a href="mailto:<%= order.customer.email %>"><%= order.customer.email %></a><br>
                     <% } %>
                     <strong>Address:</strong> <%= order.customer.address %><br>
+                    <% if (order.customer.village) { %>
+                        <strong>Village/Area:</strong> <%= order.customer.village %><br>
+                    <% } %>
+                    <% if (order.customer.thana) { %>
+                        <strong>Thana:</strong> <%= order.customer.thana %><br>
+                    <% } %>
+                    <% if (order.customer.postOffice) { %>
+                        <strong>Post Office:</strong> <%= order.customer.postOffice %><br>
+                    <% } %>
+                    <% if (order.customer.district) { %>
+                        <strong>District:</strong> <%= order.customer.district %><br>
+                    <% } %>
                     <strong>Delivery Area:</strong> <%= order.customer.city %><br>
                     <% if (order.customer.note) { %>
                         <strong>Note:</strong> <%= order.customer.note %>
@@ -50,20 +77,42 @@
                     <h2 class="card-title">Payment & Status</h2>
                 </div>
                 <div class="card-body" style="font-size:13.5px; line-height:2;">
+                    <%
+                        var payLabels = {
+                            bkash: 'bKash',
+                            nagad: 'Nagad',
+                            rocket: 'Rocket',
+                            cod: 'Cash on Delivery',
+                            bank: 'Bank Transfer'
+                        };
+                        var pay = order.paymentInfo || {};
+                    %>
                     <strong>Method:</strong>
-                    <%= order.paymentMethod === 'bkash' ? 'bKash (Send Money)' : (order.paymentMethod === 'cod' ? 'Cash on Delivery' : 'Bank Transfer') %><br>
+                    <%= payLabels[order.paymentMethod] || order.paymentMethod %><br>
 
-                    <% if (order.paymentInfo.trxId) { %>
-                        <strong>TrxID:</strong> <%= order.paymentInfo.trxId %><br>
+                    <% if (pay.trxId) { %>
+                        <strong>TrxID:</strong> <%= pay.trxId %><br>
                     <% } %>
-                    <% if (order.paymentInfo.senderNumber) { %>
-                        <strong>Sender Number:</strong> <%= order.paymentInfo.senderNumber %><br>
+                    <% if (pay.senderNumber) { %>
+                        <strong>Sender Number:</strong> <%= pay.senderNumber %><br>
                     <% } %>
-                    <% if (order.paymentInfo.bankName) { %>
-                        <strong>Bank:</strong> <%= order.paymentInfo.bankName %><br>
+                    <% if (pay.receiverNumber) { %>
+                        <strong>Received To:</strong> <%= pay.receiverNumber %><br>
                     <% } %>
-                    <% if (order.paymentInfo.accountNumber) { %>
-                        <strong>Customer Account:</strong> <%= order.paymentInfo.accountNumber %>
+                    <% if (pay.receiverBankName) { %>
+                        <strong>Bank:</strong> <%= pay.receiverBankName %><br>
+                    <% } %>
+                    <% if (pay.receiverAccountName) { %>
+                        <strong>Account Name:</strong> <%= pay.receiverAccountName %><br>
+                    <% } %>
+                    <% if (pay.receiverAccountNumber) { %>
+                        <strong>Account Number:</strong> <%= pay.receiverAccountNumber %><br>
+                    <% } %>
+                    <% if (pay.receiverBranch) { %>
+                        <strong>Branch:</strong> <%= pay.receiverBranch %><br>
+                    <% } %>
+                    <% if (pay.accountNumber) { %>
+                        <strong>Customer Account:</strong> <%= pay.accountNumber %>
                     <% } %>
 
                     <hr style="margin:14px 0; border:none; border-top:1px solid #eee;">
@@ -124,6 +173,22 @@
                                 <% if (order.couponCode) { %>(coupon: <code><%= order.couponCode %></code>)<% } %>
                             </td>
                             <td style="color:#1f8a3b;"><strong>− ৳ <%= order.discount.toLocaleString('en-US') %></strong></td>
+                        </tr>
+                        <% } %>
+                        <% if (order.rewardPointsRedeemed && order.rewardPointsRedeemed > 0) { %>
+                        <tr>
+                            <td colspan="3" style="text-align:right; color:#1f8a3b;">
+                                Reward Points used (<%= order.rewardPointsRedeemed %> pts)
+                            </td>
+                            <td style="color:#1f8a3b;"><strong>− ৳ <%= Number(order.rewardDiscount || 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 }) %></strong></td>
+                        </tr>
+                        <% } %>
+                        <% if (order.taxAmount && order.taxAmount > 0) { %>
+                        <tr>
+                            <td colspan="3" style="text-align:right; color:#374957;">
+                                <%= order.taxLabel || 'Tax' %><%= order.taxIncluded ? ' (included in prices)' : '' %>
+                            </td>
+                            <td style="color:#374957;"><strong><%= order.taxIncluded ? '' : '+ ' %>৳ <%= Number(order.taxAmount).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 }) %></strong></td>
                         </tr>
                         <% } %>
                         <% if (order.paymentCharge && order.paymentCharge > 0) { %>

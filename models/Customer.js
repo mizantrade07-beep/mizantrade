@@ -11,8 +11,9 @@ const customerSchema = new mongoose.Schema(
 
         email: {
             type: String,
-            required: true,
+            required: false,
             unique: true,
+            sparse: true,
             lowercase: true,
             trim: true,
             index: true
@@ -21,13 +22,65 @@ const customerSchema = new mongoose.Schema(
         phone: {
             type: String,
             trim: true,
-            default: ""
+            default: "",
+            index: true
         },
 
         password: {
             type: String,
-            required: true,
+            required: false,
             select: false
+        },
+
+        // "password", "email"/"phone" (OTP verified) or a social provider
+        authProvider: {
+            type: String,
+            enum: ["password", "phone", "email", "google", "facebook", "tiktok"],
+            default: "password"
+        },
+
+        googleId: {
+            type: String,
+            trim: true,
+            default: "",
+            index: true
+        },
+
+        facebookId: {
+            type: String,
+            trim: true,
+            default: "",
+            index: true
+        },
+
+        tiktokId: {
+            type: String,
+            trim: true,
+            default: "",
+            index: true
+        },
+
+        emailVerified: {
+            type: Boolean,
+            default: false
+        },
+
+        phoneVerified: {
+            type: Boolean,
+            default: false
+        },
+
+        securityQuestion: {
+            type: String,
+            trim: true,
+            default: ""
+        },
+
+        // bcrypt hash of the lowercased, trimmed answer
+        securityAnswer: {
+            type: String,
+            select: false,
+            default: ""
         },
 
         address: {
@@ -76,6 +129,44 @@ const customerSchema = new mongoose.Schema(
             type: String,
             trim: true,
             default: ""
+        },
+
+        // মেম্বারশিপ টিয়ার — অ্যাডমিন পরিবর্তন করতে পারেন
+        tier: {
+            type: String,
+            enum: ["Star", "Silver", "Platinum"],
+            default: "Star"
+        },
+
+        // Reward points balance — অর্ডারের সময় অটো যোগ হয়
+        rewardPoints: {
+            type: Number,
+            default: 0,
+            min: 0
+        },
+
+        // Points ledger — earn / redeem / admin adjustment
+        pointsHistory: [
+            new mongoose.Schema(
+                {
+                    type: {
+                        type: String,
+                        enum: ["earn", "redeem", "adjust"],
+                        default: "earn"
+                    },
+                    points: { type: Number, default: 0 },
+                    orderNumber: { type: String, trim: true, default: "" },
+                    note: { type: String, trim: true, default: "" }
+                },
+                { timestamps: true, _id: false }
+            )
+        ],
+
+        // Store credit balance — অ্যাডমিন ম্যানুয়ালি অ্যাডজাস্ট করেন
+        storeCredit: {
+            type: Number,
+            default: 0,
+            min: 0
         },
 
         isActive: {

@@ -1,0 +1,163 @@
+<%- include("partials/head", {
+    title: "Filter Attributes | MizanTrade Admin"
+}) %>
+
+<%- include("partials/sidebar") %>
+
+<div class="admin-main">
+
+    <%- include("partials/topbar", {
+        title: "Filter Attributes"
+    }) %>
+
+    <main class="admin-content">
+
+        <div class="dashboard-header">
+            <div>
+                <h1 class="dashboard-title">Filter Attributes</h1>
+                <p class="dashboard-subtitle">
+                    Save reusable specification / filter attribute names and their values here.
+                    Saved attributes appear as suggestions in the Add / Edit Product form, so you
+                    never have to type the same attribute again.
+                </p>
+            </div>
+        </div>
+
+        <% if (message) { %>
+            <%
+                var okMsg = (message === "saved" || message === "deleted");
+                var msgText = {
+                    saved: "Attribute saved.",
+                    deleted: "Attribute deleted.",
+                    empty: "Attribute name is required.",
+                    error: "Something went wrong. Please try again."
+                }[message] || message;
+            %>
+            <div style="padding:12px 16px; border-radius:10px; margin-bottom:18px; font-weight:600;
+                        background:<%= okMsg ? '#e8f7ee' : '#fdecea' %>;
+                        color:<%= okMsg ? '#1f8a3b' : '#c0392b' %>;
+                        border:1px solid <%= okMsg ? '#bfe8cd' : '#f5c6c0' %>;">
+                <%= msgText %>
+            </div>
+        <% } %>
+
+        <div style="display:grid; grid-template-columns: 380px 1fr; gap:20px; align-items:start;">
+
+            <!-- ========== ADD / EDIT FORM ========== -->
+            <section class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fa-solid fa-sliders card-icon"></i>
+                        <%= editAttribute ? "Edit Attribute" : "Add Attribute" %>
+                    </h2>
+                </div>
+
+                <form method="POST" action="/admin/attributes" style="padding:4px 0;">
+                    <% if (editAttribute) { %>
+                        <input type="hidden" name="id" value="<%= editAttribute._id %>">
+                    <% } %>
+
+                    <div class="form-group">
+                        <label for="attrKey">Attribute Name *</label>
+                        <input
+                            type="text"
+                            id="attrKey"
+                            name="key"
+                            required
+                            value="<%= editAttribute ? editAttribute.key : '' %>"
+                            placeholder="e.g. Warranty, Capacity, Chipset"
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="attrValues">Values</label>
+                        <textarea
+                            id="attrValues"
+                            name="values"
+                            rows="8"
+                            placeholder="One value per line (or comma separated)&#10;e.g.&#10;1 Year&#10;3 Years&#10;5 Years"
+                        ><%= editAttribute ? (editAttribute.values || []).join('\n') : '' %></textarea>
+                        <small style="color:#64748b;">
+                            Each line becomes a selectable value for this attribute.
+                        </small>
+                    </div>
+
+                    <div class="form-actions" style="display:flex; gap:10px;">
+                        <button type="submit" class="primary-button">
+                            <i class="fa-solid fa-floppy-disk"></i>
+                            <%= editAttribute ? "Update Attribute" : "Save Attribute" %>
+                        </button>
+
+                        <% if (editAttribute) { %>
+                            <a href="/admin/attributes" class="secondary-button">Cancel</a>
+                        <% } %>
+                    </div>
+                </form>
+            </section>
+
+            <!-- ========== LIST ========== -->
+            <section class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fa-solid fa-list-check card-icon"></i>
+                        Saved Attributes
+                        <span class="count-pill" style="margin-left:8px;"><%= attributes.length %></span>
+                    </h2>
+                </div>
+
+                <div class="table-wrapper">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Attribute</th>
+                                <th>Values</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% if (attributes.length === 0) { %>
+                                <tr>
+                                    <td colspan="3" class="empty-state">
+                                        <div class="empty-icon"><i class="fa-solid fa-sliders"></i></div>
+                                        <h4>No attributes yet</h4>
+                                        <p>Add your first attribute using the form.</p>
+                                    </td>
+                                </tr>
+                            <% } %>
+
+                            <% attributes.forEach(function (a) { %>
+                                <tr>
+                                    <td><strong><%= a.key %></strong></td>
+                                    <td>
+                                        <div class="brand-chips">
+                                            <% if ((a.values || []).length === 0) { %>
+                                                <span class="muted-dash">—</span>
+                                            <% } %>
+                                            <% (a.values || []).forEach(function (v) { %>
+                                                <span class="brand-chip"><%= v %></span>
+                                            <% }); %>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="product-actions">
+                                            <a href="/admin/attributes?edit=<%= a._id %>" class="action-edit" title="Edit">
+                                                <i class="fa-solid fa-pen"></i></a>
+                                            <a href="/admin/attributes/delete/<%= a._id %>" class="action-delete" title="Delete"
+                                               onclick="return confirm('Delete this attribute?');">
+                                                <i class="fa-solid fa-trash"></i></a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+        </div>
+
+    </main>
+
+</div>
+
+<%- include("partials/footer") %>

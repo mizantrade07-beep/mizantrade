@@ -1,7 +1,7 @@
 <%
     const p = product || {};
     const specs = p.specs || [];
-    const stockOptions = ["In Stock", "Out of Stock", "Pre Order", "Coming Soon"];
+    const stockOptions = ["In Stock", "Pre Order", "Coming Soon", "Out of Stock"];
 %>
 
 <form
@@ -147,6 +147,18 @@
                 </label>
             </div>
 
+            <div class="form-group checkbox-group">
+                <label>
+                    <input
+                        type="checkbox"
+                        name="isNewArrival"
+                        value="on"
+                        <%= p.isNewArrival ? 'checked' : '' %>
+                    >
+                    New Arrival (show in homepage "New Products" section)
+                </label>
+            </div>
+
         </div>
 
     </section>
@@ -204,6 +216,21 @@
                 </label>
             </div>
 
+            <div class="form-group">
+                <label for="rewardPointsInput">
+                    Reward Points <span class="label-hint">— per unit sold</span>
+                </label>
+                <input
+                    type="number"
+                    id="rewardPointsInput"
+                    name="rewardPoints"
+                    min="0"
+                    step="1"
+                    value="<%= p.rewardPoints ?? 0 %>"
+                    placeholder="0"
+                >
+            </div>
+
         </div>
 
     </section>
@@ -223,7 +250,7 @@
         <div class="form-grid">
 
             <div class="form-group">
-                <label for="mainImageInput">Main Image</label>
+                <label for="mainImageInput">Upload New Main Image</label>
 
                 <input
                     type="file"
@@ -232,21 +259,11 @@
                     accept="image/jpeg,image/png,image/webp"
                 >
 
-                <div class="preview-grid single">
-                    <img
-                        id="mainPreview"
-                        class="preview-tile"
-                        src="<%= p.mainImage || '' %>"
-                        alt="Main image preview"
-                        style="<%= p.mainImage ? '' : 'display:none;' %>"
-                    >
-                </div>
-
-                <small>JPG, PNG or WEBP — maximum 5MB.</small>
+                <small>Single file. It joins the image grid below — press ★ on any tile to make it the main image.</small>
             </div>
 
             <div class="form-group">
-                <label for="galleryInput">Gallery Images</label>
+                <label for="galleryInput">Upload More Images</label>
 
                 <input
                     type="file"
@@ -256,16 +273,48 @@
                     accept="image/jpeg,image/png,image/webp"
                 >
 
-                <div class="preview-grid" id="galleryPreview">
-                    <% (p.galleryImages || []).forEach(function (img) { %>
-                        <img class="preview-tile" src="<%= img %>" alt="Gallery image">
-                    <% }) %>
-                </div>
-
-                <small>You can select multiple images. Adding new images will replace the old gallery.</small>
+                <small>Select one or more files — they are appended to the grid below.</small>
             </div>
 
         </div>
+
+        <div class="img-manager" id="imgManager">
+            <%
+                var seenImages = {};
+                var allImages = [];
+                if (p.mainImage) {
+                    allImages.push({ url: p.mainImage, main: true });
+                    seenImages[p.mainImage] = true;
+                }
+                (p.galleryImages || []).forEach(function (img) {
+                    if (img && !seenImages[img]) {
+                        allImages.push({ url: img, main: false });
+                        seenImages[img] = true;
+                    }
+                });
+            %>
+
+            <% allImages.forEach(function (im) { %>
+                <div class="img-tile<%= im.main ? ' is-main' : '' %>" data-url="<%= im.url %>">
+                    <img src="<%= im.url %>" alt="Product image">
+                    <span class="main-badge"><i class="fa-solid fa-star"></i> Main</span>
+                    <div class="tile-actions">
+                        <button type="button" class="tile-btn tile-main" title="Set as main image"><i class="fa-solid fa-star"></i></button>
+                        <button type="button" class="tile-btn tile-left" title="Move left"><i class="fa-solid fa-arrow-left"></i></button>
+                        <button type="button" class="tile-btn tile-right" title="Move right"><i class="fa-solid fa-arrow-right"></i></button>
+                        <button type="button" class="tile-btn danger tile-remove" title="Remove image"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </div>
+            <% }) %>
+        </div>
+
+        <input type="hidden" name="galleryOrdered" value="">
+        <input type="hidden" name="mainImageKeep" value="">
+        <input type="hidden" name="existingImagesJoined" value="">
+
+        <p class="section-note">
+            ★ set as main &nbsp;•&nbsp; ← → reorder &nbsp;•&nbsp; 🗑 remove — the tile order here is the order shown on the product page. Nothing changes until you press Save Product.
+        </p>
 
     </section>
 
@@ -290,14 +339,28 @@
                     <div class="rte-toolbar" data-editor="shortEditor">
                         <select class="rte-select" data-fontname title="Font name">
                             <option value="">Font</option>
-                            <option value="Arial">Arial</option>
-                            <option value="Helvetica">Helvetica</option>
-                            <option value="Verdana">Verdana</option>
-                            <option value="Tahoma">Tahoma</option>
-                            <option value="Trebuchet MS">Trebuchet MS</option>
-                            <option value="Georgia">Georgia</option>
-                            <option value="Times New Roman">Times New Roman</option>
-                            <option value="Courier New">Courier New</option>
+                            <optgroup label="Web fonts">
+                                <option value="Arial">Arial</option>
+                                <option value="Helvetica">Helvetica</option>
+                                <option value="Verdana">Verdana</option>
+                                <option value="Tahoma">Tahoma</option>
+                                <option value="Trebuchet MS">Trebuchet MS</option>
+                                <option value="Georgia">Georgia</option>
+                                <option value="Times New Roman">Times New Roman</option>
+                                <option value="Courier New">Courier New</option>
+                            </optgroup>
+                            <optgroup label="Google Fonts">
+                                <option value="Poppins">Poppins</option>
+                                <option value="Roboto">Roboto</option>
+                                <option value="Open Sans">Open Sans</option>
+                                <option value="Montserrat">Montserrat</option>
+                                <option value="Lato">Lato</option>
+                                <option value="Oswald">Oswald</option>
+                                <option value="Merriweather">Merriweather</option>
+                                <option value="Noto Sans Bengali">Noto Sans Bengali</option>
+                                <option value="Hind Siliguri">Hind Siliguri</option>
+                                <option value="Baloo Da 2">Baloo Da 2</option>
+                            </optgroup>
                         </select>
                         <select class="rte-select" data-fontsize title="Font size">
                             <option value="">Size</option>
@@ -317,9 +380,11 @@
                         <span class="rte-sep"></span>
                         <select class="rte-select" data-block title="Paragraph style">
                             <option value="p">Paragraph</option>
+                            <option value="h1">Heading 1</option>
                             <option value="h2">Heading 2</option>
                             <option value="h3">Heading 3</option>
                             <option value="h4">Heading 4</option>
+                            <option value="blockquote">Quote</option>
                         </select>
                         <span class="rte-sep"></span>
                         <button type="button" class="rte-btn" data-cmd="insertUnorderedList" title="Bullet list"><i class="fa-solid fa-list-ul"></i></button>
@@ -336,7 +401,7 @@
                     <div class="rte-area" id="shortEditor" contenteditable="true"></div>
                 </div>
 
-                <textarea id="shortDescSource" name="shortDesc" class="hidden-source"><%= p.shortDesc || '' %></textarea>
+                <textarea id="shortDescSource" name="shortDesc" class="hidden-source" data-rte-source="shortEditor"><%= p.shortDesc || '' %></textarea>
             </div>
 
             <div class="form-group form-full">
@@ -346,14 +411,28 @@
                     <div class="rte-toolbar" data-editor="longEditor">
                         <select class="rte-select" data-fontname title="Font name">
                             <option value="">Font</option>
-                            <option value="Arial">Arial</option>
-                            <option value="Helvetica">Helvetica</option>
-                            <option value="Verdana">Verdana</option>
-                            <option value="Tahoma">Tahoma</option>
-                            <option value="Trebuchet MS">Trebuchet MS</option>
-                            <option value="Georgia">Georgia</option>
-                            <option value="Times New Roman">Times New Roman</option>
-                            <option value="Courier New">Courier New</option>
+                            <optgroup label="Web fonts">
+                                <option value="Arial">Arial</option>
+                                <option value="Helvetica">Helvetica</option>
+                                <option value="Verdana">Verdana</option>
+                                <option value="Tahoma">Tahoma</option>
+                                <option value="Trebuchet MS">Trebuchet MS</option>
+                                <option value="Georgia">Georgia</option>
+                                <option value="Times New Roman">Times New Roman</option>
+                                <option value="Courier New">Courier New</option>
+                            </optgroup>
+                            <optgroup label="Google Fonts">
+                                <option value="Poppins">Poppins</option>
+                                <option value="Roboto">Roboto</option>
+                                <option value="Open Sans">Open Sans</option>
+                                <option value="Montserrat">Montserrat</option>
+                                <option value="Lato">Lato</option>
+                                <option value="Oswald">Oswald</option>
+                                <option value="Merriweather">Merriweather</option>
+                                <option value="Noto Sans Bengali">Noto Sans Bengali</option>
+                                <option value="Hind Siliguri">Hind Siliguri</option>
+                                <option value="Baloo Da 2">Baloo Da 2</option>
+                            </optgroup>
                         </select>
                         <select class="rte-select" data-fontsize title="Font size">
                             <option value="">Size</option>
@@ -373,9 +452,11 @@
                         <span class="rte-sep"></span>
                         <select class="rte-select" data-block title="Paragraph style">
                             <option value="p">Paragraph</option>
+                            <option value="h1">Heading 1</option>
                             <option value="h2">Heading 2</option>
                             <option value="h3">Heading 3</option>
                             <option value="h4">Heading 4</option>
+                            <option value="blockquote">Quote</option>
                         </select>
                         <span class="rte-sep"></span>
                         <button type="button" class="rte-btn" data-cmd="insertUnorderedList" title="Bullet list"><i class="fa-solid fa-list-ul"></i></button>
@@ -395,14 +476,7 @@
                     <div class="rte-area tall" id="longEditor" contenteditable="true"></div>
                 </div>
 
-                <textarea id="longDescSource" name="longDesc" class="hidden-source"><%= p.longDesc || '' %></textarea>
-
-                <input
-                    type="file"
-                    id="rteImageInput"
-                    accept="image/jpeg,image/png,image/webp"
-                    style="display:none;"
-                >
+                <textarea id="longDescSource" name="longDesc" class="hidden-source" data-rte-source="longEditor"><%= p.longDesc || '' %></textarea>
             </div>
 
         </div>
@@ -508,3 +582,4 @@
 </script>
 
 <script src="/admin/js/productForm.js"></script>
+<script src="/admin/js/rte.js"></script>

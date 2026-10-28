@@ -8,7 +8,7 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title><%= pageTitle %> | MizanTrade</title>
+    <title><%= (typeof pageTitle !== 'undefined' && pageTitle) ? pageTitle : 'Server Error' %> | MizanTrade</title>
 
     <style>
         * {
@@ -45,7 +45,7 @@
             margin: 0;
 
             font-size: 80px;
-            font-weight: 800;
+            font-weight: 700;
         }
 
         h1 {
@@ -97,7 +97,7 @@
             Please try again after a while.
         </p>
 
-        <% if (error) { %>
+        <% if (typeof error !== 'undefined' && error) { %>
 
             <pre><%= error.message %></pre>
 

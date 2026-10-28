@@ -1,0 +1,286 @@
+<%
+    const m = member || {};
+    const isEdit = Boolean(member && member._id);
+    const formAction = isEdit ? "/admin/team/edit/" + m._id : "/admin/team/add";
+    const socialRows = Array.isArray(m.socials) && m.socials.length
+        ? m.socials
+        : [{ platform: "", url: "" }];
+%>
+
+<%- include("partials/head", {
+    title: (isEdit ? "Edit Team Member" : "Add Team Member") + " | MizanTrade Admin"
+}) %>
+
+<%- include("partials/sidebar") %>
+
+<div class="admin-main">
+
+    <%- include("partials/topbar", {
+        title: isEdit ? "Edit Team Member" : "Add Team Member"
+    }) %>
+
+    <main class="admin-content">
+
+        <div class="dashboard-header">
+            <div>
+                <h1 class="dashboard-title"><%= isEdit ? "Edit Team Member" : "Add New Team Member" %></h1>
+                <p class="dashboard-subtitle">
+                    Members appear on the public Team page in Sort Order. The phone number becomes a
+                    tap-to-call link and every social link becomes a clickable icon on their card.
+                </p>
+            </div>
+
+            <a href="/admin/team" class="secondary-button">
+                <i class="fa-solid fa-arrow-left"></i>
+                Back to Team
+            </a>
+        </div>
+
+        <% if (typeof error !== 'undefined' && error) { %>
+            <div class="team-admin-alert error">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <span><%= error %></span>
+            </div>
+        <% } %>
+
+        <form action="<%= formAction %>" method="POST" enctype="multipart/form-data">
+
+            <div class="cms-two-col">
+
+                <div class="side-stack">
+
+                    <section class="dashboard-card">
+                        <div class="card-header">
+                            <h2 class="card-title"><i class="fa-solid fa-user card-icon"></i> Member Details</h2>
+                        </div>
+
+                        <div class="form-grid">
+
+                            <div class="form-group form-full">
+                                <label for="nameInput">Full Name *</label>
+                                <input type="text" id="nameInput" name="name" required
+                                       value="<%= m.name || '' %>" placeholder="Example: Kazi Rony">
+                            </div>
+
+                            <div class="form-group form-full">
+                                <label for="designationInput">Designation</label>
+                                <input type="text" id="designationInput" name="designation"
+                                       value="<%= m.designation || '' %>" placeholder="Example: Business Development Manager">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="phoneInput">Phone Number</label>
+                                <input type="tel" id="phoneInput" name="phone"
+                                       value="<%= m.phone || '' %>" placeholder="Example: +8801709967815">
+                                <div class="tag-input-hint">Saved as a tap-to-call link (tel:) on the public card.</div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="orderInput">Sort Order</label>
+                                <input type="number" id="orderInput" name="order"
+                                       value="<%= typeof m.order !== 'undefined' ? m.order : 0 %>">
+                                <div class="tag-input-hint">Lower numbers appear first.</div>
+                            </div>
+
+                        </div>
+                    </section>
+
+                    <section class="dashboard-card">
+                        <div class="card-header">
+                            <h2 class="card-title"><i class="fa-solid fa-share-nodes card-icon"></i> Social Links</h2>
+                            <button type="button" class="secondary-button" id="addSocialRow">
+                                <i class="fa-solid fa-plus"></i> Add Link
+                            </button>
+                        </div>
+
+                        <p class="tag-input-hint" style="margin-bottom:12px;">
+                            Add as many profiles as you need — Facebook, Instagram, TikTok, WhatsApp, YouTube and more.
+                            Enter a full URL or just the username.
+                        </p>
+
+                        <div class="social-rows" id="socialRows">
+                            <% socialRows.forEach(function (social) { %>
+                                <div class="social-row">
+                                    <select name="socialPlatform" aria-label="Platform">
+                                        <%- include("../partials/socialOptions", { selected: social.platform || "" }) %>
+                                    </select>
+                                    <input type="text" name="socialUrl"
+                                           value="<%= social.url || '' %>"
+                                           placeholder="https://... or @username" aria-label="Profile link">
+                                    <button type="button" class="social-row-remove" title="Remove link">
+                                        <i class="fa-solid fa-xmark"></i>
+                                    </button>
+                                </div>
+                            <% }); %>
+                        </div>
+
+                        <template id="socialRowTemplate">
+                            <div class="social-row">
+                                <select name="socialPlatform" aria-label="Platform">
+                                    <%- include("../partials/socialOptions", { selected: "" }) %>
+                                </select>
+                                <input type="text" name="socialUrl" value=""
+                                       placeholder="https://... or @username" aria-label="Profile link">
+                                <button type="button" class="social-row-remove" title="Remove link">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            </div>
+                        </template>
+                    </section>
+
+                    <section class="dashboard-card">
+                        <div class="card-header">
+                            <h2 class="card-title"><i class="fa-solid fa-image card-icon"></i> Profile Photo</h2>
+                        </div>
+
+                        <div class="team-photo-editor">
+                            <div class="team-photo-preview">
+                                <img id="teamPhotoPreview"
+                                     src="<%= m.photo || '' %>"
+                                     alt="Profile photo preview"
+                                     style="<%= m.photo ? '' : 'display:none;' %>">
+                                <span class="tpp-empty" id="teamPhotoEmpty" style="<%= m.photo ? 'display:none;' : '' %>">
+                                    <i class="fa-regular fa-user"></i>
+                                    <small>Square photo works best</small>
+                                </span>
+                            </div>
+
+                            <div class="team-photo-controls">
+                                <input type="text" id="photoUrl" name="photo"
+                                       value="<%= m.photo || '' %>"
+                                       placeholder="Paste an image URL or upload below">
+                                <label class="secondary-button" style="cursor:pointer; white-space:nowrap;">
+                                    <i class="fa-solid fa-upload"></i> Upload Photo
+                                    <input type="file" id="photoFile" name="photo" accept="image/jpeg,image/png,image/webp" hidden>
+                                </label>
+                                <button type="button" class="mini-button danger" id="clearPhoto" title="Remove photo">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            </div>
+                            <div class="tag-input-hint" style="margin-top:10px;">
+                                JPG, PNG or WEBP up to 15 MB. Uploads are auto-cropped to a 600×600 square with face detection, so the card stays sharp and consistent.
+                            </div>
+                        </div>
+                    </section>
+
+                </div>
+
+                <div class="side-stack">
+
+                    <section class="dashboard-card">
+                        <div class="card-header">
+                            <h2 class="card-title"><i class="fa-solid fa-sliders card-icon"></i> Visibility</h2>
+                        </div>
+
+                        <label class="checkbox-row">
+                            <input type="checkbox" name="isActive" <%= m.isActive === false ? '' : 'checked' %>>
+                            <span>Show this member on the public Team page</span>
+                        </label>
+
+                        <div class="tag-input-hint" style="margin-top:10px;">
+                            Hidden members stay in the admin list but are removed from the website.
+                        </div>
+                    </section>
+
+                    <div class="form-actions">
+                        <button type="submit" class="primary-button">
+                            <i class="fa-solid fa-floppy-disk"></i>
+                            <%= isEdit ? "Update Member" : "Create Member" %>
+                        </button>
+                        <a href="/admin/team" class="secondary-button">Cancel</a>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </form>
+
+    </main>
+
+</div>
+
+<%- include("partials/footer") %>
+
+<script>
+(function () {
+    var fileInput = document.getElementById('photoFile');
+    var urlInput = document.getElementById('photoUrl');
+    var preview = document.getElementById('teamPhotoPreview');
+    var empty = document.getElementById('teamPhotoEmpty');
+    var clearBtn = document.getElementById('clearPhoto');
+
+    function show(src) {
+        if (!src) {
+            preview.style.display = 'none';
+            preview.removeAttribute('src');
+            empty.style.display = 'flex';
+            return;
+        }
+        preview.src = src;
+        preview.style.display = 'block';
+        empty.style.display = 'none';
+    }
+
+    if (fileInput) {
+        fileInput.addEventListener('change', function () {
+            var file = fileInput.files && fileInput.files[0];
+            if (file) show(URL.createObjectURL(file));
+        });
+    }
+
+    if (urlInput) {
+        urlInput.addEventListener('input', function () {
+            if (!fileInput || !fileInput.files.length) show(urlInput.value.trim());
+        });
+    }
+
+    if (clearBtn) {
+        clearBtn.addEventListener('click', function () {
+            if (fileInput) fileInput.value = '';
+            if (urlInput) urlInput.value = '';
+            show('');
+        });
+    }
+})();
+</script>
+
+<script>
+(function () {
+    var rows = document.getElementById('socialRows');
+    var addBtn = document.getElementById('addSocialRow');
+    var template = document.getElementById('socialRowTemplate');
+
+    if (!rows || !addBtn || !template) return;
+
+    function resetRow(row) {
+        var select = row.querySelector('select');
+        var input = row.querySelector('input');
+        if (select) select.value = 'facebook';
+        if (input) {
+            input.value = '';
+            input.focus();
+        }
+    }
+
+    addBtn.addEventListener('click', function () {
+        var node = template.content.firstElementChild.cloneNode(true);
+        rows.appendChild(node);
+        resetRow(node);
+    });
+
+    rows.addEventListener('click', function (event) {
+        var button = event.target.closest('.social-row-remove');
+        if (!button) return;
+
+        var row = button.closest('.social-row');
+        if (!row) return;
+
+        if (rows.querySelectorAll('.social-row').length > 1) {
+            row.remove();
+        } else {
+            resetRow(row);
+        }
+    });
+})();
+</script>

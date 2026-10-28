@@ -16,6 +16,17 @@ const couponController = require("../controllers/couponController");
 const reviewController = require("../controllers/reviewController");
 const analyticsController = require("../controllers/analyticsController");
 const settingController = require("../controllers/settingController");
+const seoMarketingController = require("../controllers/seoMarketingController");
+const topHeaderController = require("../controllers/topHeaderController");
+const attributeController = require("../controllers/attributeController");
+const homepageController = require("../controllers/homepageController");
+const footerController = require("../controllers/footerController");
+const paymentMethodController = require("../controllers/paymentMethodController");
+const faqController = require("../controllers/faqController");
+const offerController = require("../controllers/offerController");
+const chatController = require("../controllers/chatController");
+const teamController = require("../controllers/teamController");
+const rewardController = require("../controllers/rewardController");
 
 const upload = require("../middleware/upload");
 
@@ -53,6 +64,11 @@ router.get(
 ====================================================== */
 
 router.get("/products", productController.getAdminProducts);
+
+router.post(
+    "/products/bulk",
+    productController.bulkUpdateProducts
+);
 
 router.get("/products/add", productController.getAddProductPage);
 
@@ -128,12 +144,29 @@ router.get("/categories/delete/:id", categoryController.deleteCategory);
 
 
 /* ======================================================
+   FILTER ATTRIBUTES (SPEC REGISTRY)
+====================================================== */
+
+router.get("/attributes", attributeController.getAttributes);
+
+router.post("/attributes", attributeController.postSaveAttribute);
+
+router.get("/attributes/delete/:id", attributeController.deleteAttribute);
+
+
+/* ======================================================
    ORDERS
 ====================================================== */
 
 router.get("/orders", orderController.getOrders);
 
+router.get("/order-history", requirePermission("orders.view"), orderController.getOrderHistory);
+
+router.get("/payment-history", requirePermission("analytics.view"), orderController.getPaymentHistory);
+
 router.get("/order/:id", orderController.getOrderDetail);
+
+router.get("/order/:id/print/:doc", orderController.getPrintDocument);
 
 router.post("/order/:id/status", orderController.postUpdateOrderStatus);
 
@@ -149,6 +182,10 @@ router.get("/partners", adminController.getPartnerRequests);
 router.get("/partners/:id", partnerController.getPartnerDetail);
 
 router.post("/partners/:id/status", partnerController.postUpdatePartnerStatus);
+
+router.post("/partners/:id/create-login", partnerController.createPartnerLogin);
+router.post("/partners/:id/toggle-login", partnerController.togglePartnerLoginStatus);
+router.post("/partners/:id/reset-password", partnerController.resetPartnerPassword);
 
 router.get("/partners/delete/:id", partnerController.deletePartner);
 
@@ -175,6 +212,18 @@ router.post(
     "/customers/:id/toggle",
     requirePermission("customers.manage"),
     customerController.toggleCustomerStatus
+);
+
+router.post(
+    "/customers/:id/membership",
+    requirePermission("customers.manage"),
+    customerController.postUpdateMembership
+);
+
+router.post(
+    "/customers/:id/reset-password",
+    requirePermission("customers.manage"),
+    customerController.resetCustomerPassword
 );
 
 router.get(
@@ -265,6 +314,152 @@ router.get(
     "/pages/delete/:id",
     requirePermission("content.delete"),
     pageController.deletePage
+);
+
+
+/* ======================================================
+   FAQ MANAGER
+====================================================== */
+
+router.get(
+    "/faqs",
+    requirePermission("content.edit"),
+    faqController.getFaqs
+);
+
+router.get(
+    "/faqs/add",
+    requirePermission("content.create"),
+    faqController.getAddFaqPage
+);
+
+router.post(
+    "/faqs/add",
+    requirePermission("content.create"),
+    faqController.postAddFaq
+);
+
+router.get(
+    "/faqs/edit/:id",
+    requirePermission("content.edit"),
+    faqController.getEditFaqPage
+);
+
+router.post(
+    "/faqs/edit/:id",
+    requirePermission("content.edit"),
+    faqController.postEditFaq
+);
+
+router.get(
+    "/faqs/delete/:id",
+    requirePermission("content.delete"),
+    faqController.deleteFaq
+);
+
+
+/* ======================================================
+   OFFERS MANAGER
+====================================================== */
+
+router.get(
+    "/offers",
+    requirePermission("content.edit"),
+    offerController.getOffers
+);
+
+router.get(
+    "/offers/add",
+    requirePermission("content.create"),
+    offerController.getAddOfferPage
+);
+
+router.post(
+    "/offers/add",
+    requirePermission("content.create"),
+    offerController.postAddOffer
+);
+
+router.get(
+    "/offers/edit/:id",
+    requirePermission("content.edit"),
+    offerController.getEditOfferPage
+);
+
+router.post(
+    "/offers/edit/:id",
+    requirePermission("content.edit"),
+    offerController.postEditOffer
+);
+
+router.get(
+    "/offers/toggle/:id",
+    requirePermission("content.edit"),
+    offerController.toggleOffer
+);
+
+router.get(
+    "/offers/delete/:id",
+    requirePermission("content.delete"),
+    offerController.deleteOffer
+);
+
+router.post(
+    "/offers/import",
+    requirePermission("content.edit"),
+    function (req, res, next) {
+        upload.importFile.single("file")(req, res, function (error) {
+            if (error) {
+                return res.status(400).json({
+                    success: false,
+                    message: error.message || "File upload failed."
+                });
+            }
+            next();
+        });
+    },
+    offerController.postImportFile
+);
+
+
+/* ======================================================
+   LIVE CHATS
+====================================================== */
+
+router.get(
+    "/chats",
+    requirePermission("orders.view"),
+    chatController.getChats
+);
+
+router.get(
+    "/chats/:id",
+    requirePermission("orders.view"),
+    chatController.getChatDetail
+);
+
+router.get(
+    "/chats/:id/messages",
+    requirePermission("orders.view"),
+    chatController.getChatMessagesJson
+);
+
+router.post(
+    "/chats/:id/reply",
+    requirePermission("orders.manage"),
+    chatController.postAdminReply
+);
+
+router.post(
+    "/chats/:id/bot-mode",
+    requirePermission("orders.manage"),
+    chatController.toggleBotMode
+);
+
+router.post(
+    "/chats/:id/delete",
+    requirePermission("orders.manage"),
+    chatController.deleteChat
 );
 
 
@@ -411,6 +606,73 @@ router.post(
 
 
 /* ======================================================
+   REWARD POINTS
+====================================================== */
+
+router.get(
+    "/rewards",
+    requirePermission("analytics.view"),
+    rewardController.getRewards
+);
+
+router.post(
+    "/rewards",
+    requirePermission("settings.manage"),
+    rewardController.postRewards
+);
+
+
+/* ======================================================
+   HOMEPAGE CONTENT (hero slides, logos, latest count)
+====================================================== */
+
+router.get(
+    "/homepage",
+    requirePermission("content.edit"),
+    homepageController.getHomepage
+);
+
+router.post(
+    "/homepage",
+    requirePermission("content.edit"),
+    homepageController.postUpdateHomepage
+);
+
+
+/* ======================================================
+   FOOTER CONTENT
+====================================================== */
+
+router.get(
+    "/footer",
+    requirePermission("settings.manage"),
+    footerController.getFooter
+);
+
+router.post(
+    "/footer",
+    requirePermission("settings.manage"),
+    footerController.postFooter
+);
+
+/* ------------------------------------------------------
+   PAYMENT METHODS & ACCOUNTS
+------------------------------------------------------ */
+
+router.get(
+    "/payment-methods",
+    requirePermission("settings.manage"),
+    paymentMethodController.getPaymentMethods
+);
+
+router.post(
+    "/payment-methods",
+    requirePermission("settings.manage"),
+    paymentMethodController.postPaymentMethods
+);
+
+
+/* ======================================================
    SITE SETTINGS
 ====================================================== */
 
@@ -424,6 +686,85 @@ router.post(
     "/settings",
     requirePermission("settings.manage"),
     settingController.postUpdateSettings
+);
+
+
+/* ======================================================
+   SEO & MARKETING
+====================================================== */
+
+router.get(
+    "/seo",
+    requirePermission("settings.manage"),
+    seoMarketingController.getSeoPage
+);
+
+router.post(
+    "/seo",
+    requirePermission("settings.manage"),
+    seoMarketingController.postSeoPage
+);
+
+
+/* ======================================================
+   TOP HEADER PANEL
+====================================================== */
+
+router.get(
+    "/top-header",
+    requirePermission("settings.manage"),
+    topHeaderController.getTopHeader
+);
+
+router.post(
+    "/top-header",
+    requirePermission("settings.manage"),
+    topHeaderController.postTopHeader
+);
+
+
+/* ======================================================
+   TEAM PAGE MEMBERS
+====================================================== */
+
+router.get(
+    "/team",
+    requirePermission("content.edit"),
+    teamController.getTeamMembers
+);
+
+router.get(
+    "/team/add",
+    requirePermission("content.create"),
+    teamController.getAddTeamMemberPage
+);
+
+router.post(
+    "/team/add",
+    requirePermission("content.create"),
+    upload.team.single("photo"),
+    teamController.postAddTeamMember,
+    teamController.handlePhotoUploadError
+);
+
+router.get(
+    "/team/edit/:id",
+    requirePermission("content.edit"),
+    teamController.getEditTeamMemberPage
+);
+
+router.post(
+    "/team/edit/:id",
+    requirePermission("content.edit"),
+    upload.team.single("photo"),
+    teamController.postEditTeamMember,
+    teamController.handlePhotoUploadError
+);
+
+router.get(
+    "/team/delete/:id",
+    requirePermission("content.delete"),
+    teamController.deleteTeamMember
 );
 
 

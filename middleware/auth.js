@@ -72,8 +72,11 @@ function requireCustomer(req, res, next) {
         return next();
     }
 
+    const returnTo = req.originalUrl || "";
+
     return res.redirect(
-        "/login?message=login_required"
+        "/login?message=login_required" +
+        (returnTo.startsWith("/checkout") ? "&next=" + encodeURIComponent("/checkout") : "")
     );
 }
 
@@ -100,6 +103,58 @@ function attachCustomer(req, res, next) {
 
 
 /* ======================================================
+   PARTNER — separate login realm for the offers portal.
+   A customer session never grants partner access.
+====================================================== */
+
+// Owner-level admin accounts may open the partner-only live pages without a
+// partner account. Editor / sub-editor accounts do not get this bypass.
+function isAdminSession(req) {
+    const admin = req.session && req.session.admin;
+
+    return !!(
+        admin &&
+        admin.id &&
+        (admin.role === "super_admin" || admin.role === "admin")
+    );
+}
+
+function requirePartner(req, res, next) {
+    if (isAdminSession(req)) {
+        return next();
+    }
+
+    if (
+        req.session &&
+        req.session.partner &&
+        req.session.partner.id
+    ) {
+        return next();
+    }
+
+    return res.redirect(
+        "/partner/login?message=partner_login_required"
+    );
+}
+
+function redirectIfPartnerAuthenticated(req, res, next) {
+    if (isAdminSession(req)) {
+        return res.redirect("/offers");
+    }
+
+    if (
+        req.session &&
+        req.session.partner &&
+        req.session.partner.id
+    ) {
+        return res.redirect("/offers");
+    }
+
+    return next();
+}
+
+
+/* ======================================================
    EXPORTS
 ====================================================== */
 
@@ -110,5 +165,8 @@ module.exports = {
 
     requireCustomer,
     redirectIfCustomerAuthenticated,
-    attachCustomer
+    attachCustomer,
+
+    requirePartner,
+    redirectIfPartnerAuthenticated
 };

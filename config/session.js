@@ -21,7 +21,9 @@ const sessionMiddleware = session({
     cookie: {
         httpOnly: true,
 
-        secure: config.nodeEnv === "production",
+        // "auto" sets the Secure flag whenever the request is HTTPS, so admin
+        // login keeps working if the live server is ever reached over HTTP.
+        secure: config.nodeEnv === "production" ? "auto" : false,
 
         sameSite: "lax",
 

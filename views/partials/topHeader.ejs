@@ -1,25 +1,37 @@
-<!-- ==========================================================
-     TOP HEADER: Marquee + Email + Hotline
-     স্ক্রল করলে এই অংশটি সিলকিভাবে হাইড হয়ে যাবে
-========================================================== -->
-<div class="top-header" id="topHeader">
+<%
+    var tb = (typeof site !== "undefined" && site.topbar) ? site.topbar : {};
+    var notices = (tb.notices || []).filter(function (n) { return n && n.text; });
+    var contacts = (tb.contacts || []).filter(function (c) { return c && c.text; });
+    var tbc = tb.colors || {};
+%>
+<div class="top-header" id="topHeader" <%- tbc.topbarBg ? 'style="background:' + tbc.topbarBg + ';"' : '' %>>
     <div class="top-header-inner">
 
         <!-- Marquee Notice -->
+        <% if (notices.length) { %>
         <div class="top-marquee">
-            <div class="marquee-track">
-                ⚠️ Official Notice: Mizan Trade is the sole authorized distributor of KingSpec, AITC Kingsman Gaming, Xentrha, Unika, and PowerSync products. To avoid counterfeit products, please verify the "AUTHORIZED PRODUCT – Powered by MIZAN TRADE" sticker at the time of purchase.
+            <div class="marquee-track" <%- tbc.topbarText ? 'style="color:' + tbc.topbarText + ';"' : '' %>>
+                <% notices.forEach(function (n, i) { %>
+                    <% if (i > 0 && !notices[i - 1].bgColor && !n.bgColor) { %><span class="top-notice-sep">&bull;</span><% } %>
+                    <% var pillStyle = ''; if (n.bgColor || n.textColor) { pillStyle = 'style="'; if (n.bgColor) { pillStyle += 'background:' + n.bgColor + ';padding:3px 12px;border-radius:999px;'; } if (n.textColor) { pillStyle += 'color:' + n.textColor + ';'; } pillStyle += '"'; } %>
+                    <% if (n.link) { %>
+                        <a href="<%= n.link %>" class="top-notice-item" <%- pillStyle %>><%= n.text %></a>
+                    <% } else { %>
+                        <span class="top-notice-item" <%- pillStyle %>><%= n.text %></span>
+                    <% } %>
+                <% }); %>
             </div>
         </div>
+        <% } %>
 
-        <!-- Email + Hotline -->
+        <!-- Contact items -->
         <div class="top-contact">
-            <a href="mailto:<%= site.email %>" class="email-link">
-                <i class="fa-regular fa-envelope"></i> <%= site.email %>
-            </a>
-            <a href="tel:<%= site.hotline %>">
-                <i class="fa-solid fa-phone"></i> Hotline: <%= site.hotline %>
-            </a>
+            <% contacts.forEach(function (c) { %>
+                <% var cStyle = ''; if (c.bgColor || c.textColor) { cStyle = 'style="'; if (c.bgColor) { cStyle += 'background:' + c.bgColor + ';padding:4px 12px;border-radius:999px;'; } if (c.textColor) { cStyle += 'color:' + c.textColor + ';'; } cStyle += '"'; } %>
+                <a href="<%= c.link || '#' %>" class="<%= String(c.link || '').indexOf('mailto:') === 0 ? 'email-link' : '' %>" <%- cStyle %>>
+                    <% if (c.icon) { %><i class="<%= c.icon %>"></i> <% } %><%= c.label ? c.label + ': ' : '' %><%= c.text %>
+                </a>
+            <% }); %>
         </div>
 
     </div>

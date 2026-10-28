@@ -110,6 +110,80 @@
 
         </div>
 
+        <!-- পার্টনার লগইন ম্যানেজমেন্ট -->
+        <section class="dashboard-card" style="margin-top:18px;">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fa-solid fa-handshake"></i>
+                    Offers Portal Login
+                </h2>
+            </div>
+            <div class="card-body">
+
+                <% if (typeof loginNotice !== 'undefined' && loginNotice) { %>
+                    <div style="background:#e8f6ee; color:#1e7d43; border:1px solid #bfe6cd; border-radius:8px; padding:12px 15px; margin-bottom:16px; font-size:13.5px; font-weight:600;">
+                        <i class="fa-solid fa-circle-check"></i> <%= loginNotice %>
+                    </div>
+                <% } %>
+
+                <% if (!login) { %>
+                    <% if (partner.status === 'Approved') { %>
+                        <p style="font-size:13.5px; color:#555; margin-bottom:12px;">
+                            This application is approved. Create a login so the partner can access the
+                            <a href="/offers" target="_blank" style="color:#ef4a23; font-weight:600;">offers portal</a>
+                            with their business e-mail.
+                        </p>
+                        <form method="POST" action="/admin/partners/<%= partner._id %>/create-login" style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+                            <input type="text" name="password" placeholder="Password (leave empty to auto-generate)"
+                                   style="padding:9px 12px; border:1px solid #ddd; border-radius:6px; min-width:260px;">
+                            <button type="submit" class="primary-button">
+                                <i class="fa-solid fa-user-lock"></i> Create Login
+                            </button>
+                        </form>
+                    <% } else { %>
+                        <p style="font-size:13.5px; color:#888;">
+                            A portal login can be created after this application is <strong>Approved</strong>.
+                        </p>
+                    <% } %>
+                <% } else { %>
+                    <div style="font-size:13.5px; line-height:2;">
+                        <strong>E-Mail:</strong> <%= login.email %><br>
+                        <strong>Status:</strong>
+                        <% if (login.isActive) { %>
+                            <span class="badge badge-approved">Active</span>
+                        <% } else { %>
+                            <span class="badge badge-rejected">Disabled</span>
+                        <% } %>
+                        <br>
+                        <strong>Last Login:</strong>
+                        <%= login.lastLoginAt ? new Date(login.lastLoginAt).toLocaleString('en-GB') : 'Never' %>
+                    </div>
+
+                    <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:16px; align-items:center;">
+                        <form method="POST" action="/admin/partners/<%= partner._id %>/toggle-login">
+                            <% if (login.isActive) { %>
+                                <button type="submit" class="secondary-button" style="color:#c53030; border-color:#f5c6cb;">
+                                    <i class="fa-solid fa-ban"></i> Disable Login
+                                </button>
+                            <% } else { %>
+                                <button type="submit" class="primary-button" style="background:#2f855a;">
+                                    <i class="fa-solid fa-check"></i> Enable Login
+                                </button>
+                            <% } %>
+                        </form>
+                        <form method="POST" action="/admin/partners/<%= partner._id %>/reset-password" style="display:flex; gap:8px; align-items:center;">
+                            <input type="text" name="password" placeholder="New password (empty = auto-generate)"
+                                   style="padding:9px 12px; border:1px solid #ddd; border-radius:6px; min-width:230px;">
+                            <button type="submit" class="secondary-button">
+                                <i class="fa-solid fa-key"></i> Reset Password
+                            </button>
+                        </form>
+                    </div>
+                <% } %>
+
+            </div>
+        </section>
+
     </main>
 
 </div>

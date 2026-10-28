@@ -1,10 +1,115 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html lang="en">
 <head>
+    <link rel="icon" href="/images/logo.svg">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Account - Mizan Trade</title>
-    <link rel="icon" href="/images/logo.svg">
+    <style>
+        .wb-card {
+            background: linear-gradient(120deg, #081621 0%, #16344d 60%, #1f4a66 100%);
+            border-radius: 16px; color: #fff; padding: 24px 26px; margin: 18px 0 20px;
+            display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap;
+            box-shadow: 0 14px 34px rgba(8,22,33,.22);
+        }
+        .wb-left { display: flex; align-items: center; gap: 16px; min-width: 0; }
+        .wb-avatar {
+            width: 62px; height: 62px; border-radius: 50%; flex-shrink: 0;
+            background: linear-gradient(120deg, #ef4a23, #ff7a45);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 24px; font-weight: 700; color: #fff;
+            border: 2px solid rgba(255,255,255,.35);
+        }
+        .wb-title { font-size: 20px; font-weight: 700; margin: 0; }
+        .wb-sub { font-size: 13px; opacity: .82; margin: 4px 0 0; }
+        .wb-chips { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+        .wb-chip {
+            display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700;
+            background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.22);
+            padding: 5px 11px; border-radius: 999px;
+        }
+        .wb-chip.orange { background: rgba(239,74,35,.25); border-color: rgba(255,122,69,.5); }
+        .wb-logout {
+            display: inline-flex; align-items: center; gap: 8px; padding: 11px 18px;
+            border-radius: 10px; border: 1.5px solid rgba(255,255,255,.35);
+            background: rgba(255,255,255,.08); color: #fff; font-size: 14px; font-weight: 700;
+            cursor: pointer; transition: .15s; text-decoration: none;
+        }
+        .wb-logout:hover { background: rgba(239,74,35,.85); border-color: transparent; }
+
+        .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; margin: 0 0 22px; }
+        .stat-card {
+            background: #fff; border: 1px solid #eef0f3; border-radius: 14px;
+            padding: 18px; text-align: center; box-shadow: 0 6px 18px rgba(8,22,33,.05);
+        }
+        .stat-card .ic {
+            width: 46px; height: 46px; border-radius: 12px; margin: 0 auto 10px;
+            display: flex; align-items: center; justify-content: center; font-size: 19px;
+        }
+        .stat-card .ic.o { background: #fff3ef; color: #ef4a23; }
+        .stat-card .ic.g { background: #e8f7ee; color: #1f8a3b; }
+        .stat-card .ic.b { background: #e9f1fe; color: #2563eb; }
+        .stat-card .val { font-size: 22px; font-weight: 700; color: #081621; }
+        .stat-card .lbl { font-size: 12.5px; color: #777; margin-top: 3px; }
+
+        .tile-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(158px, 1fr));
+            gap: 12px; margin: 0 0 26px;
+        }
+        .tile {
+            background: #fff; border: 1px solid #eef0f3; border-radius: 13px;
+            padding: 16px 14px; display: flex; flex-direction: column; align-items: center; gap: 4px;
+            text-align: center; text-decoration: none; color: #081621; transition: .15s;
+            box-shadow: 0 4px 12px rgba(8,22,33,.04);
+        }
+        .tile:hover { border-color: #ef4a23; box-shadow: 0 10px 22px rgba(239,74,35,.14); transform: translateY(-2px); }
+        .tile .t-ic {
+            width: 44px; height: 44px; border-radius: 50%; margin-bottom: 6px;
+            background: #fff3ef; color: #ef4a23;
+            display: flex; align-items: center; justify-content: center; font-size: 17px;
+        }
+        .tile:nth-child(3n+2) .t-ic { background: #e9f1fe; color: #2563eb; }
+        .tile:nth-child(3n) .t-ic { background: #e8f7ee; color: #1f8a3b; }
+        .tile .t-title { font-size: 13.5px; font-weight: 700; }
+        .tile .t-sub { font-size: 11.5px; color: #8892a0; }
+        .tile.danger .t-ic { background: #fdecea; color: #c0392b; }
+        button.tile { width: 100%; cursor: pointer; font-family: inherit; }
+        .order-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 12px; }
+        .acct-notice {
+            display: flex; align-items: flex-start; gap: 10px;
+            background: #eef6ff; border: 1px solid #cfe3fb; color: #1e4e79;
+            border-radius: 12px; padding: 12px 15px; margin: 14px 0 0; font-size: 13px; line-height: 1.5;
+        }
+        .acct-notice i { margin-top: 2px; color: #2563eb; }
+
+        .reward-panel {
+            background: #fff; border: 1px solid #eef0f3; border-radius: 14px;
+            box-shadow: 0 6px 18px rgba(8,22,33,.05); margin: 0 0 22px; overflow: hidden;
+        }
+        .reward-panel-head {
+            display: flex; align-items: center; justify-content: space-between; gap: 12px;
+            padding: 15px 18px; border-bottom: 1px solid #eef0f3; flex-wrap: wrap;
+        }
+        .reward-panel-head h2 { margin: 0; font-size: 15px; color: #081621; display: flex; align-items: center; gap: 8px; }
+        .reward-panel-head h2 i { color: #1f8a3b; }
+        .reward-panel-head .rp-bal {
+            font-size: 12.5px; font-weight: 700; color: #1f8a3b;
+            background: #eaf7ee; border: 1px solid #bfe8cd; border-radius: 999px; padding: 5px 12px;
+        }
+        .reward-ledger { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .reward-ledger th {
+            text-align: left; font-size: 11px; letter-spacing: .4px; text-transform: uppercase;
+            color: #8892a0; padding: 10px 18px; background: #f8fafc;
+        }
+        .reward-ledger td { padding: 11px 18px; border-top: 1px solid #f1f3f6; color: #374957; }
+        .reward-ledger .amt { font-weight: 700; white-space: nowrap; }
+        .reward-ledger .amt.plus { color: #1f8a3b; }
+        .reward-ledger .amt.minus { color: #c0392b; }
+        .reward-empty { padding: 22px 18px; text-align: center; color: #8892a0; font-size: 13px; }
+        @media (max-width: 560px) {
+            .reward-ledger th:nth-child(3), .reward-ledger td:nth-child(3) { display: none; }
+        }
+    </style>
 </head>
 <body>
 
@@ -18,117 +123,240 @@
             <span>My Account</span>
         </div>
 
-        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-            <h1 class="page-title" style="margin:0;">
-                <i class="fa-solid fa-user-check"></i> Hello, <%= profile.name %>
-            </h1>
+        <%
+            var totalOrders = orders.length;
+            var totalSpent = orders.reduce(function (sum, o) { return sum + (Number(o.total) || 0); }, 0);
+            var memberSince = profile.createdAt ? new Date(profile.createdAt).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' }) : '';
+            var starPoints = Number(profile.rewardPoints) || 0;
+            var credit = Number(profile.storeCredit) || 0;
+            var initials = String(profile.name || '?').trim().split(/\s+/).map(function (w) { return w.charAt(0); }).slice(0, 2).join('').toUpperCase();
+            var tierName = profile.tier || 'Star';
+            var rewardCfg = (typeof site !== 'undefined' && site.rewards) ? site.rewards : {};
+            var rewardLabel = rewardCfg.label || 'Reward Points';
+            var rewardValue = Number(rewardCfg.pointValue === undefined ? 1 : rewardCfg.pointValue) || 0;
+            var rewardLog = Array.isArray(profile.pointsHistory)
+                ? profile.pointsHistory.slice().reverse().slice(0, 6)
+                : [];
+        %>
 
-            <form action="/logout" method="POST">
-                <button type="submit" class="btn btn-outline" style="color:#c0392b; border-color:#e6b3ad;">
+        <% if (typeof authNotice !== 'undefined' && authNotice) { %>
+            <div class="acct-notice">
+                <i class="fa-solid fa-circle-info"></i>
+                <span><%= authNotice %></span>
+            </div>
+        <% } %>
+
+        <!-- ===== WELCOME BACK CARD ===== -->
+        <div class="wb-card">
+            <div class="wb-left">
+                <div class="wb-avatar"><%= initials %></div>
+                <div style="min-width:0;">
+                    <h1 class="wb-title">Welcome Back, <%= profile.name %></h1>
+                    <p class="wb-sub">
+                        Member since <%= memberSince || '—' %>
+                        <% if (profile.phoneVerified) { %> · <i class="fa-solid fa-circle-check" style="color:#35d07f;"></i> Phone verified<% } %>
+                    </p>
+                    <div class="wb-chips">
+                        <span class="wb-chip orange"><i class="fa-solid fa-award"></i> <%= tierName %> Member</span>
+                        <span class="wb-chip"><i class="fa-solid fa-star" style="color:#fbbf24;"></i> <%= starPoints.toLocaleString() %> <%= rewardLabel %></span>
+                        <span class="wb-chip"><i class="fa-solid fa-wallet"></i> ৳ <%= credit.toLocaleString() %> Store Credit</span>
+                    </div>
+                </div>
+            </div>
+            <form action="/logout" method="POST" style="margin:0;">
+                <button type="submit" class="wb-logout">
                     <i class="fa-solid fa-arrow-right-from-bracket"></i> Logout
                 </button>
             </form>
         </div>
 
-        <% if (typeof updated !== 'undefined' && updated) { %>
-            <div style="background:#e8f6ee; color:#1e7d43; padding:12px 16px; border-radius:8px; margin:16px 0; border:1px solid #bfe6cd; font-size:14px;">
-                <i class="fa-solid fa-circle-check"></i> Profile updated successfully.
+        <!-- ===== STATS ===== -->
+        <div class="stat-grid">
+            <div class="stat-card" id="orders-stat">
+                <div class="ic o"><i class="fa-solid fa-bag-shopping"></i></div>
+                <div class="val"><%= totalOrders %></div>
+                <div class="lbl">Orders</div>
             </div>
-        <% } %>
-
-        <div class="cart-layout" style="margin-top:20px;">
-
-            <!-- প্রোফাইল এডিট -->
-            <div class="content-card">
-                <h3 style="color:#081621; margin-bottom:18px; font-size:16px;">
-                    <i class="fa-solid fa-id-card" style="color:#ef4a23;"></i> Profile Information
-                </h3>
-
-                <form action="/account/update" method="POST">
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>Name</label>
-                            <input type="text" name="name" class="form-control" value="<%= profile.name %>">
-                        </div>
-
-                        <div class="form-group">
-                            <label>Mobile</label>
-                            <input type="tel" name="phone" class="form-control" value="<%= profile.phone || '' %>">
-                        </div>
-
-                        <div class="form-group">
-                            <label>Gender</label>
-                            <select name="gender" class="form-control">
-                                <option value="">Select</option>
-                                <option value="male" <%= profile.gender === 'male' ? 'selected' : '' %>>Male</option>
-                                <option value="female" <%= profile.gender === 'female' ? 'selected' : '' %>>Female</option>
-                                <option value="other" <%= profile.gender === 'other' ? 'selected' : '' %>>Other</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Date of Birth</label>
-                            <input type="date" name="dateOfBirth" class="form-control"
-                                   value="<%= profile.dateOfBirth ? new Date(profile.dateOfBirth).toISOString().slice(0,10) : '' %>">
-                        </div>
-
-                        <div class="form-group full">
-                            <label>Address</label>
-                            <textarea name="address" class="form-control" style="min-height:60px;"><%= profile.address || '' %></textarea>
-                        </div>
-
-                        <div class="form-group">
-                            <label>City</label>
-                            <input type="text" name="city" class="form-control" value="<%= profile.city || '' %>">
-                        </div>
-
-                        <div class="form-group">
-                            <label>District</label>
-                            <input type="text" name="district" class="form-control" value="<%= profile.district || '' %>">
-                        </div>
-
-                        <div class="form-group">
-                            <label>Postal Code</label>
-                            <input type="text" name="postalCode" class="form-control" value="<%= profile.postalCode || '' %>">
-                        </div>
-                    </div>
-
-                    <h3 style="color:#081621; margin:26px 0 16px; font-size:15px;">
-                        <i class="fa-solid fa-key" style="color:#ef4a23;"></i> Change Password (optional)
-                    </h3>
-
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label>Current Password</label>
-                            <input type="password" name="currentPassword" class="form-control" placeholder="Fill in only if you want a new password">
-                        </div>
-                        <div class="form-group">
-                            <label>New Password</label>
-                            <input type="password" name="newPassword" class="form-control" placeholder="At least 6 characters">
-                        </div>
-                    </div>
-
-                    <button type="submit" class="btn btn-primary" style="margin-top:18px;">
-                        <i class="fa-solid fa-floppy-disk"></i> Update
-                    </button>
-                </form>
+            <div class="stat-card" id="rewards">
+                <div class="ic g"><i class="fa-solid fa-star"></i></div>
+                <div class="val"><%= starPoints.toLocaleString() %></div>
+                <div class="lbl"><%= rewardLabel %></div>
             </div>
+            <div class="stat-card" id="credit">
+                <div class="ic b"><i class="fa-solid fa-wallet"></i></div>
+                <div class="val">৳ <%= credit.toLocaleString() %></div>
+                <div class="lbl">Store Credit</div>
+            </div>
+            <div class="stat-card">
+                <div class="ic o"><i class="fa-solid fa-sack-dollar"></i></div>
+                <div class="val">৳ <%= totalSpent.toLocaleString() %></div>
+                <div class="lbl">Total Spent</div>
+            </div>
+        </div>
 
-            <!-- অর্ডার ইতিহাস -->
-            <div>
-                <div class="content-card">
-                    <h3 style="color:#081621; margin-bottom:18px; font-size:16px;">
+        <!-- ===== REWARD ACTIVITY ===== -->
+        <section class="reward-panel" id="reward-activity">
+            <div class="reward-panel-head">
+                <h2><i class="fa-solid fa-gift"></i> <%= rewardLabel %> Activity</h2>
+                <span class="rp-bal">
+                    <%= starPoints.toLocaleString() %> pts
+                    <% if (rewardValue > 0) { %>· ৳ <%= (starPoints * rewardValue).toLocaleString('en-US', { maximumFractionDigits: 2 }) %><% } %>
+                </span>
+            </div>
+            <% if (rewardLog.length === 0) { %>
+                <div class="reward-empty">
+                    No reward activity yet. Earn points on every delivered order.
+                </div>
+            <% } else { %>
+                <div style="overflow-x:auto;">
+                    <table class="reward-ledger">
+                        <thead>
+                            <tr><th>Date</th><th>Activity</th><th>Order</th><th style="text-align:right;">Points</th></tr>
+                        </thead>
+                        <tbody>
+                            <% rewardLog.forEach(function (row) { %>
+                                <tr>
+                                    <td><%= row.createdAt ? new Date(row.createdAt).toLocaleDateString('en-GB') : '—' %></td>
+                                    <td>
+                                        <% if (row.type === 'redeem') { %>
+                                            <span style="color:#c0392b; font-weight:700;">Redeemed</span>
+                                        <% } else if (row.type === 'adjust') { %>
+                                            <span style="color:#2563eb; font-weight:700;">Adjusted</span>
+                                        <% } else { %>
+                                            <span style="color:#1f8a3b; font-weight:700;">Earned</span>
+                                        <% } %>
+                                    </td>
+                                    <td><%= row.orderNumber || '—' %></td>
+                                    <td style="text-align:right;" class="amt <%= row.type === 'redeem' ? 'minus' : 'plus' %>">
+                                        <%= row.type === 'redeem' ? '−' : '+' %><%= Number(row.points) || 0 %>
+                                    </td>
+                                </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                </div>
+            <% } %>
+        </section>
+
+        <!-- ===== TILE GRID ===== -->
+        <div class="tile-grid">
+            <a class="tile" href="/account#orders">
+                <span class="t-ic"><i class="fa-solid fa-bag-shopping"></i></span>
+                <span class="t-title">My Orders</span>
+                <span class="t-sub">View your order history</span>
+            </a>
+            <a class="tile" href="/order-tracking">
+                <span class="t-ic"><i class="fa-solid fa-truck-fast"></i></span>
+                <span class="t-title">Track Order</span>
+                <span class="t-sub">Follow your delivery</span>
+            </a>
+            <a class="tile" href="/wishlist">
+                <span class="t-ic"><i class="fa-regular fa-heart"></i></span>
+                <span class="t-title">Wishlist</span>
+                <span class="t-sub">Saved products</span>
+            </a>
+            <a class="tile" href="/compare">
+                <span class="t-ic"><i class="fa-solid fa-code-compare"></i></span>
+                <span class="t-title">Compare</span>
+                <span class="t-sub"><%= compareCount ? compareCount + (compareCount === 1 ? ' product' : ' products') + ' selected' : 'Side-by-side specs' %></span>
+            </a>
+            <a class="tile" href="/cart">
+                <span class="t-ic"><i class="fa-solid fa-cart-shopping"></i></span>
+                <span class="t-title">My Cart</span>
+                <span class="t-sub">Items ready to buy</span>
+            </a>
+            <a class="tile" href="/account/settings#profile">
+                <span class="t-ic"><i class="fa-solid fa-id-card"></i></span>
+                <span class="t-title">Profile Information</span>
+                <span class="t-sub">Edit your details</span>
+            </a>
+            <a class="tile" href="/account/settings#password">
+                <span class="t-ic"><i class="fa-solid fa-key"></i></span>
+                <span class="t-title">Change Password</span>
+                <span class="t-sub">Keep your account safe</span>
+            </a>
+            <a class="tile" href="/account#rewards">
+                <span class="t-ic"><i class="fa-solid fa-star"></i></span>
+                <span class="t-title"><%= rewardLabel %></span>
+                <span class="t-sub">Your reward balance</span>
+            </a>
+            <a class="tile" href="/account#credit">
+                <span class="t-ic"><i class="fa-solid fa-wallet"></i></span>
+                <span class="t-title">Store Credit</span>
+                <span class="t-sub">Available credit balance</span>
+            </a>
+            <a class="tile" href="/pages/payment-methods">
+                <span class="t-ic"><i class="fa-solid fa-credit-card"></i></span>
+                <span class="t-title">Payment Methods</span>
+                <span class="t-sub">bKash, COD, bank transfer</span>
+            </a>
+            <a class="tile" href="/pages/shipping-info">
+                <span class="t-ic"><i class="fa-solid fa-truck"></i></span>
+                <span class="t-title">Shipping Info</span>
+                <span class="t-sub">Areas &amp; charges</span>
+            </a>
+            <a class="tile" href="/offers">
+                <span class="t-ic"><i class="fa-solid fa-tag"></i></span>
+                <span class="t-title">Special Offers</span>
+                <span class="t-sub">Deals &amp; packages</span>
+            </a>
+            <a class="tile" href="/faq">
+                <span class="t-ic"><i class="fa-solid fa-circle-question"></i></span>
+                <span class="t-title">Help / FAQ</span>
+                <span class="t-sub">Common questions</span>
+            </a>
+            <a class="tile" href="/page/privacy-policy">
+                <span class="t-ic"><i class="fa-solid fa-shield-halved"></i></span>
+                <span class="t-title">Privacy Policy</span>
+                <span class="t-sub">How we handle data</span>
+            </a>
+            <a class="tile" href="/blog">
+                <span class="t-ic"><i class="fa-solid fa-newspaper"></i></span>
+                <span class="t-title">Our Blog</span>
+                <span class="t-sub">News &amp; guides</span>
+            </a>
+            <a class="tile" href="/become-a-partner">
+                <span class="t-ic"><i class="fa-solid fa-handshake"></i></span>
+                <span class="t-title">Become a Partner</span>
+                <span class="t-sub">Sell with us</span>
+            </a>
+            <a class="tile" href="/shop">
+                <span class="t-ic"><i class="fa-solid fa-store"></i></span>
+                <span class="t-title">Continue Shopping</span>
+                <span class="t-sub">Browse all products</span>
+            </a>
+            <form action="/logout" method="POST" style="margin:0; display:contents;">
+                <button type="submit" class="tile danger">
+                    <span class="t-ic"><i class="fa-solid fa-arrow-right-from-bracket"></i></span>
+                    <span class="t-title">Logout</span>
+                    <span class="t-sub">Sign out safely</span>
+                </button>
+            </form>
+        </div>
+
+        <!-- ===== ORDER HISTORY ===== -->
+        <div id="orders" style="scroll-margin-top:90px;">
+            <div class="content-card" style="margin-bottom:30px;">
+                <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:18px;">
+                    <h3 style="color:#081621; margin:0; font-size:16px;">
                         <i class="fa-solid fa-bag-shopping" style="color:#ef4a23;"></i> My Orders
                     </h3>
-
-                    <% if (orders.length === 0) { %>
-                        <p style="color:#777; font-size:14px;">You have not placed any orders yet.</p>
-                        <a href="/shop" class="btn btn-primary" style="margin-top:8px;">
-                            <i class="fa-solid fa-store"></i> Start Shopping
+                    <% if (orders.length > 0) { %>
+                        <a href="/order-tracking" class="btn btn-primary" style="padding:8px 14px; font-size:13px;">
+                            <i class="fa-solid fa-truck-fast"></i> Track an Order
                         </a>
-                    <% } else { %>
+                    <% } %>
+                </div>
+
+                <% if (orders.length === 0) { %>
+                    <p style="color:#777; font-size:14px;">You have not placed any orders yet.</p>
+                    <a href="/shop" class="btn btn-primary" style="margin-top:8px;">
+                        <i class="fa-solid fa-store"></i> Start Shopping
+                    </a>
+                <% } else { %>
+                    <div class="order-grid">
                         <% orders.forEach(function (o) { %>
-                            <div style="border:1px solid #eef0f3; border-radius:10px; padding:14px 16px; margin-bottom:12px;">
+                            <div style="border:1px solid #eef0f3; border-radius:10px; padding:14px 16px;">
                                 <div style="display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;">
                                     <strong style="color:#081621;"><%= o.orderNumber %></strong>
                                     <span style="font-size:12px; color:#888;"><%= new Date(o.createdAt).toLocaleDateString() %></span>
@@ -146,16 +374,15 @@
                                 </div>
                             </div>
                         <% }); %>
-                    <% } %>
-                </div>
+                    </div>
+                <% } %>
             </div>
-
         </div>
 
     </div>
 
     <%- include('../partials/footer') %>
 
-    <script src="/js/main.js?v=2"></script>
+    <script src="/js/main.js?v=4"></script>
 </body>
 </html>

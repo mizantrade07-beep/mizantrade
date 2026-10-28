@@ -1,0 +1,411 @@
+<%
+    const o = offer || {};
+    const formAction = offer ? "/admin/offers/edit/" + offer._id : "/admin/offers/add";
+    const sel = selected || { categories: [], subCategories: [], childCategories: [], products: [] };
+    const layoutOptions = ["full", "half", "third", "quarter"];
+    const layoutValue = layoutOptions.indexOf(o.layout) !== -1 ? o.layout : "full";
+%>
+
+<%- include("partials/head", {
+    title: (offer ? "Edit Offer" : "Add Offer") + " | MizanTrade Admin",
+    loadEditorFonts: true
+}) %>
+
+<%- include("partials/sidebar") %>
+
+<div class="admin-main">
+
+    <%- include("partials/topbar", {
+        title: offer ? "Edit Offer" : "Add Offer"
+    }) %>
+
+    <main class="admin-content">
+
+        <div class="dashboard-header">
+            <div>
+                <h1 class="dashboard-title"><%= offer ? "Edit Offer" : "Add New Offer" %></h1>
+                <p class="dashboard-subtitle">
+                    Type, name, price and gift are free text. Add a banner, target categories/products,
+                    and build rich content with tables, fonts and formulas imported from Word or Excel.
+                </p>
+            </div>
+
+            <a href="/admin/offers" class="secondary-button">
+                <i class="fa-solid fa-arrow-left"></i>
+                Back to Offers
+            </a>
+        </div>
+
+        <form action="<%= formAction %>" method="POST" id="offerForm">
+
+            <div class="cms-two-col">
+
+                <div class="side-stack">
+
+                    <section class="dashboard-card">
+                        <div class="card-header">
+                            <h2 class="card-title"><i class="fa-solid fa-tags card-icon"></i> Offer Details</h2>
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="typeInput">Offer Type *</label>
+                                <input type="text" id="typeInput" name="type" list="offerTypeList"
+                                       value="<%= o.type || 'Product' %>" required
+                                       placeholder="Product / Package / Tour / Discount / anything">
+                                <datalist id="offerTypeList">
+                                    <% (offerTypes || []).forEach(function (t) { %>
+                                        <option value="<%= t %>"></option>
+                                    <% }); %>
+                                </datalist>
+                                <div class="tag-input-hint">
+                                    Write any type. Offers are grouped by this text on the public Offers page.
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="nameInput">Product / Name *</label>
+                                <input type="text" id="nameInput" name="name" required
+                                       value="<%= o.name || '' %>"
+                                       placeholder="Example: Core i5 Build Package / Cox's Bazar Tour">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="qtyInput">Offer Qty</label>
+                                <input type="text" id="qtyInput" name="offerQty"
+                                       value="<%= o.offerQty || '' %>"
+                                       placeholder="Example: 10 pcs / 5+1 / 2 Days 3 Nights">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="priceInput">Price (৳)</label>
+                                <input type="text" id="priceInput" name="price"
+                                       value="<%= o.price != null ? o.price : '' %>"
+                                       placeholder="12500 or Call for price">
+                                <div class="tag-input-hint">
+                                    Numbers are formatted with commas automatically. Any text is shown as typed.
+                                </div>
+                            </div>
+
+                            <div class="form-group form-full">
+                                <label for="giftInput">Gift</label>
+                                <input type="text" id="giftInput" name="gift"
+                                       value="<%= o.gift || '' %>"
+                                       placeholder="Example: Free RGB Keyboard + Mouse">
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="dashboard-card">
+                        <div class="card-header">
+                            <h2 class="card-title"><i class="fa-solid fa-image card-icon"></i> Offer Banner</h2>
+                        </div>
+
+                        <div class="offer-banner-editor">
+                            <div class="offer-banner-preview <%= o.banner ? 'has-image' : '' %>" id="bannerPreview">
+                                <% if (o.banner) { %>
+                                    <img id="bannerPreviewImg" src="<%= o.banner %>" alt="Banner preview">
+                                <% } else { %>
+                                    <img id="bannerPreviewImg" alt="Banner preview" style="display:none;">
+                                <% } %>
+                                <div class="obp-empty" id="bannerEmpty">
+                                    <i class="fa-regular fa-image"></i>
+                                    <span>Any size or shape — the complete image stays visible on the public page.</span>
+                                </div>
+                            </div>
+
+                            <div class="offer-banner-controls">
+                                <input type="text" id="bannerInput" name="banner" class="img-url"
+                                       value="<%= o.banner || '' %>"
+                                       placeholder="Paste an image URL or upload">
+                                <label class="secondary-button" style="cursor:pointer; white-space:nowrap;">
+                                    <i class="fa-solid fa-upload"></i> Upload
+                                    <input type="file" id="bannerFile" accept="image/*" hidden>
+                                </label>
+                                <button type="button" class="mini-button danger" id="clearBanner" title="Remove banner">
+                                    <i class="fa-solid fa-xmark"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="dashboard-card">
+                        <div class="card-header" style="flex-wrap:wrap; gap:10px;">
+                            <h2 class="card-title"><i class="fa-solid fa-table-columns card-icon"></i> Rich Content</h2>
+                        </div>
+
+                        <div class="offer-import-bar">
+                            <label class="secondary-button offer-import-btn">
+                                <i class="fa-solid fa-file-word"></i> Import Word (.docx)
+                                <input type="file" class="offer-import-file" accept=".docx" hidden>
+                            </label>
+                            <label class="secondary-button offer-import-btn">
+                                <i class="fa-solid fa-file-excel"></i> Import Excel (.xlsx)
+                                <input type="file" class="offer-import-file" accept=".xlsx" hidden>
+                            </label>
+                            <label class="offer-import-replace">
+                                <input type="checkbox" id="importReplace">
+                                Replace existing content
+                            </label>
+                            <span class="offer-import-status" id="importStatus"></span>
+                        </div>
+
+                        <div class="rte-wrap">
+                            <div class="rte-toolbar" data-editor="contentEditor">
+                                <button type="button" class="rte-btn" data-cmd="undo" title="Undo"><i class="fa-solid fa-rotate-left"></i></button>
+                                <button type="button" class="rte-btn" data-cmd="redo" title="Redo"><i class="fa-solid fa-rotate-right"></i></button>
+                                <span class="rte-sep"></span>
+                                <button type="button" class="rte-btn" data-cmd="bold" title="Bold"><i class="fa-solid fa-bold"></i></button>
+                                <button type="button" class="rte-btn" data-cmd="italic" title="Italic"><i class="fa-solid fa-italic"></i></button>
+                                <button type="button" class="rte-btn" data-cmd="underline" title="Underline"><i class="fa-solid fa-underline"></i></button>
+                                <button type="button" class="rte-btn" data-cmd="strikeThrough" title="Strike-through"><i class="fa-solid fa-strikethrough"></i></button>
+                                <span class="rte-sep"></span>
+                                <select class="rte-select" data-block title="Paragraph style">
+                                    <option value="p">Paragraph</option>
+                                    <option value="h2">Heading 2</option>
+                                    <option value="h3">Heading 3</option>
+                                    <option value="h4">Heading 4</option>
+                                </select>
+                                <select class="rte-select" data-fontname title="Font family">
+                                    <option value="">Font</option>
+                                    <option value="Arial, sans-serif">Arial</option>
+                                    <option value="'Segoe UI', sans-serif">Segoe UI</option>
+                                    <option value="'Times New Roman', serif">Times New Roman</option>
+                                    <option value="Georgia, serif">Georgia</option>
+                                    <option value="'Courier New', monospace">Courier New</option>
+                                    <option value="'Noto Sans Bengali', sans-serif">Noto Sans Bengali</option>
+                                    <option value="'Hind Siliguri', sans-serif">Hind Siliguri</option>
+                                </select>
+                                <select class="rte-select" data-fontsize title="Font size">
+                                    <option value="">Size</option>
+                                    <option value="11px">11 px</option>
+                                    <option value="12px">12 px</option>
+                                    <option value="13px">13 px</option>
+                                    <option value="14px">14 px</option>
+                                    <option value="16px">16 px</option>
+                                    <option value="18px">18 px</option>
+                                    <option value="20px">20 px</option>
+                                    <option value="24px">24 px</option>
+                                    <option value="28px">28 px</option>
+                                    <option value="32px">32 px</option>
+                                </select>
+                                <span class="rte-sep"></span>
+                                <input type="color" class="rte-color" data-color-cmd="foreColor" value="#111827" title="Text colour">
+                                <input type="color" class="rte-color" data-color-cmd="hiliteColor" value="#fff3a3" title="Highlight colour">
+                                <span class="rte-sep"></span>
+                                <button type="button" class="rte-btn" data-cmd="justifyLeft" title="Align left"><i class="fa-solid fa-align-left"></i></button>
+                                <button type="button" class="rte-btn" data-cmd="justifyCenter" title="Align centre"><i class="fa-solid fa-align-center"></i></button>
+                                <button type="button" class="rte-btn" data-cmd="justifyRight" title="Align right"><i class="fa-solid fa-align-right"></i></button>
+                                <button type="button" class="rte-btn" data-cmd="justifyFull" title="Justify"><i class="fa-solid fa-align-justify"></i></button>
+                                <span class="rte-sep"></span>
+                                <button type="button" class="rte-btn" data-cmd="insertUnorderedList" title="Bullet list"><i class="fa-solid fa-list-ul"></i></button>
+                                <button type="button" class="rte-btn" data-cmd="insertOrderedList" title="Numbered list"><i class="fa-solid fa-list-ol"></i></button>
+                                <span class="rte-sep"></span>
+                                <button type="button" class="rte-btn" data-cmd="createLink" title="Insert link"><i class="fa-solid fa-link"></i></button>
+                                <button type="button" class="rte-btn" data-cmd="unlink" title="Remove link"><i class="fa-solid fa-link-slash"></i></button>
+                                <button type="button" class="rte-btn" data-role="image" title="Upload image"><i class="fa-solid fa-image"></i></button>
+                                <button type="button" class="rte-btn" data-role="video" title="Upload video"><i class="fa-solid fa-video"></i></button>
+                                <span class="rte-sep"></span>
+                                <button type="button" class="rte-btn" data-role="table" title="Insert table"><i class="fa-solid fa-table"></i></button>
+                                <button type="button" class="rte-btn" data-role="rowAdd" title="Add row below"><i class="fa-solid fa-plus"></i><span class="rte-mini">R</span></button>
+                                <button type="button" class="rte-btn" data-role="rowDelete" title="Delete row"><i class="fa-solid fa-minus"></i><span class="rte-mini">R</span></button>
+                                <button type="button" class="rte-btn" data-role="colAdd" title="Add column right"><i class="fa-solid fa-plus"></i><span class="rte-mini">C</span></button>
+                                <button type="button" class="rte-btn" data-role="colDelete" title="Delete column"><i class="fa-solid fa-minus"></i><span class="rte-mini">C</span></button>
+                                <button type="button" class="rte-btn" data-role="tableDelete" title="Delete table"><i class="fa-solid fa-trash"></i><span class="rte-mini">T</span></button>
+                                <span class="rte-sep"></span>
+                                <button type="button" class="rte-btn" data-role="formula" title="Set formula for the selected cell (fx)"><i class="fa-solid fa-square-root-variable"></i></button>
+                                <button type="button" class="rte-btn rte-btn-calc" data-role="recalc" title="Recalculate all formulas"><i class="fa-solid fa-calculator"></i></button>
+                                <button type="button" class="rte-btn" data-cmd="removeFormat" title="Clear formatting"><i class="fa-solid fa-eraser"></i></button>
+                            </div>
+                            <div class="rte-area tall" id="contentEditor" contenteditable="true"></div>
+                        </div>
+
+                        <textarea name="content" class="hidden-source" data-rte-source="contentEditor"><%= o.content || '' %></textarea>
+
+                        <div class="tag-input-hint" style="margin-top:8px;">
+                            Paste directly from Word or Excel (tables and fonts are kept). Type <strong>=SUM(A1:A5)</strong>
+                            or <strong>=B2*C2</strong> inside a table cell, then press the calculator button — or use
+                            fx to edit a cell formula. Calculated values are saved with the offer.
+                        </div>
+                    </section>
+
+                </div>
+
+                <div class="side-stack">
+
+                    <section class="dashboard-card">
+                        <div class="card-header">
+                            <h2 class="card-title"><i class="fa-solid fa-bullseye card-icon"></i> Offer Scope</h2>
+                        </div>
+
+                        <div class="tag-input-hint" style="margin-bottom:14px;">
+                            Leave everything empty to show this offer to everyone. Selected scopes also power the
+                            public Offers page filter. You can mix any categories and products.
+                        </div>
+
+                        <div class="scope-block">
+                            <label class="scope-label">Category</label>
+                            <div class="scope-picker" data-kind="categories">
+                                <div class="scope-picker-search">
+                                    <input type="text" class="scope-input" placeholder="Search category…" autocomplete="off">
+                                    <datalist></datalist>
+                                    <button type="button" class="secondary-button scope-add">Add</button>
+                                </div>
+                                <div class="scope-list"></div>
+                            </div>
+                        </div>
+
+                        <div class="scope-block">
+                            <label class="scope-label">Sub Category</label>
+                            <div class="scope-picker" data-kind="subCategories">
+                                <div class="scope-picker-search">
+                                    <input type="text" class="scope-input" placeholder="Search sub category…" autocomplete="off">
+                                    <datalist></datalist>
+                                    <button type="button" class="secondary-button scope-add">Add</button>
+                                </div>
+                                <div class="scope-list"></div>
+                            </div>
+                        </div>
+
+                        <div class="scope-block">
+                            <label class="scope-label">Child Category</label>
+                            <div class="scope-picker" data-kind="childCategories">
+                                <div class="scope-picker-search">
+                                    <input type="text" class="scope-input" placeholder="Search child category…" autocomplete="off">
+                                    <datalist></datalist>
+                                    <button type="button" class="secondary-button scope-add">Add</button>
+                                </div>
+                                <div class="scope-list"></div>
+                            </div>
+                        </div>
+
+                        <div class="scope-block">
+                            <label class="scope-label">Product</label>
+                            <div class="scope-picker" data-kind="products">
+                                <div class="scope-picker-search">
+                                    <input type="text" class="scope-input" placeholder="Search product…" autocomplete="off">
+                                    <datalist></datalist>
+                                    <button type="button" class="secondary-button scope-add">Add</button>
+                                </div>
+                                <div class="scope-list"></div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="dashboard-card">
+                        <div class="card-header">
+                            <h2 class="card-title"><i class="fa-solid fa-sliders card-icon"></i> Display Settings</h2>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="orderInput">Sort Order</label>
+                            <input type="number" id="orderInput" name="order" value="<%= typeof o.order === 'number' ? o.order : 0 %>">
+                            <div class="tag-input-hint">Lower numbers appear first within the same type.</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="layoutInput">Card Width / Offers per Row</label>
+                            <select id="layoutInput" name="layout">
+                                <option value="full" <%= layoutValue === 'full' ? 'selected' : '' %>>Full width — 1 per row (1/1)</option>
+                                <option value="half" <%= layoutValue === 'half' ? 'selected' : '' %>>Half width — 2 per row (1/2)</option>
+                                <option value="third" <%= layoutValue === 'third' ? 'selected' : '' %>>One third — 3 per row (1/3)</option>
+                                <option value="quarter" <%= layoutValue === 'quarter' ? 'selected' : '' %>>One quarter — 4 per row (1/4)</option>
+                            </select>
+                            <div class="tag-input-hint">Tablets show at most 2 per row; phones always show 1 per row.</div>
+                        </div>
+
+                        <label class="checkbox-row">
+                            <input type="checkbox" name="isActive" <%= o.isActive === false ? '' : 'checked' %>>
+                            <span>Show on the public Offers page</span>
+                        </label>
+                    </section>
+
+                    <div class="form-actions">
+                        <button type="submit" class="primary-button">
+                            <i class="fa-solid fa-floppy-disk"></i>
+                            <%= offer ? "Update Offer" : "Create Offer" %>
+                        </button>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </form>
+
+        <div id="offerScopeData" hidden
+             data-json="<%= JSON.stringify({ categories: categoryOptions || [], products: productOptions || [], selected: sel }) %>"></div>
+
+    </main>
+
+</div>
+
+<style>
+    .offer-banner-editor { display: flex; flex-direction: column; gap: 10px; }
+    .offer-banner-preview {
+        position: relative; width: 100%; aspect-ratio: 16 / 6; min-height: 120px;
+        background: #f1f5f9; border: 1px dashed #cbd5e1; border-radius: 12px;
+        display: flex; align-items: center; justify-content: center; overflow: hidden;
+    }
+    .offer-banner-preview img { width: 100%; height: 100%; object-fit: contain; }
+    .offer-banner-preview .obp-empty {
+        display: flex; flex-direction: column; align-items: center; gap: 8px;
+        color: #94a3b8; font-size: 12.5px; text-align: center; padding: 12px; max-width: 360px;
+    }
+    .offer-banner-preview .obp-empty i { font-size: 26px; }
+    .offer-banner-preview.has-image .obp-empty { display: none; }
+    .offer-banner-controls { display: flex; gap: 8px; align-items: center; }
+    .offer-banner-controls .img-url { flex: 1; }
+    .offer-import-bar {
+        display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+        background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px;
+        padding: 10px 12px; margin-bottom: 12px;
+    }
+    .offer-import-btn { cursor: pointer; margin: 0; }
+    .offer-import-replace { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: #475569; margin: 0; }
+    .offer-import-status { font-size: 12.5px; color: #0f766e; font-weight: 600; }
+    .rte-btn { position: relative; }
+    .rte-mini {
+        position: absolute; right: 2px; bottom: 0; font-size: 7.5px;
+        font-weight: 700; color: #94a3b8; line-height: 1;
+    }
+    .rte-btn-calc { color: #0f766e; background: #ecfdf5; border-color: #a7f3d0; }
+    input.rte-color {
+        width: 28px; height: 28px; border: 1px solid #d7dde6; border-radius: 7px;
+        padding: 2px; background: #fff; cursor: pointer;
+    }
+    .rte-area table, .rte-area td, .rte-area th { border: 1px solid #cbd5e1; }
+    .rte-area table { width: 100%; border-collapse: collapse; margin: 10px 0; table-layout: auto; }
+    .rte-area td, .rte-area th { padding: 6px 9px; vertical-align: top; min-width: 24px; }
+    .rte-area .formula-cell { background: #f0fdf4; }
+    .rte-area .formula-cell:hover { outline: 1px dashed #0f766e; }
+    .scope-block { margin-bottom: 16px; }
+    .scope-block:last-child { margin-bottom: 0; }
+    .scope-label { display: block; font-size: 12.5px; font-weight: 700; color: #334155; margin-bottom: 6px; }
+    .scope-picker-search { display: flex; gap: 8px; align-items: center; }
+    .scope-picker-search .scope-input { flex: 1; }
+    .scope-picker-search .scope-add { flex-shrink: 0; white-space: nowrap; }
+    .scope-list { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 9px; }
+    .scope-list:empty { display: none; }
+    .scope-chip {
+        display: inline-flex; align-items: center; gap: 7px;
+        background: #eef2ff; border: 1px solid #c7d2fe; color: #3730a3;
+        border-radius: 999px; padding: 4px 9px; font-size: 12.5px; max-width: 100%;
+    }
+    .scope-chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 230px; }
+    .scope-chip button {
+        background: none; border: none; color: #6366f1; cursor: pointer;
+        font-size: 15px; line-height: 1; padding: 0 2px;
+    }
+    .scope-chip button:hover { color: #dc2626; }
+    @media (max-width: 640px) {
+        .offer-banner-controls { flex-wrap: wrap; }
+        .offer-import-replace { width: 100%; }
+    }
+</style>
+
+<script src="/admin/js/offerFormula.js?v=1"></script>
+<script src="/admin/js/rte.js?v=2"></script>
+<script src="/admin/js/offerForm.js?v=1"></script>
+
+<%- include("partials/footer") %>

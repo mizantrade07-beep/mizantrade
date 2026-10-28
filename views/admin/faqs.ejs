@@ -1,0 +1,146 @@
+<%- include("partials/head", {
+    title: "FAQ Manager | MizanTrade Admin"
+}) %>
+
+<%- include("partials/sidebar") %>
+
+<div class="admin-main">
+
+    <%- include("partials/topbar", {
+        title: "FAQ Manager"
+    }) %>
+
+    <main class="admin-content">
+
+        <div class="dashboard-header">
+            <div>
+                <h1 class="dashboard-title">FAQ Manager</h1>
+                <p class="dashboard-subtitle">
+                    Manage the questions and answers shown on the public FAQ page, grouped by category.
+                </p>
+            </div>
+
+            <% if (can('content.create')) { %>
+                <a href="/admin/faqs/add" class="primary-button">
+                    <i class="fa-solid fa-plus"></i>
+                    Add FAQ
+                </a>
+            <% } %>
+        </div>
+
+
+        <section class="stats-grid">
+
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-circle-question"></i></div>
+                <div class="stat-content">
+                    <span>Total FAQs</span>
+                    <strong><%= faqs.length %></strong>
+                </div>
+            </article>
+
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-eye"></i></div>
+                <div class="stat-content">
+                    <span>Active</span>
+                    <strong><%= totalActive %></strong>
+                </div>
+            </article>
+
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-eye-slash"></i></div>
+                <div class="stat-content">
+                    <span>Hidden</span>
+                    <strong><%= totalInactive %></strong>
+                </div>
+            </article>
+
+        </section>
+
+
+        <section class="dashboard-card">
+
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fa-solid fa-circle-question card-icon"></i>
+                    All FAQs
+                </h2>
+
+                <form method="GET" action="/admin/faqs" class="product-search">
+                    <input type="text" name="search" value="<%= search %>" placeholder="Search category or question...">
+                    <button type="submit"><i class="fa-solid fa-filter"></i> Filter</button>
+                </form>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Category</th>
+                            <th>Question</th>
+                            <th>Answer</th>
+                            <th>Order</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        <% if (faqs.length === 0) { %>
+                            <tr>
+                                <td colspan="6" style="text-align:center; padding:30px; color:#64748b;">
+                                    No FAQs yet. Start with "Add FAQ".
+                                </td>
+                            </tr>
+                        <% } %>
+
+                        <% faqs.forEach(function (f) { %>
+                            <tr>
+                                <td>
+                                    <span class="badge" style="background:#eef2f6; color:#374957;">
+                                        <%= f.category %>
+                                    </span>
+                                </td>
+                                <td style="max-width:280px;">
+                                    <strong style="font-size:13px;"><%= f.question %></strong>
+                                </td>
+                                <td style="max-width:340px; font-size:12.5px; color:#64748b;">
+                                    <%= f.answer.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 110) %><%= f.answer.replace(/<[^>]*>/g, ' ').length > 110 ? '…' : '' %>
+                                </td>
+                                <td style="font-size:13px; color:#475569;"><%= f.order %></td>
+                                <td>
+                                    <% if (f.isActive) { %>
+                                        <span class="badge badge-approved">Active</span>
+                                    <% } else { %>
+                                        <span class="badge badge-pending">Hidden</span>
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <div class="product-actions">
+                                        <% if (can('content.edit')) { %>
+                                            <a href="/admin/faqs/edit/<%= f._id %>" class="action-edit" title="Edit">
+                                                <i class="fa-solid fa-pen"></i>
+                                            </a>
+                                        <% } %>
+                                        <% if (can('content.delete')) { %>
+                                            <a href="/admin/faqs/delete/<%= f._id %>" class="action-delete" title="Delete"
+                                               onclick="return confirm('Delete this FAQ?');">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </a>
+                                        <% } %>
+                                    </div>
+                                </td>
+                            </tr>
+                        <% }); %>
+
+                    </tbody>
+                </table>
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+<%- include("partials/footer") %>

@@ -1,0 +1,389 @@
+<%- include("partials/head", { title: "Payment Methods | MizanTrade Admin" }) %>
+
+<%- include("partials/sidebar") %>
+
+<div class="admin-main">
+
+    <%- include("partials/topbar", { title: "Payment Methods & Accounts" }) %>
+
+    <main class="admin-content">
+
+        <div class="dashboard-header">
+            <div>
+                <h1 class="dashboard-title">Payment Methods &amp; Accounts</h1>
+                <p class="dashboard-subtitle">
+                    Manage the bKash, Nagad, Rocket and bank accounts shown at checkout, plus the payment
+                    logos in the footer. This section is separate from Settings and from the Footer editor.
+                </p>
+            </div>
+            <a href="/admin/settings#payment-gateways" class="secondary-button">
+                <i class="fa-solid fa-toggle-on"></i> Gateway Switches
+            </a>
+        </div>
+
+        <% if (message === "saved") { %>
+            <div style="margin-bottom:16px;padding:12px 16px;border-radius:8px;background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;font-weight:600;">
+                <i class="fa-solid fa-circle-check"></i> Payment methods saved.
+            </div>
+        <% } else if (message === "error") { %>
+            <div style="margin-bottom:16px;padding:12px 16px;border-radius:8px;background:#fef2f2;border:1px solid #fecaca;color:#991b1b;font-weight:600;">
+                <i class="fa-solid fa-triangle-exclamation"></i> Could not save. Please try again.
+            </div>
+        <% } %>
+
+        <%
+            var accounts = content.paymentAccounts || [];
+            var icons = content.paymentIcons || [];
+            var gateways = (settings && settings.paymentGateways) || {};
+            var gatewayList = [
+                { key: "bkash", label: "bKash" },
+                { key: "nagad", label: "Nagad" },
+                { key: "rocket", label: "Rocket" },
+                { key: "card", label: "Card" },
+                { key: "bank", label: "Bank Transfer" },
+                { key: "cod", label: "Cash on Delivery" }
+            ];
+            var enabledGateways = gatewayList.filter(function (g) {
+                var cfg = gateways[g.key];
+                return !cfg || cfg.enabled !== false;
+            }).length;
+            var typeCount = { bkash: 0, nagad: 0, rocket: 0, bank: 0 };
+            accounts.forEach(function (a) { if (typeCount[a.type] !== undefined) typeCount[a.type]++; });
+        %>
+
+        <section class="stats-grid">
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-credit-card"></i></div>
+                <div class="stat-content">
+                    <span>Active Accounts</span>
+                    <strong><%= active.paymentAccounts.length %></strong>
+                </div>
+            </article>
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-mobile-screen-button"></i></div>
+                <div class="stat-content">
+                    <span>bKash / Nagad / Rocket</span>
+                    <strong><%= typeCount.bkash + typeCount.nagad + typeCount.rocket %></strong>
+                </div>
+            </article>
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-building-columns"></i></div>
+                <div class="stat-content">
+                    <span>Bank Accounts</span>
+                    <strong><%= typeCount.bank %></strong>
+                </div>
+            </article>
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-toggle-on"></i></div>
+                <div class="stat-content">
+                    <span>Gateways Enabled</span>
+                    <strong><%= enabledGateways %> / <%= gatewayList.length %></strong>
+                </div>
+            </article>
+        </section>
+
+        <!-- ===== GATEWAY STATUS ===== -->
+        <section class="dashboard-card">
+            <div class="card-header">
+                <h2 class="card-title"><i class="fa-solid fa-signal card-icon"></i> Gateway Status</h2>
+                <a href="/admin/settings#payment-gateways" class="mini-button" style="text-decoration:none;">
+                    <i class="fa-solid fa-gear"></i> Configure
+                </a>
+            </div>
+            <div class="tag-input-hint" style="margin-bottom:12px;">
+                Disabled gateways are hidden at checkout even if an account exists below. API keys,
+                sandbox/live mode and enable switches live in Settings → Payment Gateways.
+            </div>
+            <div style="display:flex; flex-wrap:wrap; gap:10px;">
+                <% gatewayList.forEach(function (g) {
+                    var cfg = gateways[g.key] || {};
+                    var on = cfg.enabled !== false;
+                %>
+                    <span style="display:inline-flex; align-items:center; gap:8px; padding:8px 14px; border-radius:999px; font-size:12.5px; font-weight:700; border:1px solid <%= on ? '#bfe8cd' : '#e3e8ef' %>; background:<%= on ? '#eaf7ee' : '#f6f8fa' %>; color:<%= on ? '#1f8a3b' : '#8892a0' %>;">
+                        <i class="fa-solid fa-<%= on ? 'circle-check' : 'circle-xmark' %>"></i>
+                        <%= g.label %>
+                        <% if (cfg.enabled !== false && (g.key === 'bkash' || g.key === 'nagad' || g.key === 'rocket' || g.key === 'card' || g.key === 'bank') && cfg.mode) { %>
+                            <span style="font-weight:600; opacity:.75;">· <%= cfg.mode %></span>
+                        <% } %>
+                    </span>
+                <% }); %>
+            </div>
+        </section>
+
+        <form action="/admin/payment-methods" method="POST" id="paymentForm">
+
+            <!-- ===== ACCOUNTS ===== -->
+            <section class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fa-solid fa-credit-card card-icon"></i> Accounts</h2>
+                    <button type="button" class="secondary-button" data-add="pay">
+                        <i class="fa-solid fa-plus"></i> Add Account
+                    </button>
+                </div>
+                <div class="tag-input-hint" style="margin-bottom:10px;">
+                    Add multiple accounts for each method. Each account can carry its own charge (%) and
+                    QR image; customers pick one at checkout.
+                </div>
+                <div data-key="paymentAccounts" id="payRows">
+                    <% accounts.forEach(function (a, i) { %>
+                        <div class="hc-row pay-row" data-type="<%= a.type %>" style="border:1px solid #e3e8ef; border-radius:10px; padding:12px; margin-bottom:12px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
+                                <strong style="color:#081621;">Account <%= i + 1 %> — <%= a.type.toUpperCase() %></strong>
+                                <span style="display:flex; gap:6px; align-items:center;">
+                                    <label style="display:flex; gap:6px; align-items:center; font-size:13px; margin:0 4px;">
+                                        <input type="checkbox" name="paymentAccounts[<%= i %>][active]" value="on" <%= a.active !== false ? 'checked' : '' %>> Active
+                                    </label>
+                                    <button type="button" class="mini-button danger hc-remove"><i class="fa-solid fa-trash"></i></button>
+                                </span>
+                            </div>
+                            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:10px; align-items:end;">
+                                <div class="form-group" style="margin:0;"><label>Method</label>
+                                    <select name="paymentAccounts[<%= i %>][type]" class="pay-type">
+                                        <option value="bkash" <%= a.type === 'bkash' ? 'selected' : '' %>>bKash</option>
+                                        <option value="nagad" <%= a.type === 'nagad' ? 'selected' : '' %>>Nagad</option>
+                                        <option value="rocket" <%= a.type === 'rocket' ? 'selected' : '' %>>Rocket</option>
+                                        <option value="bank" <%= a.type === 'bank' ? 'selected' : '' %>>Bank Transfer</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="margin:0;"><label>Label / Account name</label>
+                                    <input type="text" name="paymentAccounts[<%= i %>][label]" value="<%= a.label %>" placeholder="Personal / Merchant"></div>
+                                <div class="form-group wallet-field" style="margin:0;"><label>Wallet number</label>
+                                    <input type="text" name="paymentAccounts[<%= i %>][number]" value="<%= a.number %>" placeholder="01XXXXXXXXX"></div>
+                                <div class="form-group wallet-field" style="margin:0;"><label>Account type</label>
+                                    <input type="text" name="paymentAccounts[<%= i %>][accountType]" value="<%= a.accountType %>" placeholder="Personal / Agent / Merchant"></div>
+                                <div class="form-group" style="margin:0;"><label>Charge (%)</label>
+                                    <input type="number" name="paymentAccounts[<%= i %>][chargePercent]" min="0" max="100" step="0.01" value="<%= a.chargePercent %>"></div>
+                                <div class="form-group bank-field" style="margin:0;"><label>Bank name</label>
+                                    <input type="text" name="paymentAccounts[<%= i %>][bankName]" value="<%= a.bankName %>"></div>
+                                <div class="form-group bank-field" style="margin:0;"><label>Branch</label>
+                                    <input type="text" name="paymentAccounts[<%= i %>][branch]" value="<%= a.branch %>"></div>
+                                <div class="form-group bank-field" style="margin:0;"><label>Account name</label>
+                                    <input type="text" name="paymentAccounts[<%= i %>][accountName]" value="<%= a.accountName %>"></div>
+                                <div class="form-group bank-field" style="margin:0;"><label>Account number</label>
+                                    <input type="text" name="paymentAccounts[<%= i %>][accountNumber]" value="<%= a.accountNumber %>"></div>
+                                <div class="form-group bank-field" style="margin:0;"><label>Routing number</label>
+                                    <input type="text" name="paymentAccounts[<%= i %>][routingNumber]" value="<%= a.routingNumber %>"></div>
+                            </div>
+                            <div style="display:grid; grid-template-columns:1.4fr 2fr; gap:10px; margin-top:10px;">
+                                <div class="form-group" style="margin:0;"><label>Bengali QR image (URL)</label>
+                                    <div style="display:flex; gap:6px;">
+                                        <input type="text" name="paymentAccounts[<%= i %>][qrImage]" class="img-url" value="<%= a.qrImage %>">
+                                        <label class="secondary-button" style="cursor:pointer; white-space:nowrap;">
+                                            <i class="fa-solid fa-upload"></i><input type="file" accept="image/*" class="img-file" hidden>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="form-group" style="margin:0;"><label>Instructions (optional)</label>
+                                    <textarea name="paymentAccounts[<%= i %>][instructions]" rows="2" placeholder="Optional custom instructions (Payment / Send Money)"><%= a.instructions %></textarea></div>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            </section>
+
+            <!-- ===== ICONS ===== -->
+            <section class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fa-solid fa-wallet card-icon"></i> Payment Icons</h2>
+                    <button type="button" class="secondary-button" data-add="payIcon">
+                        <i class="fa-solid fa-plus"></i> Add Icon
+                    </button>
+                </div>
+                <div class="tag-input-hint" style="margin-bottom:10px;">
+                    Shown in the public footer bottom bar. Upload VISA, MasterCard, bKash, Nagad, Rocket or any other logo.
+                </div>
+                <div data-key="paymentIcons" id="payIconRows">
+                    <% icons.forEach(function (p, i) { %>
+                        <div class="hc-row" style="display:grid; grid-template-columns:1.4fr 2.4fr auto auto auto; gap:10px; align-items:end; border:1px solid #e3e8ef; border-radius:10px; padding:12px; margin-bottom:10px;">
+                            <div class="form-group" style="margin:0;"><label>Name</label>
+                                <input type="text" name="paymentIcons[<%= i %>][name]" value="<%= p.name %>"></div>
+                            <div class="form-group" style="margin:0;"><label>Icon image (URL)</label>
+                                <div style="display:flex; gap:6px;">
+                                    <input type="text" name="paymentIcons[<%= i %>][image]" class="img-url" value="<%= p.image %>">
+                                    <label class="secondary-button" style="cursor:pointer; white-space:nowrap;">
+                                        <i class="fa-solid fa-upload"></i><input type="file" accept="image/*" class="img-file" hidden>
+                                    </label>
+                                </div>
+                            </div>
+                            <label style="display:flex; gap:6px; align-items:center; font-size:13px; padding-bottom:10px;">
+                                <input type="checkbox" name="paymentIcons[<%= i %>][active]" value="on" <%= p.active !== false ? 'checked' : '' %>> Show
+                            </label>
+                            <button type="button" class="mini-button hc-move" data-dir="1" style="margin-bottom:6px;"><i class="fa-solid fa-arrow-down"></i></button>
+                            <button type="button" class="mini-button danger hc-remove" style="margin-bottom:6px;"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    <% }); %>
+                </div>
+            </section>
+
+            <div class="form-actions">
+                <button type="submit" class="primary-button">
+                    <i class="fa-solid fa-floppy-disk"></i> Save Payment Methods
+                </button>
+                <a href="/checkout" target="_blank" class="secondary-button">Preview Checkout</a>
+                <a href="/admin/footer" class="secondary-button">Edit Footer</a>
+            </div>
+
+        </form>
+
+    </main>
+
+</div>
+
+<%- include("partials/footer") %>
+
+<script>
+(function () {
+    function uploadField(name) {
+        return '<div style="display:flex; gap:6px;">' +
+            '<input type="text" name="' + name + '" class="img-url" placeholder="https://… or upload">' +
+            '<label class="secondary-button" style="cursor:pointer; white-space:nowrap;"><i class="fa-solid fa-upload"></i>' +
+            '<input type="file" accept="image/*" class="img-file" hidden></label></div>';
+    }
+
+    function activeBox(name) {
+        return '<label style="display:flex; gap:6px; align-items:center; font-size:13px; padding-bottom:10px;">' +
+            '<input type="checkbox" name="' + name + '" value="on" checked> Show</label>';
+    }
+
+    function reindex(box) {
+        if (!box) return;
+        var key = box.getAttribute('data-key');
+        var rows = box.querySelectorAll(':scope > .hc-row');
+        Array.prototype.forEach.call(rows, function (row, i) {
+            Array.prototype.forEach.call(row.querySelectorAll('[name^="' + key + '["]'), function (input) {
+                input.name = input.name.replace(new RegExp('^' + key + '\\[\\d+\\]'), key + '[' + i + ']');
+            });
+        });
+    }
+
+    function addTo(container, html) {
+        if (!container) return;
+        container.insertAdjacentHTML('beforeend', html);
+        reindex(container);
+    }
+
+    function payTemplate(i) {
+        return '<div class="hc-row pay-row" data-type="bkash" style="border:1px solid #e3e8ef; border-radius:10px; padding:12px; margin-bottom:12px;">' +
+            '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;">' +
+                '<strong style="color:#081621;">New account</strong>' +
+                '<span style="display:flex; gap:6px; align-items:center;">' +
+                    '<label style="display:flex; gap:6px; align-items:center; font-size:13px; margin:0 4px;">' +
+                        '<input type="checkbox" name="paymentAccounts[' + i + '][active]" value="on" checked> Active</label>' +
+                    '<button type="button" class="mini-button danger hc-remove"><i class="fa-solid fa-trash"></i></button>' +
+                '</span></div>' +
+            '<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:10px; align-items:end;">' +
+                '<div class="form-group" style="margin:0;"><label>Method</label><select name="paymentAccounts[' + i + '][type]" class="pay-type">' +
+                    '<option value="bkash">bKash</option><option value="nagad">Nagad</option><option value="rocket">Rocket</option><option value="bank">Bank Transfer</option></select></div>' +
+                '<div class="form-group" style="margin:0;"><label>Label / Account name</label><input type="text" name="paymentAccounts[' + i + '][label]"></div>' +
+                '<div class="form-group wallet-field" style="margin:0;"><label>Wallet number</label><input type="text" name="paymentAccounts[' + i + '][number]" placeholder="01XXXXXXXXX"></div>' +
+                '<div class="form-group wallet-field" style="margin:0;"><label>Account type</label><input type="text" name="paymentAccounts[' + i + '][accountType]" placeholder="Personal / Agent / Merchant"></div>' +
+                '<div class="form-group" style="margin:0;"><label>Charge (%)</label><input type="number" name="paymentAccounts[' + i + '][chargePercent]" min="0" max="100" step="0.01" value="0"></div>' +
+                '<div class="form-group bank-field" style="margin:0;"><label>Bank name</label><input type="text" name="paymentAccounts[' + i + '][bankName]"></div>' +
+                '<div class="form-group bank-field" style="margin:0;"><label>Branch</label><input type="text" name="paymentAccounts[' + i + '][branch]"></div>' +
+                '<div class="form-group bank-field" style="margin:0;"><label>Account name</label><input type="text" name="paymentAccounts[' + i + '][accountName]"></div>' +
+                '<div class="form-group bank-field" style="margin:0;"><label>Account number</label><input type="text" name="paymentAccounts[' + i + '][accountNumber]"></div>' +
+                '<div class="form-group bank-field" style="margin:0;"><label>Routing number</label><input type="text" name="paymentAccounts[' + i + '][routingNumber]"></div>' +
+            '</div>' +
+            '<div style="display:grid; grid-template-columns:1.4fr 2fr; gap:10px; margin-top:10px;">' +
+                '<div class="form-group" style="margin:0;"><label>Bengali QR image (URL)</label>' + uploadField('paymentAccounts[' + i + '][qrImage]') + '</div>' +
+                '<div class="form-group" style="margin:0;"><label>Instructions (optional)</label><textarea name="paymentAccounts[' + i + '][instructions]" rows="2"></textarea></div>' +
+            '</div></div>';
+    }
+
+    function payIconTemplate(i) {
+        return '<div class="hc-row" style="display:grid; grid-template-columns:1.4fr 2.4fr auto auto auto; gap:10px; align-items:end; border:1px solid #e3e8ef; border-radius:10px; padding:12px; margin-bottom:10px;">' +
+            '<div class="form-group" style="margin:0;"><label>Name</label><input type="text" name="paymentIcons[' + i + '][name]"></div>' +
+            '<div class="form-group" style="margin:0;"><label>Icon image (URL)</label>' + uploadField('paymentIcons[' + i + '][image]') + '</div>' +
+            activeBox('paymentIcons[' + i + '][active]') +
+            '<button type="button" class="mini-button hc-move" data-dir="1" style="margin-bottom:6px;"><i class="fa-solid fa-arrow-down"></i></button>' +
+            '<button type="button" class="mini-button danger hc-remove" style="margin-bottom:6px;"><i class="fa-solid fa-trash"></i></button></div>';
+    }
+
+    document.querySelectorAll('[data-add]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var key = btn.getAttribute('data-add');
+            if (key === 'pay') {
+                addTo(document.getElementById('payRows'), payTemplate(0));
+                syncPayType(document.querySelector('#payRows .pay-row:last-child .pay-type'));
+            } else if (key === 'payIcon') {
+                addTo(document.getElementById('payIconRows'), payIconTemplate(0));
+            }
+        });
+    });
+
+    document.addEventListener('click', function (e) {
+        var rm = e.target.closest('.hc-remove');
+        if (rm) {
+            var row = rm.closest('.hc-row');
+            if (row && confirm('Remove this row?')) {
+                var container = row.closest('[data-key]');
+                row.remove();
+                reindex(container);
+            }
+            return;
+        }
+
+        var mv = e.target.closest('.hc-move');
+        if (mv) {
+            var rowEl = mv.closest('.hc-row');
+            if (!rowEl) return;
+            var container2 = rowEl.parentElement;
+            var dir = Number(mv.getAttribute('data-dir')) || 0;
+            if (dir < 0 && rowEl.previousElementSibling) {
+                container2.insertBefore(rowEl, rowEl.previousElementSibling);
+                reindex(container2.closest('[data-key]') || container2);
+            } else if (dir > 0 && rowEl.nextElementSibling) {
+                container2.insertBefore(rowEl.nextElementSibling, rowEl);
+                reindex(container2.closest('[data-key]') || container2);
+            }
+        }
+    });
+
+    function syncPayType(sel) {
+        if (!sel) return;
+        var row = sel.closest('.pay-row');
+        if (!row) return;
+        var type = sel.value;
+        row.setAttribute('data-type', type);
+        row.querySelectorAll('.wallet-field').forEach(function (el) {
+            el.style.display = type === 'bank' ? 'none' : '';
+        });
+        row.querySelectorAll('.bank-field').forEach(function (el) {
+            el.style.display = type === 'bank' ? '' : 'none';
+        });
+    }
+
+    document.querySelectorAll('.pay-type').forEach(syncPayType);
+
+    document.addEventListener('change', function (e) {
+        if (e.target.classList && e.target.classList.contains('pay-type')) {
+            syncPayType(e.target);
+            return;
+        }
+
+        var fileInput = e.target.closest('.img-file');
+        if (!fileInput || !fileInput.files || !fileInput.files[0]) return;
+
+        var wrap = fileInput.closest('div');
+        var urlInput = wrap.querySelector('.img-url');
+        var fd = new FormData();
+        fd.append('media', fileInput.files[0]);
+
+        fetch('/admin/upload-media', { method: 'POST', body: fd })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (data && data.success && data.urls && data.urls.length) {
+                    if (urlInput) urlInput.value = data.urls[0];
+                } else {
+                    alert('Upload failed: ' + ((data && data.message) || 'unknown error'));
+                }
+            })
+            .catch(function (err) { alert('Upload error: ' + err.message); });
+    });
+
+    document.getElementById('paymentForm').addEventListener('submit', function () {
+        reindex(document.getElementById('payRows'));
+        reindex(document.getElementById('payIconRows'));
+    });
+})();
+</script>

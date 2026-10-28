@@ -7,8 +7,20 @@ module.exports = {
     email: "support@mizantrade.com",
 
     shipping: {
-        insideDhaka: 60,
+        insideDhaka: 80,
         outsideDhaka: 120
+    },
+
+    // Order notifications — emails + SMS sent on every new order.
+    // Override with env ADMIN_NOTIFY_EMAILS / ADMIN_NOTIFY_PHONES (comma-separated).
+    notifications: {
+        adminEmails: [
+            "admin@mizantrade.com",
+            "mizantrade07@gmail.com"
+        ],
+        adminPhones: [
+            "01709867815"
+        ]
     },
 
     bkash: {

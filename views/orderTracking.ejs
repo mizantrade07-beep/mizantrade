@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <%- include('partials/seo') %>
+    <style>
+        .ot-wrap { max-width: 1200px; margin: 0 auto; padding: 0 15px 30px; }
+
+        /* Hero band */
+        .ot-hero {
+            background: linear-gradient(120deg, #081621 0%, #0f2a3d 60%, #12324a 100%);
+            border-radius: 8px; color: #fff; padding: 34px 34px 30px;
+            margin-bottom: 22px; position: relative; overflow: hidden;
+        }
+        .ot-hero h1 { font-size: 26px; margin: 0 0 8px; }
+        .ot-hero p { font-size: 13.5px; color: #b8c6d2; margin: 0; max-width: 460px; line-height: 1.7; }
+        .ot-hero .ot-crumb { font-size: 12px; color: #8fa3b3; margin-bottom: 10px; }
+        .ot-hero .ot-crumb a { color: #cfd9e2; text-decoration: none; }
+        .ot-hero .ot-crumb a:hover { color: #ef4a23; }
+        .ot-hero-art {
+            position: absolute; right: 26px; top: 50%; transform: translateY(-50%);
+            font-size: 84px; color: rgba(239, 74, 35, 0.35);
+        }
+
+        .ot-layout { display: flex; gap: 22px; align-items: flex-start; }
+
+        /* Tracking card */
+        .ot-card {
+            flex: 1; min-width: 0; background: #fff; border: 1px solid #e5e5e5;
+            border-radius: 8px; padding: 26px;
+        }
+        .ot-card-head { display: flex; gap: 14px; align-items: center; margin-bottom: 6px; }
+        .ot-card-head .ot-ico {
+            width: 46px; height: 46px; border-radius: 50%; background: #ef4a23;
+            color: #fff; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 46px;
+        }
+        .ot-card-head .ot-ico i { font-size: 20px; }
+        .ot-card-head h2 { font-size: 18px; color: #081621; margin: 0; }
+        .ot-card-head p { font-size: 12.5px; color: #777; margin: 2px 0 0; }
+
+        .ot-form { margin-top: 18px; display: flex; flex-direction: column; gap: 12px; }
+        .ot-input {
+            padding: 13px 16px; border: 1px solid #ddd; border-radius: 6px;
+            font-size: 14px; outline: none; width: 100%; font-family: inherit; min-width: 0;
+        }
+        .ot-input:focus { border-color: #ef4a23; }
+        .ot-btn {
+            background: #ef4a23; color: #fff; border: none; padding: 13px;
+            border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer;
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .ot-btn:hover { background: #d63d18; }
+        .ot-error {
+            background: #fdecea; border: 1px solid #f5c6c0; color: #b3261e;
+            border-radius: 6px; padding: 12px 14px; font-size: 13px; margin-top: 14px;
+        }
+        .ot-help-box {
+            margin-top: 18px; background: #f4f6f9; border-radius: 6px; padding: 14px 16px;
+            font-size: 13px; color: #555; display: flex; gap: 12px; align-items: flex-start;
+        }
+        .ot-help-box i { color: #ef4a23; margin-top: 2px; }
+
+        /* Status legend card */
+        .ot-legend { flex: 0 0 320px; background: #fff; border: 1px solid #e5e5e5; border-radius: 8px; padding: 22px; }
+        .ot-legend h3 { font-size: 16px; color: #081621; margin: 0 0 14px; }
+        .ot-legend .lg-item { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid #f2f2f2; }
+        .ot-legend .lg-item:last-child { border-bottom: none; }
+        .ot-legend .lg-ico {
+            width: 36px; height: 36px; border-radius: 50%; flex: 0 0 36px;
+            display: inline-flex; align-items: center; justify-content: center; color: #fff; font-size: 14px;
+        }
+        .ot-legend .lg-item strong { display: block; font-size: 13.5px; color: #081621; }
+        .ot-legend .lg-item span { font-size: 12px; color: #888; }
+
+        /* Result: timeline */
+        .ot-result { margin-top: 26px; border-top: 1px solid #eee; padding-top: 22px; }
+        .ot-result-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; }
+        .ot-result-head h3 { font-size: 16px; color: #081621; margin: 0; }
+        .ot-result-head code { background: #f4f6f9; padding: 4px 10px; border-radius: 4px; font-size: 13px; color: #ef4a23; font-weight: 700; }
+        .ot-status-chip { font-size: 12px; font-weight: 700; padding: 5px 12px; border-radius: 20px; }
+        .ot-status-chip.st-Pending { background: #fff4e5; color: #b26a00; }
+        .ot-status-chip.st-Confirmed { background: #e8f1fb; color: #1a5fb4; }
+        .ot-status-chip.st-Processing { background: #efe9fb; color: #6a3fb5; }
+        .ot-status-chip.st-Shipped { background: #e6f4fd; color: #0369a1; }
+        .ot-status-chip.st-Delivered { background: #e9f7ec; color: #2e7d32; }
+        .ot-status-chip.st-Cancelled { background: #fdecea; color: #b3261e; }
+
+        .ot-timeline { list-style: none; margin: 0; padding: 0; }
+        .ot-step { display: flex; gap: 14px; position: relative; padding-bottom: 22px; }
+        .ot-step:last-child { padding-bottom: 0; }
+        .ot-step::before {
+            content: ''; position: absolute; left: 17px; top: 36px; bottom: 0;
+            width: 2px; background: #e5e5e5;
+        }
+        .ot-step:last-child::before { display: none; }
+        .ot-step.done::before { background: #82b440; }
+        .ot-dot {
+            width: 36px; height: 36px; border-radius: 50%; flex: 0 0 36px;
+            background: #f4f6f9; border: 2px solid #e5e5e5; color: #b0b8bf;
+            display: inline-flex; align-items: center; justify-content: center; font-size: 13px;
+            position: relative; z-index: 1;
+        }
+        .ot-step.done .ot-dot { background: #82b440; border-color: #82b440; color: #fff; }
+        .ot-step.current .ot-dot { background: #ef4a23; border-color: #ef4a23; color: #fff; box-shadow: 0 0 0 4px rgba(239,74,35,0.18); }
+        .ot-step-info strong { display: block; font-size: 14px; color: #081621; }
+        .ot-step.current .ot-step-info strong { color: #ef4a23; }
+        .ot-step-info span { font-size: 12px; color: #888; }
+
+        /* Result: order summary */
+        .ot-summary { margin-top: 20px; background: #f9fafb; border: 1px solid #eee; border-radius: 6px; padding: 18px; }
+        .ot-summary h4 { font-size: 14px; color: #081621; margin: 0 0 12px; }
+        .ot-summary table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        .ot-summary td { padding: 7px 4px; border-bottom: 1px dashed #e5e5e5; color: #555; }
+        .ot-summary td:last-child { text-align: right; color: #081621; font-weight: 600; }
+        .ot-summary tr:last-child td { border-bottom: none; }
+        .ot-summary .ot-total td { color: #ef4a23; font-size: 15px; font-weight: 700; }
+
+        /* How it works */
+        .ot-how { margin-top: 26px; }
+        .ot-how h3 { font-size: 17px; color: #081621; margin: 0 0 4px; }
+        .ot-how p { font-size: 13px; color: #777; margin: 0 0 16px; }
+        .ot-how-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+        .ot-how-card { background: #fff; border: 1px solid #e5e5e5; border-radius: 8px; padding: 18px; display: flex; gap: 12px; align-items: flex-start; }
+        .ot-how-card .num {
+            width: 34px; height: 34px; border-radius: 50%; background: #ef4a23; color: #fff;
+            display: inline-flex; align-items: center; justify-content: center; font-weight: 700; flex: 0 0 34px;
+        }
+        .ot-how-card strong { display: block; font-size: 13.5px; color: #081621; margin-bottom: 4px; }
+        .ot-how-card span { font-size: 12px; color: #888; line-height: 1.6; }
+
+        @media(max-width: 900px) {
+            .ot-layout { flex-direction: column; }
+            .ot-legend { flex: none; width: 100%; }
+            .ot-how-grid { grid-template-columns: repeat(2, 1fr); }
+            .ot-hero-art { display: none; }
+        }
+        @media(max-width: 480px) {
+            .ot-how-grid { grid-template-columns: 1fr; }
+            .ot-hero { padding: 24px 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <%- include('partials/header') %>
+
+    <div class="container ot-wrap" style="padding-top:15px;">
+
+        <!-- Hero band -->
+        <div class="ot-hero">
+            <div class="ot-crumb">
+                <a href="/">Home</a> &nbsp;/&nbsp; <a href="/order-procedure">Customer Help</a> &nbsp;/&nbsp; Order Tracking
+            </div>
+            <h1>Order Tracking</h1>
+            <p>Track your order status in real-time. Enter your order number and mobile number to get the latest updates on your shipment.</p>
+            <div class="ot-hero-art"><i class="fa-solid fa-box-open"></i></div>
+        </div>
+
+        <div class="ot-layout">
+
+            <!-- Track form card -->
+            <div class="ot-card">
+                <div class="ot-card-head">
+                    <span class="ot-ico"><i class="fa-solid fa-cube"></i></span>
+                    <div>
+                        <h2>Track Your Order</h2>
+                        <p>Enter your order details to check the current status of your order.</p>
+                    </div>
+                </div>
+
+                <form class="ot-form" action="/order-tracking" method="POST">
+                    <input type="text" name="orderNumber" class="ot-input" placeholder="Enter your order number (e.g. MT-20261014-4F8K)"
+                           value="<%= orderNumber %>" required>
+                    <input type="tel" name="phone" class="ot-input" placeholder="Mobile number used at checkout (e.g. 01709867815)"
+                           value="<%= phone %>" required>
+                    <button type="submit" class="ot-btn"><i class="fa-solid fa-magnifying-glass"></i> Track Order</button>
+                </form>
+
+                <% if (error) { %>
+                    <div class="ot-error"><i class="fa-solid fa-circle-exclamation" style="margin-right:6px;"></i> <%= error %></div>
+                <% } %>
+
+                <div class="ot-help-box">
+                    <i class="fa-solid fa-circle-info"></i>
+                    <div>
+                        <strong>Where can I find my order number?</strong><br>
+                        Your order number is provided in your order confirmation email and SMS after you place your order. If you can't find it, please contact our support team.
+                    </div>
+                </div>
+
+                <% if (order) { %>
+                    <div class="ot-result">
+
+                        <div class="ot-result-head">
+                            <h3>Order <code><%= order.orderNumber %></code></h3>
+                            <span class="ot-status-chip st-<%= order.status %>"><%= order.status %></span>
+                        </div>
+
+                        <% if (order.status === 'Cancelled') { %>
+                            <div class="ot-error" style="margin-top:0;">
+                                <i class="fa-solid fa-circle-xmark" style="margin-right:6px;"></i>
+                                This order has been cancelled. If you believe this is a mistake, please contact our support team.
+                            </div>
+                        <% } else { %>
+                            <ul class="ot-timeline">
+                                <% steps.forEach(function (step, i) { %>
+                                    <li class="ot-step <%= i < stepIndex ? 'done' : i === stepIndex ? 'done current' : '' %>">
+                                        <span class="ot-dot">
+                                            <% if (i < stepIndex) { %>
+                                                <i class="fa-solid fa-check"></i>
+                                            <% } else if (i === stepIndex) { %>
+                                                <i class="fa-solid <%= i === 0 ? 'fa-hourglass-half' : i === 1 ? 'fa-circle-check' : i === 2 ? 'fa-gear' : i === 3 ? 'fa-truck' : 'fa-box' %>"></i>
+                                            <% } else { %>
+                                                <i class="fa-solid <%= i === 0 ? 'fa-hourglass-half' : i === 1 ? 'fa-circle-check' : i === 2 ? 'fa-gear' : i === 3 ? 'fa-truck' : 'fa-box' %>"></i>
+                                            <% } %>
+                                        </span>
+                                        <div class="ot-step-info">
+                                            <strong><%= step %></strong>
+                                            <span>
+                                                <% if (i < stepIndex) { %>
+                                                    Completed
+                                                <% } else if (i === stepIndex) { %>
+                                                    Current status — last updated <%= new Date(order.updatedAt).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) %>
+                                                <% } else { %>
+                                                    Pending
+                                                <% } %>
+                                            </span>
+                                        </div>
+                                    </li>
+                                <% }) %>
+                            </ul>
+                        <% } %>
+
+                        <div class="ot-summary">
+                            <h4>Order Summary</h4>
+                            <table>
+                                <% order.items.forEach(function (item) { %>
+                                    <tr>
+                                        <td><%= item.title %> &times; <%= item.quantity %></td>
+                                        <td>৳ <%= (item.price * item.quantity).toLocaleString('en-US') %></td>
+                                    </tr>
+                                <% }) %>
+                                <tr><td>Subtotal</td><td>৳ <%= order.subtotal.toLocaleString('en-US') %></td></tr>
+                                <tr><td>Delivery charge</td><td>৳ <%= order.shippingFee.toLocaleString('en-US') %></td></tr>
+                                <% if (order.discount > 0) { %>
+                                    <tr><td>Discount (<%= order.couponCode %>)</td><td>- ৳ <%= order.discount.toLocaleString('en-US') %></td></tr>
+                                <% } %>
+                                <% if (order.paymentCharge > 0) { %>
+                                    <tr><td>bKash charge (1.15%)</td><td>৳ <%= order.paymentCharge.toLocaleString('en-US') %></td></tr>
+                                <% } %>
+                                <tr class="ot-total"><td>Total</td><td>৳ <%= order.total.toLocaleString('en-US') %></td></tr>
+                                <tr><td>Payment method</td><td style="text-transform:uppercase;"><%= order.paymentMethod %></td></tr>
+                            </table>
+                        </div>
+
+                    </div>
+                <% } %>
+            </div>
+
+            <!-- Status legend -->
+            <aside class="ot-legend">
+                <h3><i class="fa-solid fa-signal" style="margin-right:8px; color:#ef4a23;"></i>Order Tracking Statuses</h3>
+
+                <div class="lg-item">
+                    <span class="lg-ico" style="background:#b26a00;"><i class="fa-solid fa-hourglass-half"></i></span>
+                    <div><strong>Pending</strong><span>Your order has been received and is under review.</span></div>
+                </div>
+                <div class="lg-item">
+                    <span class="lg-ico" style="background:#1a5fb4;"><i class="fa-solid fa-circle-check"></i></span>
+                    <div><strong>Confirmed</strong><span>Your order has been confirmed by our team.</span></div>
+                </div>
+                <div class="lg-item">
+                    <span class="lg-ico" style="background:#6a3fb5;"><i class="fa-solid fa-gear"></i></span>
+                    <div><strong>Processing</strong><span>Your order is being prepared for dispatch.</span></div>
+                </div>
+                <div class="lg-item">
+                    <span class="lg-ico" style="background:#0369a1;"><i class="fa-solid fa-truck"></i></span>
+                    <div><strong>Shipped</strong><span>Your order has been shipped and is on the way.</span></div>
+                </div>
+                <div class="lg-item">
+                    <span class="lg-ico" style="background:#2e7d32;"><i class="fa-solid fa-box"></i></span>
+                    <div><strong>Delivered</strong><span>Your order has been successfully delivered.</span></div>
+                </div>
+            </aside>
+
+        </div>
+
+        <!-- How it works -->
+        <div class="ot-how">
+            <h3>How It Works</h3>
+            <p>Follow these simple steps to track your order.</p>
+            <div class="ot-how-grid">
+                <div class="ot-how-card">
+                    <span class="num">1</span>
+                    <div><strong>Enter Order Number</strong><span>Type your order number in the search box above.</span></div>
+                </div>
+                <div class="ot-how-card">
+                    <span class="num">2</span>
+                    <div><strong>Verify Mobile Number</strong><span>Enter the mobile number used at checkout.</span></div>
+                </div>
+                <div class="ot-how-card">
+                    <span class="num">3</span>
+                    <div><strong>View Order Status</strong><span>See the latest status and shipment details.</span></div>
+                </div>
+                <div class="ot-how-card">
+                    <span class="num">4</span>
+                    <div><strong>Receive Your Order</strong><span>Your order arrives at your provided address.</span></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <%- include('partials/footer') %>
+
+    <script src="/js/main.js?v=4"></script>
+</body>
+</html>

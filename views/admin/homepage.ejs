@@ -1,0 +1,861 @@
+<%- include("partials/head", {
+    title: "Homepage Content | MizanTrade Admin"
+}) %>
+
+<%- include("partials/sidebar") %>
+
+<div class="admin-main">
+
+    <%- include("partials/topbar", {
+        title: "Homepage Content"
+    }) %>
+
+    <main class="admin-content">
+
+        <div class="dashboard-header">
+            <div>
+                <h1 class="dashboard-title">Homepage Content</h1>
+                <p class="dashboard-subtitle">
+                    Build the home page from here: hero banners, side cards, Why choose us,
+                    Featured Category, product sections (Latest / Custom / Up-coming / Pre Order / New / Stock-out),
+                    image banners and brand strip. Use the arrow buttons to reorder rows.
+                    The live home page shows exactly these rows in this order.
+                </p>
+            </div>
+        </div>
+
+        <% if (message) { %>
+            <%
+                var okMsg = (message === "saved");
+                var msgText = okMsg ? "Homepage content saved." : "Something went wrong. Please try again.";
+            %>
+            <div style="padding:12px 16px; border-radius:10px; margin-bottom:18px; font-weight:600;
+                        background:<%= okMsg ? '#e8f7ee' : '#fdecea' %>;
+                        color:<%= okMsg ? '#1f8a3b' : '#c0392b' %>;
+                        border:1px solid <%= okMsg ? '#bfe8cd' : '#f5c6c0' %>;">
+                <%= msgText %>
+            </div>
+        <% } %>
+
+        <form method="POST" action="/admin/homepage" id="homepageForm">
+
+            <!-- ===== LATEST PRODUCTS + HERO SIZING ===== -->
+            <section class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fa-solid fa-bolt card-icon"></i> General</h2>
+                </div>
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 260px)); gap:14px;">
+                    <div class="form-group" style="margin:0;">
+                        <label for="sideWidth">Hero side-cards width (px)</label>
+                        <input type="number" id="sideWidth" name="heroSideWidth" min="0" max="600" step="10"
+                               value="<%= content.heroSideWidth || 0 %>">
+                        <small style="color:#64748b;">0 = theme default. Try 260–360.</small>
+                    </div>
+                </div>
+                <div class="tag-input-hint" style="margin-top:10px;">
+                    Latest Products is now a normal product section below, so you can edit, hide or delete it.
+                </div>
+            </section>
+
+            <!-- ===== HERO SLIDES ===== -->
+            <section class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fa-solid fa-images card-icon"></i> 1. Hero Slide Banners</h2>
+                    <button type="button" class="secondary-button" data-add="slide">
+                        <i class="fa-solid fa-plus"></i> Add Slide
+                    </button>
+                </div>
+
+                <div class="tag-input-hint" style="margin-bottom:10px;">
+                    Slides rotate automatically. Height is optional (pixels) — leave 0 for the theme default.
+                </div>
+
+                <div id="slideRows" data-key="heroSlides">
+                    <% (content.heroSlides || []).forEach(function (s, i) { %>
+                        <div class="hc-row" style="border:1px solid #e3e8ef; border-radius:12px; padding:16px; margin-bottom:14px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                                <strong style="color:#081621;">Slide <%= i + 1 %></strong>
+                                <span style="display:flex; gap:6px; align-items:center;">
+                                    <button type="button" class="mini-button hc-move" data-dir="-1" title="Move up"><i class="fa-solid fa-arrow-up"></i></button>
+                                    <button type="button" class="mini-button hc-move" data-dir="1" title="Move down"><i class="fa-solid fa-arrow-down"></i></button>
+                                    <label style="display:flex; gap:6px; align-items:center; font-size:13px; color:#374957; margin:0 4px;">
+                                        <input type="checkbox" name="heroSlides[<%= i %>][active]" value="on" <%= s.active !== false ? 'checked' : '' %>> Active
+                                    </label>
+                                </span>
+                            </div>
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                                <div class="form-group"><label>Tag / eyebrow</label>
+                                    <input type="text" name="heroSlides[<%= i %>][tag]" value="<%= s.tag %>"></div>
+                                <div class="form-group"><label>Button link</label>
+                                    <input type="text" name="heroSlides[<%= i %>][buttonLink]" value="<%= s.buttonLink %>" placeholder="/shop"></div>
+                                <div class="form-group" style="grid-column:1/-1;"><label>Heading</label>
+                                    <input type="text" name="heroSlides[<%= i %>][title]" value="<%= s.title %>"></div>
+                                <div class="form-group" style="grid-column:1/-1;"><label>Text</label>
+                                    <textarea name="heroSlides[<%= i %>][text]" rows="2"><%= s.text %></textarea></div>
+                                <div class="form-group"><label>Button text</label>
+                                    <input type="text" name="heroSlides[<%= i %>][buttonText]" value="<%= s.buttonText %>"></div>
+                                <div class="form-group"><label>Slide height (px, 0 = default)</label>
+                                    <input type="number" name="heroSlides[<%= i %>][height]" min="0" max="800" step="10" value="<%= s.height || 0 %>"></div>
+                                <div class="form-group" style="grid-column:1/-1;"><label>Banner / background image (URL)</label>
+                                    <div style="display:flex; gap:8px;">
+                                        <input type="text" name="heroSlides[<%= i %>][image]" class="img-url" value="<%= s.image %>" placeholder="https://… or upload">
+                                        <label class="secondary-button" style="cursor:pointer; white-space:nowrap;">
+                                            <i class="fa-solid fa-upload"></i> Upload
+                                            <input type="file" accept="image/*" class="img-file" hidden>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="button" class="mini-button danger hc-remove" style="margin-top:6px;">
+                                <i class="fa-solid fa-trash"></i> Remove slide
+                            </button>
+                        </div>
+                    <% }); %>
+                </div>
+            </section>
+
+            <!-- ===== HERO SIDE CARDS ===== -->
+            <section class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fa-solid fa-rectangle-list card-icon"></i> 2. Hero Side Cards</h2>
+                    <button type="button" class="secondary-button" data-add="sideCard">
+                        <i class="fa-solid fa-plus"></i> Add Card
+                    </button>
+                </div>
+
+                <div class="tag-input-hint" style="margin-bottom:10px;">
+                    Small cards stacked beside the hero slider. Add a background image, a colour,
+                    or both. Height 0 = share the slider height; set a pixel height to resize.
+                </div>
+
+                <div id="sideCardRows" data-key="heroSideCards">
+                    <% (content.heroSideCards || []).forEach(function (s, i) { %>
+                        <div class="hc-row" style="border:1px solid #e3e8ef; border-radius:10px; padding:12px; margin-bottom:10px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                                <strong style="color:#081621;">Card <%= i + 1 %></strong>
+                                <span style="display:flex; gap:6px; align-items:center;">
+                                    <button type="button" class="mini-button hc-move" data-dir="-1"><i class="fa-solid fa-arrow-up"></i></button>
+                                    <button type="button" class="mini-button hc-move" data-dir="1"><i class="fa-solid fa-arrow-down"></i></button>
+                                    <label style="display:flex; gap:6px; align-items:center; font-size:13px; margin:0 4px;">
+                                        <input type="checkbox" name="heroSideCards[<%= i %>][active]" value="on" <%= s.active !== false ? 'checked' : '' %>> Active
+                                    </label>
+                                </span>
+                            </div>
+                            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:10px;">
+                                <div class="form-group" style="margin:0;"><label>Icon (FA class)</label>
+                                    <input type="text" name="heroSideCards[<%= i %>][icon]" value="<%= s.icon %>" placeholder="fa-solid fa-headset"></div>
+                                <div class="form-group" style="margin:0;"><label>Title</label>
+                                    <input type="text" name="heroSideCards[<%= i %>][title]" value="<%= s.title %>"></div>
+                                <div class="form-group" style="margin:0;"><label>Text</label>
+                                    <input type="text" name="heroSideCards[<%= i %>][text]" value="<%= s.text %>"></div>
+                                <div class="form-group" style="margin:0;"><label>Link text</label>
+                                    <input type="text" name="heroSideCards[<%= i %>][linkText]" value="<%= s.linkText %>" placeholder="e.g. 01709867815"></div>
+                                <div class="form-group" style="margin:0;"><label>Link URL</label>
+                                    <input type="text" name="heroSideCards[<%= i %>][link]" value="<%= s.link %>" placeholder="tel:017… or /pages/…"></div>
+                                <div class="form-group" style="margin:0;"><label>Background color</label>
+                                    <div style="display:flex; gap:6px; align-items:center;">
+                                        <input type="color" class="hc-color" value="<%= s.bgColor || '#0b2a3d' %>" style="width:42px; height:34px; padding:2px; border:1px solid #d5dce4; border-radius:8px;">
+                                        <input type="text" name="heroSideCards[<%= i %>][bgColor]" class="hc-hex" value="<%= s.bgColor %>" placeholder="#0b2a3d">
+                                    </div>
+                                </div>
+                                <div class="form-group" style="margin:0;"><label>Height (px, 0 = auto)</label>
+                                    <input type="number" name="heroSideCards[<%= i %>][height]" min="0" max="800" step="10" value="<%= s.height || 0 %>"></div>
+                                <div class="form-group" style="margin:0; grid-column:1/-1;"><label>Background image (URL)</label>
+                                    <div style="display:flex; gap:8px;">
+                                        <input type="text" name="heroSideCards[<%= i %>][image]" class="img-url" value="<%= s.image %>" placeholder="https://… or upload">
+                                        <label class="secondary-button" style="cursor:pointer; white-space:nowrap;">
+                                            <i class="fa-solid fa-upload"></i> Upload
+                                            <input type="file" accept="image/*" class="img-file" hidden>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="button" class="mini-button danger hc-remove" style="margin-top:8px;">
+                                <i class="fa-solid fa-trash"></i> Remove card
+                            </button>
+                        </div>
+                    <% }); %>
+                </div>
+            </section>
+
+            <!-- ===== WHY CHOOSE US ===== -->
+            <section class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fa-solid fa-circle-question card-icon"></i> 3. Why Choose Us</h2>
+                    <button type="button" class="secondary-button" data-add="whyItem">
+                        <i class="fa-solid fa-plus"></i> Add Item
+                    </button>
+                </div>
+
+                <div style="display:grid; grid-template-columns:1fr 1.6fr; gap:12px; margin-bottom:12px;">
+                    <div class="form-group" style="margin:0;"><label>Title</label>
+                        <input type="text" name="whyTitle" value="<%= content.whyTitle %>" placeholder="Why choose us?"></div>
+                    <div class="form-group" style="margin:0;"><label>Subtitle</label>
+                        <input type="text" name="whySubtitle" value="<%= content.whySubtitle %>" placeholder="Quality products, fast service…"></div>
+                    <div class="form-group" style="margin:0; grid-column:1/-1;"><label>Description</label>
+                        <textarea name="whyDescription" rows="2" placeholder="Short paragraph shown under the subtitle"><%= content.whyDescription %></textarea></div>
+                </div>
+
+                <div id="whyRows" data-key="whyItems">
+                    <% (content.whyItems || []).forEach(function (s, i) { %>
+                        <div class="hc-row" style="display:grid; grid-template-columns:1.1fr 1.1fr 2fr 1.3fr auto auto auto; gap:10px; align-items:end; border:1px solid #e3e8ef; border-radius:10px; padding:12px; margin-bottom:10px;">
+                            <div class="form-group" style="margin:0;"><label>Icon (FA class)</label>
+                                <input type="text" name="whyItems[<%= i %>][icon]" value="<%= s.icon %>" placeholder="fa-solid fa-shield-halved"></div>
+                            <div class="form-group" style="margin:0;"><label>Title</label>
+                                <input type="text" name="whyItems[<%= i %>][title]" value="<%= s.title %>"></div>
+                            <div class="form-group" style="margin:0;"><label>Text</label>
+                                <input type="text" name="whyItems[<%= i %>][text]" value="<%= s.text %>"></div>
+                            <div class="form-group" style="margin:0;"><label>Link (optional)</label>
+                                <input type="text" name="whyItems[<%= i %>][link]" value="<%= s.link %>" placeholder="/page/genuine-products"></div>
+                            <button type="button" class="mini-button hc-move" data-dir="-1" style="margin-bottom:6px;"><i class="fa-solid fa-arrow-up"></i></button>
+                            <button type="button" class="mini-button hc-move" data-dir="1" style="margin-bottom:6px;"><i class="fa-solid fa-arrow-down"></i></button>
+                            <button type="button" class="mini-button danger hc-remove" style="margin-bottom:6px;"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    <% }); %>
+                </div>
+            </section>
+
+            <!-- ===== FEATURED CATEGORY ===== -->
+            <section class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fa-solid fa-grip card-icon"></i> 4. Featured Category</h2>
+                    <label style="display:flex; gap:6px; align-items:center; font-size:13px;">
+                        <input type="checkbox" name="featEnabled" value="on" <%= content.featEnabled !== false ? 'checked' : '' %>> Show section
+                    </label>
+                </div>
+
+                <div style="display:grid; grid-template-columns:1fr 1.6fr; gap:12px; margin-bottom:12px;">
+                    <div class="form-group" style="margin:0;"><label>Title</label>
+                        <input type="text" name="featTitle" value="<%= content.featTitle %>" placeholder="Featured Category"></div>
+                    <div class="form-group" style="margin:0;"><label>Subtitle</label>
+                        <input type="text" name="featSubtitle" value="<%= content.featSubtitle %>" placeholder="Get Your Desired Product from Featured Category!"></div>
+                    <div class="form-group" style="margin:0; grid-column:1/-1;"><label>Description</label>
+                        <textarea name="featDescription" rows="2" placeholder="Short paragraph shown under the subtitle"><%= content.featDescription %></textarea></div>
+                </div>
+
+                <div class="tag-input-hint" style="margin-bottom:10px;">
+                    Tick the categories to show. If none are ticked, the first 8 main categories appear automatically.
+                </div>
+
+                <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:8px;">
+                    <% (parentCats || []).forEach(function (c) { %>
+                        <label style="display:flex; gap:8px; align-items:center; border:1px solid #e3e8ef; border-radius:8px; padding:8px 10px; font-size:13.5px; cursor:pointer;">
+                            <input type="checkbox" name="featSlugs" value="<%= c.slug %>"
+                                   <%= (content.featSlugs || []).indexOf(c.slug) !== -1 ? 'checked' : '' %>>
+                            <i class="<%= c.icon %>" style="color:#ef4a23; width:18px;"></i>
+                            <span><%= c.name %></span>
+                        </label>
+                    <% }); %>
+                </div>
+            </section>
+
+            <!-- ===== PRODUCT SECTIONS (ordered) ===== -->
+            <%
+                var allPS = content.productSections || [];
+                var PS_KIND_LABELS = {
+                    latest: "Latest Products",
+                    custom: "Custom",
+                    upcoming: "Up-coming",
+                    preorder: "Pre Order",
+                    new: "New Arrivals",
+                    stockout: "Stock-Out"
+                };
+            %>
+            <section class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fa-solid fa-layer-group card-icon"></i> 5–11. Product Sections</h2>
+                    <button type="button" class="secondary-button" data-add="ps">
+                        <i class="fa-solid fa-plus"></i> Add Section
+                    </button>
+                </div>
+                <div class="tag-input-hint" style="margin-bottom:10px;">
+                    Sections render top-to-bottom in this order. Pick a type: Latest Products,
+                    Custom (category / sub-category / child category / brand / chosen products),
+                    Up-coming, Pre Order, New Arrivals or Stock-Out. Use the arrows to reorder.
+                </div>
+
+                <div class="ps-rows" id="ps-all" data-key="productSections" data-seq="ps">
+                    <% allPS.forEach(function (s, i) { %>
+                        <%
+                            var kindVal = PS_KIND_LABELS[s.kind] ? s.kind : "custom";
+                            var scopeVal = s.scope || "all";
+                        %>
+                        <div class="hc-row" style="border:1px solid #e3e8ef; border-radius:10px; padding:12px; margin-bottom:10px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                                <strong style="color:#081621;"><span class="ps-label">Section <%= i + 1 %></span><% if (s.title) { %> — <%= s.title %><% } %></strong>
+                                <span style="display:flex; gap:6px; align-items:center;">
+                                    <button type="button" class="mini-button hc-move" data-dir="-1"><i class="fa-solid fa-arrow-up"></i></button>
+                                    <button type="button" class="mini-button hc-move" data-dir="1"><i class="fa-solid fa-arrow-down"></i></button>
+                                    <label style="display:flex; gap:6px; align-items:center; font-size:13px; margin:0 4px;">
+                                        <input type="checkbox" name="productSections[<%= i %>][active]" value="on" <%= s.active !== false ? 'checked' : '' %>> Show
+                                    </label>
+                                </span>
+                            </div>
+                            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:10px; align-items:end;">
+                                <div class="form-group" style="margin:0;"><label>Section type</label>
+                                    <select name="productSections[<%= i %>][kind]" class="ps-kind">
+                                        <option value="latest" <%= kindVal === 'latest' ? 'selected' : '' %>>Latest Products</option>
+                                        <option value="custom" <%= kindVal === 'custom' ? 'selected' : '' %>>Custom</option>
+                                        <option value="upcoming" <%= kindVal === 'upcoming' ? 'selected' : '' %>>Up-coming</option>
+                                        <option value="preorder" <%= kindVal === 'preorder' ? 'selected' : '' %>>Pre Order</option>
+                                        <option value="new" <%= kindVal === 'new' ? 'selected' : '' %>>New Arrivals</option>
+                                        <option value="stockout" <%= kindVal === 'stockout' ? 'selected' : '' %>>Stock-Out</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="margin:0;"><label>Section title</label>
+                                    <input type="text" name="productSections[<%= i %>][title]" value="<%= s.title %>" placeholder="e.g. Best SSD Deals"></div>
+                                <div class="form-group" style="margin:0;"><label>Icon (FA class, optional)</label>
+                                    <input type="text" name="productSections[<%= i %>][icon]" value="<%= s.icon %>" placeholder="fa-solid fa-layer-group"></div>
+                                <div class="form-group" style="margin:0;"><label>Products from</label>
+                                    <select name="productSections[<%= i %>][scope]" class="ps-scope">
+                                        <option value="all" <%= scopeVal === 'all' ? 'selected' : '' %>>Everything</option>
+                                        <option value="category" <%= scopeVal === 'category' ? 'selected' : '' %>>Category</option>
+                                        <option value="subcategory" <%= scopeVal === 'subcategory' ? 'selected' : '' %>>Sub-Category</option>
+                                        <option value="childcategory" <%= scopeVal === 'childcategory' ? 'selected' : '' %>>Child Category</option>
+                                        <option value="brand" <%= scopeVal === 'brand' ? 'selected' : '' %>>Brand</option>
+                                        <option value="products" <%= scopeVal === 'products' ? 'selected' : '' %>>Pick products</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="margin:0;"><label>Count</label>
+                                    <input type="number" name="productSections[<%= i %>][count]" min="2" max="24" value="<%= s.count || 10 %>"></div>
+                                <button type="button" class="mini-button danger hc-remove" style="margin-bottom:6px;"><i class="fa-solid fa-trash"></i></button>
+                            </div>
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;">
+                                <div class="form-group ps-extra" data-extra="category" style="margin:0; display:none;">
+                                    <label>Main category</label>
+                                    <select name="productSections[<%= i %>][categorySlug]" class="ps-cat">
+                                        <option value="">— pick —</option>
+                                        <% (parentCats || []).forEach(function (c) { %>
+                                            <option value="<%= c.slug %>" <%= s.categorySlug === c.slug ? 'selected' : '' %>><%= c.name %></option>
+                                        <% }); %>
+                                    </select>
+                                </div>
+                                <div class="form-group ps-extra" data-extra="subcategory" style="margin:0; display:none;">
+                                    <label>Sub-category</label>
+                                    <select name="productSections[<%= i %>][categorySlug]" class="ps-sub">
+                                        <option value="">— pick —</option>
+                                        <% (subCats || []).forEach(function (c) { %>
+                                            <option value="<%= c.slug %>" <%= s.categorySlug === c.slug ? 'selected' : '' %>><%= c.name %></option>
+                                        <% }); %>
+                                    </select>
+                                </div>
+                                <div class="form-group ps-extra" data-extra="childcategory" style="margin:0; display:none;">
+                                    <label>Child category</label>
+                                    <select name="productSections[<%= i %>][categorySlug]" class="ps-child">
+                                        <option value="">— pick —</option>
+                                        <% (childCats || []).forEach(function (c) { %>
+                                            <option value="<%= c.slug %>" <%= s.categorySlug === c.slug ? 'selected' : '' %>><%= c.name %> (<%= c.parent %>)</option>
+                                        <% }); %>
+                                    </select>
+                                </div>
+                                <div class="form-group ps-extra" data-extra="brand" style="margin:0; display:none;">
+                                    <label>Brand name</label>
+                                    <input type="text" name="productSections[<%= i %>][brand]" value="<%= s.brand %>" placeholder="KingSpec">
+                                </div>
+                                <div class="form-group ps-extra" data-extra="products" style="margin:0; display:none;">
+                                    <label>Product slugs (comma separated)</label>
+                                    <input type="text" name="productSections[<%= i %>][products]" value="<%= s.products %>" placeholder="kingspec-256gb-ssd, aitc-8gb-ddr4">
+                                </div>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            </section>
+
+            <!-- ===== IMAGE SECTIONS ===== -->
+            <section class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fa-solid fa-panorama card-icon"></i> 6/8/10. Image Sections</h2>
+                    <button type="button" class="secondary-button" data-add="image">
+                        <i class="fa-solid fa-plus"></i> Add Banner
+                    </button>
+                </div>
+
+                <div class="tag-input-hint" style="margin-bottom:10px;">
+                    Full-width banner media placed between homepage blocks (e.g. after the Custom
+                    sections, before footer). Add an image or a YouTube/Vimeo/MP4 video, and an
+                    optional link for images.
+                </div>
+
+                <div id="imageRows" data-key="imageSections">
+                    <% (content.imageSections || []).forEach(function (s, i) { %>
+                        <div class="hc-row" style="display:grid; grid-template-columns:120px 1.6fr 1.6fr 1.2fr 1fr 1.2fr auto auto auto; gap:10px; align-items:end; border:1px solid #e3e8ef; border-radius:10px; padding:12px; margin-bottom:10px;">
+                            <div class="form-group" style="margin:0;"><label>Type</label>
+                                <select name="imageSections[<%= i %>][kind]" class="media-kind">
+                                    <option value="image" <%= s.kind !== 'video' ? 'selected' : '' %>>Image</option>
+                                    <option value="video" <%= s.kind === 'video' ? 'selected' : '' %>>Video</option>
+                                </select>
+                            </div>
+                            <div class="form-group media-image" style="margin:0;"><label>Image (URL)</label>
+                                <div style="display:flex; gap:6px;">
+                                    <input type="text" name="imageSections[<%= i %>][image]" class="img-url" value="<%= s.image %>">
+                                    <label class="secondary-button" style="cursor:pointer; white-space:nowrap;">
+                                        <i class="fa-solid fa-upload"></i>
+                                        <input type="file" accept="image/*" class="img-file" hidden>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="form-group media-video" style="margin:0;"><label>Video (YouTube, Vimeo or .mp4)</label>
+                                <div style="display:flex; gap:6px;">
+                                    <input type="text" name="imageSections[<%= i %>][video]" class="img-url" value="<%= s.video %>" placeholder="https://www.youtube.com/watch?v=…">
+                                    <label class="secondary-button" style="cursor:pointer; white-space:nowrap;">
+                                        <i class="fa-solid fa-upload"></i>
+                                        <input type="file" accept="video/*" class="img-file" hidden>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="form-group" style="margin:0;"><label>Link (optional)</label>
+                                <input type="text" name="imageSections[<%= i %>][link]" value="<%= s.link %>" placeholder="/category/ssd"></div>
+                            <div class="form-group" style="margin:0;"><label>Alt text</label>
+                                <input type="text" name="imageSections[<%= i %>][alt]" value="<%= s.alt %>"></div>
+                            <div class="form-group" style="margin:0;"><label>Show at</label>
+                                <select name="imageSections[<%= i %>][slot]">
+                                    <option value="after-hero" <%= s.slot === 'after-hero' ? 'selected' : '' %>>After hero slider</option>
+                                    <option value="after-featured" <%= s.slot === 'after-featured' ? 'selected' : '' %>>After Featured Category</option>
+                                    <option value="after-latest" <%= s.slot === 'after-latest' ? 'selected' : '' %>>After Latest section</option>
+                                    <option value="after-custom" <%= s.slot === 'after-custom' ? 'selected' : '' %>>After Custom sections</option>
+                                    <option value="after-upcoming" <%= s.slot === 'after-upcoming' ? 'selected' : '' %>>After Up-coming sections</option>
+                                    <option value="after-preorder" <%= s.slot === 'after-preorder' ? 'selected' : '' %>>After Pre Order sections</option>
+                                    <option value="after-new" <%= s.slot === 'after-new' ? 'selected' : '' %>>After New sections</option>
+                                    <option value="after-stockout" <%= s.slot === 'after-stockout' ? 'selected' : '' %>>After Stock-Out sections</option>
+                                    <option value="before-footer" <%= s.slot === 'before-footer' ? 'selected' : '' %>>Before footer</option>
+                                </select>
+                            </div>
+                            <label style="display:flex; gap:6px; align-items:center; font-size:13px; padding-bottom:10px;">
+                                <input type="checkbox" name="imageSections[<%= i %>][active]" value="on" <%= s.active !== false ? 'checked' : '' %>> Show
+                            </label>
+                            <span style="display:flex; gap:4px; padding-bottom:4px;">
+                                <button type="button" class="mini-button hc-move" data-dir="-1"><i class="fa-solid fa-arrow-up"></i></button>
+                                <button type="button" class="mini-button hc-move" data-dir="1"><i class="fa-solid fa-arrow-down"></i></button>
+                            </span>
+                            <button type="button" class="mini-button danger hc-remove" style="margin-bottom:6px;"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    <% }); %>
+                </div>
+            </section>
+
+            <!-- ===== BRAND SECTION ===== -->
+            <section class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fa-solid fa-tags card-icon"></i> 12. Brand Section</h2>
+                </div>
+                <div class="form-group" style="max-width:340px; margin-bottom:14px;">
+                    <label>Section title</label>
+                    <input type="text" name="brandSectionTitle" value="<%= content.brandSectionTitle %>" placeholder="Our Brands">
+                </div>
+
+                <div class="card-header" style="margin-bottom:8px;">
+                    <h3 class="card-title" style="font-size:15px;"><i class="fa-solid fa-image card-icon"></i> Brand logos</h3>
+                    <button type="button" class="secondary-button" data-add="brandLogos">
+                        <i class="fa-solid fa-plus"></i> Add
+                    </button>
+                </div>
+                <div class="logo-rows" data-group="brandLogos" data-key="brandLogos" id="brandLogoRows">
+                    <% (content.brandLogos || []).forEach(function (item, i) { %>
+                        <div class="hc-row" style="display:grid; grid-template-columns:1.4fr 2fr 1.4fr auto auto auto auto; gap:10px; align-items:end; border:1px solid #e3e8ef; border-radius:10px; padding:12px; margin-bottom:10px;">
+                            <div class="form-group" style="margin:0;"><label>Name</label>
+                                <input type="text" name="brandLogos[<%= i %>][name]" value="<%= item.name %>"></div>
+                            <div class="form-group" style="margin:0;"><label>Image (URL)</label>
+                                <div style="display:flex; gap:6px;">
+                                    <input type="text" name="brandLogos[<%= i %>][image]" class="img-url" value="<%= item.image %>">
+                                    <label class="secondary-button" style="cursor:pointer; white-space:nowrap;">
+                                        <i class="fa-solid fa-upload"></i>
+                                        <input type="file" accept="image/*" class="img-file" hidden>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="form-group" style="margin:0;"><label>Link (optional)</label>
+                                <input type="text" name="brandLogos[<%= i %>][link]" value="<%= item.link %>" placeholder="/shop?brand=KingSpec"></div>
+                            <label style="display:flex; gap:6px; align-items:center; font-size:13px; padding-bottom:10px;">
+                                <input type="checkbox" name="brandLogos[<%= i %>][active]" value="on" <%= item.active !== false ? 'checked' : '' %>> Show
+                            </label>
+                            <button type="button" class="mini-button hc-move" data-dir="-1" style="margin-bottom:6px;"><i class="fa-solid fa-arrow-up"></i></button>
+                            <button type="button" class="mini-button hc-move" data-dir="1" style="margin-bottom:6px;"><i class="fa-solid fa-arrow-down"></i></button>
+                            <button type="button" class="mini-button danger hc-remove" style="margin-bottom:6px;"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    <% }); %>
+                </div>
+            </section>
+
+            <div class="tag-input-hint" style="margin-bottom:18px;">
+                Payment logos, membership badges, addresses and copyright are managed in
+                <a href="/admin/footer" style="color:#ef4a23; font-weight:700;">Footer</a>.
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="primary-button">
+                    <i class="fa-solid fa-floppy-disk"></i> Save Homepage
+                </button>
+                <a href="/" class="secondary-button" target="_blank">View Home Page</a>
+            </div>
+        </form>
+
+    </main>
+</div>
+
+<%- include("partials/footer") %>
+
+<script>
+(function () {
+    var parentCats = <%- JSON.stringify((typeof parentCats !== 'undefined' ? parentCats : []).map(function (c) { return { slug: c.slug, name: c.name }; })) %>;
+    var subCats = <%- JSON.stringify((typeof subCats !== 'undefined' ? subCats : []).map(function (c) { return { slug: c.slug, name: c.name }; })) %>;
+    var childCats = <%- JSON.stringify((typeof childCats !== 'undefined' ? childCats : []).map(function (c) { return { slug: c.slug, name: c.name, parent: c.parent }; })) %>;
+    var SLOT_OPTIONS = [
+        ['after-hero', 'After hero slider'],
+        ['after-featured', 'After Featured Category'],
+        ['after-latest', 'After Latest section'],
+        ['after-custom', 'After Custom sections'],
+        ['after-upcoming', 'After Up-coming sections'],
+        ['after-preorder', 'After Pre Order sections'],
+        ['after-new', 'After New sections'],
+        ['after-stockout', 'After Stock-Out sections'],
+        ['before-footer', 'Before footer']
+    ];
+
+    function esc(s) {
+        return String(s === undefined || s === null ? '' : s)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function opts(list, current) {
+        var html = '<option value="">— pick —</option>';
+        list.forEach(function (c) {
+            html += '<option value="' + esc(c.slug) + '"' + (c.slug === current ? ' selected' : '') + '>' + esc(c.name) + '</option>';
+        });
+        return html;
+    }
+
+    /* -------- reindex: DOM order becomes the saved array order -------- */
+    function containersFor(box) {
+        var seq = box.getAttribute('data-seq');
+        if (!seq) return [box];
+        return Array.prototype.slice.call(document.querySelectorAll('[data-seq="' + seq + '"]'));
+    }
+
+    function reindex(box) {
+        var key = box.getAttribute('data-key');
+        var i = 0;
+        containersFor(box).forEach(function (b) {
+            Array.prototype.forEach.call(b.querySelectorAll(':scope > .hc-row'), function (row) {
+                Array.prototype.forEach.call(row.querySelectorAll('[name^="' + key + '["]'), function (input) {
+                    input.name = input.name.replace(new RegExp('^' + key + '\\[\\d+\\]'), key + '[' + i + ']');
+                });
+                i += 1;
+            });
+        });
+        // refresh "Slide N" / "Card N" labels
+        var n = 0;
+        containersFor(box).forEach(function (b) {
+            Array.prototype.forEach.call(b.querySelectorAll(':scope > .hc-row'), function (row) {
+                var strong = row.querySelector('strong');
+                if (strong && /^(Slide|Card) \d+$/.test(strong.textContent)) {
+                    n += 1;
+                    strong.textContent = strong.textContent.replace(/\d+$/, n);
+                }
+            });
+        });
+        // refresh "Section N" labels in the product-section list
+        var sec = 0;
+        containersFor(box).forEach(function (b) {
+            Array.prototype.forEach.call(b.querySelectorAll(':scope > .hc-row'), function (row) {
+                var lab = row.querySelector('.ps-label');
+                if (lab) {
+                    sec += 1;
+                    lab.textContent = 'Section ' + sec;
+                }
+            });
+        });
+    }
+
+    /* show only the extra field that matches the chosen scope; disable the
+       hidden ones so their empty duplicate values are not submitted */
+    function syncScope(sel) {
+        var row = sel.closest('.hc-row');
+        row.querySelectorAll('.ps-extra').forEach(function (x) {
+            var on = x.getAttribute('data-extra') === sel.value;
+            x.style.display = on ? '' : 'none';
+            x.querySelectorAll('input, select, textarea').forEach(function (field) {
+                field.disabled = !on;
+            });
+        });
+    }
+
+    function syncMedia(sel) {
+        if (!sel) return;
+        var row = sel.closest('.hc-row');
+        if (!row) return;
+        var kind = sel.value === 'video' ? 'video' : 'image';
+        var imageBox = row.querySelector('.media-image');
+        var videoBox = row.querySelector('.media-video');
+        if (imageBox) imageBox.style.display = kind === 'image' ? '' : 'none';
+        if (videoBox) videoBox.style.display = kind === 'video' ? '' : 'none';
+    }
+
+    function reindexAll() {
+        document.querySelectorAll('[data-key]').forEach(function (box) {
+            reindex(box);
+        });
+    }
+
+    /* -------- templates for new rows -------- */
+    function uploadField(name, placeholder, accept) {
+        return '<div style="display:flex; gap:6px;">' +
+            '<input type="text" name="' + name + '" class="img-url" placeholder="' + (placeholder || 'https://… or upload') + '">' +
+            '<label class="secondary-button" style="cursor:pointer; white-space:nowrap;"><i class="fa-solid fa-upload"></i>' +
+            '<input type="file" accept="' + (accept || 'image/*') + '" class="img-file" hidden></label></div>';
+    }
+
+    function slideTemplate(i) {
+        return '<div class="hc-row" style="border:1px solid #e3e8ef; border-radius:12px; padding:16px; margin-bottom:14px;">' +
+            '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">' +
+                '<strong style="color:#081621;">New Slide</strong>' +
+                '<span style="display:flex; gap:6px; align-items:center;">' +
+                    '<button type="button" class="mini-button hc-move" data-dir="-1"><i class="fa-solid fa-arrow-up"></i></button>' +
+                    '<button type="button" class="mini-button hc-move" data-dir="1"><i class="fa-solid fa-arrow-down"></i></button>' +
+                    '<label style="display:flex; gap:6px; align-items:center; font-size:13px; margin:0 4px;"><input type="checkbox" name="heroSlides[' + i + '][active]" value="on" checked> Active</label>' +
+                '</span></div>' +
+            '<div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">' +
+                '<div class="form-group"><label>Tag / eyebrow</label><input type="text" name="heroSlides[' + i + '][tag]"></div>' +
+                '<div class="form-group"><label>Button link</label><input type="text" name="heroSlides[' + i + '][buttonLink]" placeholder="/shop"></div>' +
+                '<div class="form-group" style="grid-column:1/-1;"><label>Heading</label><input type="text" name="heroSlides[' + i + '][title]"></div>' +
+                '<div class="form-group" style="grid-column:1/-1;"><label>Text</label><textarea name="heroSlides[' + i + '][text]" rows="2"></textarea></div>' +
+                '<div class="form-group"><label>Button text</label><input type="text" name="heroSlides[' + i + '][buttonText]"></div>' +
+                '<div class="form-group"><label>Slide height (px, 0 = default)</label><input type="number" name="heroSlides[' + i + '][height]" min="0" max="800" step="10" value="0"></div>' +
+                '<div class="form-group" style="grid-column:1/-1;"><label>Banner / background image (URL)</label>' + uploadField('heroSlides[' + i + '][image]') + '</div>' +
+            '</div>' +
+            '<button type="button" class="mini-button danger hc-remove" style="margin-top:6px;"><i class="fa-solid fa-trash"></i> Remove slide</button></div>';
+    }
+
+    function sideCardTemplate(i) {
+        return '<div class="hc-row" style="border:1px solid #e3e8ef; border-radius:10px; padding:12px; margin-bottom:10px;">' +
+            '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">' +
+                '<strong style="color:#081621;">New Card</strong>' +
+                '<span style="display:flex; gap:6px; align-items:center;">' +
+                    '<button type="button" class="mini-button hc-move" data-dir="-1"><i class="fa-solid fa-arrow-up"></i></button>' +
+                    '<button type="button" class="mini-button hc-move" data-dir="1"><i class="fa-solid fa-arrow-down"></i></button>' +
+                    '<label style="display:flex; gap:6px; align-items:center; font-size:13px; margin:0 4px;"><input type="checkbox" name="heroSideCards[' + i + '][active]" value="on" checked> Active</label>' +
+                '</span></div>' +
+            '<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(150px, 1fr)); gap:10px;">' +
+                '<div class="form-group" style="margin:0;"><label>Icon (FA class)</label><input type="text" name="heroSideCards[' + i + '][icon]" placeholder="fa-solid fa-headset"></div>' +
+                '<div class="form-group" style="margin:0;"><label>Title</label><input type="text" name="heroSideCards[' + i + '][title]"></div>' +
+                '<div class="form-group" style="margin:0;"><label>Text</label><input type="text" name="heroSideCards[' + i + '][text]"></div>' +
+                '<div class="form-group" style="margin:0;"><label>Link text</label><input type="text" name="heroSideCards[' + i + '][linkText]"></div>' +
+                '<div class="form-group" style="margin:0;"><label>Link URL</label><input type="text" name="heroSideCards[' + i + '][link]" placeholder="tel:017… or /pages/…"></div>' +
+                '<div class="form-group" style="margin:0;"><label>Background color</label>' +
+                    '<div style="display:flex; gap:6px; align-items:center;">' +
+                        '<input type="color" class="hc-color" value="#0b2a3d" style="width:42px; height:34px; padding:2px; border:1px solid #d5dce4; border-radius:8px;">' +
+                        '<input type="text" name="heroSideCards[' + i + '][bgColor]" class="hc-hex" placeholder="#0b2a3d"></div></div>' +
+                '<div class="form-group" style="margin:0;"><label>Height (px, 0 = auto)</label><input type="number" name="heroSideCards[' + i + '][height]" min="0" max="800" step="10" value="0"></div>' +
+                '<div class="form-group" style="margin:0; grid-column:1/-1;"><label>Background image (URL)</label>' + uploadField('heroSideCards[' + i + '][image]') + '</div>' +
+            '</div>' +
+            '<button type="button" class="mini-button danger hc-remove" style="margin-top:8px;"><i class="fa-solid fa-trash"></i> Remove card</button></div>';
+    }
+
+    function whyTemplate(i) {
+        return '<div class="hc-row" style="display:grid; grid-template-columns:1.1fr 1.1fr 2fr 1.3fr auto auto auto; gap:10px; align-items:end; border:1px solid #e3e8ef; border-radius:10px; padding:12px; margin-bottom:10px;">' +
+            '<div class="form-group" style="margin:0;"><label>Icon (FA class)</label><input type="text" name="whyItems[' + i + '][icon]" placeholder="fa-solid fa-shield-halved"></div>' +
+            '<div class="form-group" style="margin:0;"><label>Title</label><input type="text" name="whyItems[' + i + '][title]"></div>' +
+            '<div class="form-group" style="margin:0;"><label>Text</label><input type="text" name="whyItems[' + i + '][text]"></div>' +
+            '<div class="form-group" style="margin:0;"><label>Link (optional)</label><input type="text" name="whyItems[' + i + '][link]" placeholder="/page/genuine-products"></div>' +
+            '<button type="button" class="mini-button hc-move" data-dir="-1" style="margin-bottom:6px;"><i class="fa-solid fa-arrow-up"></i></button>' +
+            '<button type="button" class="mini-button hc-move" data-dir="1" style="margin-bottom:6px;"><i class="fa-solid fa-arrow-down"></i></button>' +
+            '<button type="button" class="mini-button danger hc-remove" style="margin-bottom:6px;"><i class="fa-solid fa-trash"></i></button></div>';
+    }
+
+    function psTemplate(i) {
+        return '<div class="hc-row" style="border:1px solid #e3e8ef; border-radius:10px; padding:12px; margin-bottom:10px;">' +
+            '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">' +
+                '<strong style="color:#081621;"><span class="ps-label">New Section</span></strong>' +
+                '<span style="display:flex; gap:6px; align-items:center;">' +
+                    '<button type="button" class="mini-button hc-move" data-dir="-1"><i class="fa-solid fa-arrow-up"></i></button>' +
+                    '<button type="button" class="mini-button hc-move" data-dir="1"><i class="fa-solid fa-arrow-down"></i></button>' +
+                    '<label style="display:flex; gap:6px; align-items:center; font-size:13px; margin:0 4px;"><input type="checkbox" name="productSections[' + i + '][active]" value="on" checked> Show</label>' +
+                '</span></div>' +
+            '<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:10px; align-items:end;">' +
+                '<div class="form-group" style="margin:0;"><label>Section type</label>' +
+                    '<select name="productSections[' + i + '][kind]" class="ps-kind">' +
+                        '<option value="latest">Latest Products</option>' +
+                        '<option value="custom" selected>Custom</option>' +
+                        '<option value="upcoming">Up-coming</option>' +
+                        '<option value="preorder">Pre Order</option>' +
+                        '<option value="new">New Arrivals</option>' +
+                        '<option value="stockout">Stock-Out</option></select></div>' +
+                '<div class="form-group" style="margin:0;"><label>Section title</label><input type="text" name="productSections[' + i + '][title]" placeholder="e.g. Best SSD Deals"></div>' +
+                '<div class="form-group" style="margin:0;"><label>Icon (FA class, optional)</label><input type="text" name="productSections[' + i + '][icon]" placeholder="fa-solid fa-layer-group"></div>' +
+                '<div class="form-group" style="margin:0;"><label>Products from</label>' +
+                    '<select name="productSections[' + i + '][scope]" class="ps-scope">' +
+                        '<option value="all">Everything</option><option value="category">Category</option>' +
+                        '<option value="subcategory">Sub-Category</option><option value="childcategory">Child Category</option>' +
+                        '<option value="brand">Brand</option>' +
+                        '<option value="products">Pick products</option></select></div>' +
+                '<div class="form-group" style="margin:0;"><label>Count</label><input type="number" name="productSections[' + i + '][count]" min="2" max="24" value="10"></div>' +
+                '<button type="button" class="mini-button danger hc-remove" style="margin-bottom:6px;"><i class="fa-solid fa-trash"></i></button>' +
+            '</div>' +
+            '<div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;">' +
+                '<div class="form-group ps-extra" data-extra="category" style="margin:0; display:none;"><label>Main category</label>' +
+                    '<select name="productSections[' + i + '][categorySlug]" class="ps-cat">' + opts(parentCats, '') + '</select></div>' +
+                '<div class="form-group ps-extra" data-extra="subcategory" style="margin:0; display:none;"><label>Sub-category</label>' +
+                    '<select name="productSections[' + i + '][categorySlug]" class="ps-sub">' + opts(subCats, '') + '</select></div>' +
+                '<div class="form-group ps-extra" data-extra="childcategory" style="margin:0; display:none;"><label>Child category</label>' +
+                    '<select name="productSections[' + i + '][categorySlug]" class="ps-child">' + opts(childCats, '') + '</select></div>' +
+                '<div class="form-group ps-extra" data-extra="brand" style="margin:0; display:none;"><label>Brand name</label>' +
+                    '<input type="text" name="productSections[' + i + '][brand]" placeholder="KingSpec"></div>' +
+                '<div class="form-group ps-extra" data-extra="products" style="margin:0; display:none;"><label>Product slugs (comma separated)</label>' +
+                    '<input type="text" name="productSections[' + i + '][products]" placeholder="kingspec-256gb-ssd, aitc-8gb-ddr4"></div>' +
+            '</div></div>';
+    }
+
+    function imageTemplate(i) {
+        var slotOpts = '';
+        SLOT_OPTIONS.forEach(function (o) {
+            slotOpts += '<option value="' + o[0] + '"' + (o[0] === 'after-custom' ? ' selected' : '') + '>' + o[1] + '</option>';
+        });
+        return '<div class="hc-row" style="display:grid; grid-template-columns:120px 1.6fr 1.6fr 1.2fr 1fr 1.2fr auto auto auto; gap:10px; align-items:end; border:1px solid #e3e8ef; border-radius:10px; padding:12px; margin-bottom:10px;">' +
+            '<div class="form-group" style="margin:0;"><label>Type</label><select name="imageSections[' + i + '][kind]" class="media-kind">' +
+                '<option value="image">Image</option><option value="video">Video</option></select></div>' +
+            '<div class="form-group media-image" style="margin:0;"><label>Image (URL)</label>' + uploadField('imageSections[' + i + '][image]', 'https://…') + '</div>' +
+            '<div class="form-group media-video" style="margin:0;"><label>Video (YouTube, Vimeo or .mp4)</label>' + uploadField('imageSections[' + i + '][video]', 'https://youtube.com/watch?v=…', 'video/*') + '</div>' +
+            '<div class="form-group" style="margin:0;"><label>Link (optional)</label><input type="text" name="imageSections[' + i + '][link]" placeholder="/category/ssd"></div>' +
+            '<div class="form-group" style="margin:0;"><label>Alt text</label><input type="text" name="imageSections[' + i + '][alt]"></div>' +
+            '<div class="form-group" style="margin:0;"><label>Show at</label><select name="imageSections[' + i + '][slot]">' + slotOpts + '</select></div>' +
+            '<label style="display:flex; gap:6px; align-items:center; font-size:13px; padding-bottom:10px;"><input type="checkbox" name="imageSections[' + i + '][active]" value="on" checked> Show</label>' +
+            '<span style="display:flex; gap:4px; padding-bottom:4px;">' +
+                '<button type="button" class="mini-button hc-move" data-dir="-1"><i class="fa-solid fa-arrow-up"></i></button>' +
+                '<button type="button" class="mini-button hc-move" data-dir="1"><i class="fa-solid fa-arrow-down"></i></button></span>' +
+            '<button type="button" class="mini-button danger hc-remove" style="margin-bottom:6px;"><i class="fa-solid fa-trash"></i></button></div>';
+    }
+
+    function logoTemplate(groupKey, i) {
+        return '<div class="hc-row" style="display:grid; grid-template-columns:1.4fr 2fr 1.4fr auto auto auto auto; gap:10px; align-items:end; border:1px solid #e3e8ef; border-radius:10px; padding:12px; margin-bottom:10px;">' +
+            '<div class="form-group" style="margin:0;"><label>Name</label><input type="text" name="' + groupKey + '[' + i + '][name]"></div>' +
+            '<div class="form-group" style="margin:0;"><label>Image (URL)</label>' + uploadField(groupKey + '[' + i + '][image]', '') + '</div>' +
+            '<div class="form-group" style="margin:0;"><label>Link (optional)</label><input type="text" name="' + groupKey + '[' + i + '][link]"></div>' +
+            '<label style="display:flex; gap:6px; align-items:center; font-size:13px; padding-bottom:10px;"><input type="checkbox" name="' + groupKey + '[' + i + '][active]" value="on" checked> Show</label>' +
+            '<button type="button" class="mini-button hc-move" data-dir="-1" style="margin-bottom:6px;"><i class="fa-solid fa-arrow-up"></i></button>' +
+            '<button type="button" class="mini-button hc-move" data-dir="1" style="margin-bottom:6px;"><i class="fa-solid fa-arrow-down"></i></button>' +
+            '<button type="button" class="mini-button danger hc-remove" style="margin-bottom:6px;"><i class="fa-solid fa-trash"></i></button></div>';
+    }
+
+    /* -------- add buttons -------- */
+    document.querySelectorAll('[data-add]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var key = btn.getAttribute('data-add');
+            var box, i, html;
+            if (key === 'slide') {
+                box = document.getElementById('slideRows');
+                i = box.querySelectorAll('.hc-row').length + 1000;
+                html = slideTemplate(i);
+            } else if (key === 'sideCard') {
+                box = document.getElementById('sideCardRows');
+                i = box.querySelectorAll('.hc-row').length + 1000;
+                html = sideCardTemplate(i);
+            } else if (key === 'whyItem') {
+                box = document.getElementById('whyRows');
+                i = box.querySelectorAll('.hc-row').length + 1000;
+                html = whyTemplate(i);
+            } else if (key === 'ps') {
+                box = document.getElementById('ps-all');
+                i = box.querySelectorAll('.hc-row').length + 1000;
+                html = psTemplate(i);
+            } else if (key === 'image') {
+                box = document.getElementById('imageRows');
+                i = box.querySelectorAll('.hc-row').length + 1000;
+                html = imageTemplate(i);
+            } else {
+                box = document.querySelector('.logo-rows[data-group="' + key + '"]');
+                i = box.querySelectorAll('.hc-row').length + 1000;
+                html = logoTemplate(key, i);
+            }
+            box.insertAdjacentHTML('beforeend', html);
+            reindex(box);
+        });
+    });
+
+    /* -------- delegated: remove / move / scope toggle / color sync -------- */
+    document.addEventListener('click', function (e) {
+        var rm = e.target.closest('.hc-remove');
+        if (rm) {
+            var row = rm.closest('.hc-row');
+            if (row && confirm('Remove this row?')) {
+                var box = row.parentElement;
+                row.remove();
+                reindex(box);
+            }
+            return;
+        }
+
+        var mv = e.target.closest('.hc-move');
+        if (mv) {
+            var rowEl = mv.closest('.hc-row');
+            if (!rowEl) return;
+            var container = rowEl.parentElement;
+            var dir = Number(mv.getAttribute('data-dir')) || 0;
+            if (dir < 0 && rowEl.previousElementSibling) {
+                container.insertBefore(rowEl, rowEl.previousElementSibling);
+                reindex(container);
+            } else if (dir > 0 && rowEl.nextElementSibling) {
+                container.insertBefore(rowEl.nextElementSibling, rowEl);
+                reindex(container);
+            }
+        }
+    });
+
+    // scope select → show matching extra field
+    document.addEventListener('change', function (e) {
+        var sel = e.target.closest('.ps-scope');
+        if (sel) {
+            syncScope(sel);
+            return;
+        }
+
+        var media = e.target.closest('.media-kind');
+        if (media) {
+            syncMedia(media);
+            return;
+        }
+
+        // native color picker ↔ hex text
+        if (e.target.classList && e.target.classList.contains('hc-color')) {
+            var hex = e.target.closest('div').querySelector('.hc-hex');
+            if (hex) hex.value = e.target.value;
+            return;
+        }
+        if (e.target.classList && e.target.classList.contains('hc-hex')) {
+            var picker = e.target.parentElement.querySelector('.hc-color');
+            if (picker && /^#[0-9a-fA-F]{3,8}$/.test(e.target.value.trim())) {
+                picker.value = e.target.value.trim();
+            }
+            return;
+        }
+
+        // image upload → fill paired URL input
+        var fileInput = e.target.closest('.img-file');
+        if (!fileInput || !fileInput.files || !fileInput.files[0]) return;
+
+        var wrap = fileInput.closest('.form-group') || fileInput.parentElement.parentElement;
+        var urlInput = wrap.querySelector('.img-url');
+
+        var fd = new FormData();
+        fd.append('media', fileInput.files[0]);
+
+        fetch('/admin/upload-media', { method: 'POST', body: fd })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (data && data.success && data.urls && data.urls.length) {
+                    if (urlInput) urlInput.value = data.urls[0];
+                } else {
+                    alert('Upload failed: ' + ((data && data.message) || 'unknown error'));
+                }
+            })
+            .catch(function (err) { alert('Upload error: ' + err.message); });
+    });
+
+    // on load: show the extra field matching each row's saved scope
+    document.querySelectorAll('.ps-scope').forEach(syncScope);
+    document.querySelectorAll('.media-kind').forEach(syncMedia);
+
+    // safety: reindex everything right before submit so order is always clean
+    document.getElementById('homepageForm').addEventListener('submit', reindexAll);
+})();
+</script>

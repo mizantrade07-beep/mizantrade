@@ -117,6 +117,16 @@
                                 return html;
                             }
 
+                            function countCell(cat) {
+                                var n = counts[cat.slug] || counts[cat.name] || 0;
+                                if (n > 0) {
+                                    return '<a class="count-pill link" href="/admin/products?category=' +
+                                        encodeURIComponent(cat.name) +
+                                        '" title="View these products">' + n + '</a>';
+                                }
+                                return '<span class="count-pill">0</span>';
+                            }
+
                             function actionCell(cat) {
                                 return '' +
                                     '<div class="product-actions">' +
@@ -140,7 +150,7 @@
                                 </td>
                                 <td><code class="slug-chip"><%= main.slug %></code></td>
                                 <td><%- brandCell(main) %></td>
-                                <td><span class="count-pill"><%= counts[main.slug] || counts[main.name] || 0 %></span></td>
+                                <td><%- countCell(main) %></td>
                                 <td>
                                     <% if (main.showOnHome) { %>
                                         <span class="badge badge-approved"><i class="fa-solid fa-house"></i> Yes</span>
@@ -171,7 +181,7 @@
                                     </td>
                                     <td><code class="slug-chip"><%= sub.slug %></code></td>
                                     <td><%- brandCell(sub) %></td>
-                                    <td><span class="count-pill"><%= counts[sub.slug] || counts[sub.name] || 0 %></span></td>
+                                    <td><%- countCell(sub) %></td>
                                     <td>
                                         <% if (sub.showOnHome) { %>
                                             <span class="badge badge-approved">Yes</span>
@@ -202,7 +212,7 @@
                                         </td>
                                         <td><code class="slug-chip"><%= child.slug %></code></td>
                                         <td><%- brandCell(child) %></td>
-                                        <td><span class="count-pill"><%= counts[child.slug] || counts[child.name] || 0 %></span></td>
+                                        <td><%- countCell(child) %></td>
                                         <td>
                                             <% if (child.showOnHome) { %>
                                                 <span class="badge badge-approved">Yes</span>
@@ -235,7 +245,7 @@
                                 </td>
                                 <td><code class="slug-chip"><%= cat.slug %></code></td>
                                 <td><%- brandCell(cat) %></td>
-                                <td><span class="count-pill"><%= counts[cat.slug] || counts[cat.name] || 0 %></span></td>
+                                <td><%- countCell(cat) %></td>
                                 <td><span class="badge">No</span></td>
                                 <td><%= cat.order %></td>
                                 <td>

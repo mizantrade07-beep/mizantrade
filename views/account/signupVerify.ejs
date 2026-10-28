@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" href="/images/logo.svg">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Your Phone - Mizan Trade</title>
+    <%- include('authStyles') %>
+</head>
+<body>
+
+    <%- include('../partials/header') %>
+
+    <%
+        var errorText = (typeof message !== 'undefined' && message) ? message : '';
+        var okText = (typeof notice !== 'undefined' && notice) ? notice : '';
+        var waitSeconds = (typeof resendWait !== 'undefined' && resendWait) ? resendWait : 0;
+        var phoneText = (typeof phone !== 'undefined' && phone) ? phone : ((typeof phoneMasked !== 'undefined' && phoneMasked) ? phoneMasked : 'your phone');
+    %>
+
+    <div class="container auth-wrap">
+
+        <div class="auth-card">
+
+            <div class="auth-hero">
+                <div class="ah-ic"><i class="fa-solid fa-mobile-screen-button"></i></div>
+                <h1>OTP Verification</h1>
+                <p>We've sent a verification code to your phone - <strong><%= phoneText %></strong></p>
+            </div>
+
+            <div class="auth-body">
+
+                <% if (errorText) { %>
+                    <div class="auth-banner err"><i class="fa-solid fa-circle-exclamation"></i> <%= errorText %></div>
+                <% } %>
+                <% if (okText) { %>
+                    <div class="auth-banner ok"><i class="fa-solid fa-circle-check"></i> <%= okText %></div>
+                <% } %>
+
+                <form action="/signup/verify" method="POST">
+                    <div class="auth-field">
+                        <label>Verification Code <span style="color:#c0392b;">*</span></label>
+                        <input type="text" name="code" class="auth-input otp-input"
+                               inputmode="numeric" autocomplete="one-time-code"
+                               maxlength="6" pattern="[0-9]{6}" placeholder="______"
+                               required autofocus>
+                    </div>
+
+                    <div class="auth-field">
+                        <label>Password <span style="color:#c0392b;">*</span></label>
+                        <div class="pw-wrap">
+                            <input type="password" name="password" id="otpPassword" class="auth-input" placeholder="At least 6 characters" required>
+                            <button type="button" class="pw-toggle" data-target="otpPassword"><i class="fa-regular fa-eye"></i></button>
+                        </div>
+                    </div>
+
+                    <div class="auth-field">
+                        <label>Password Confirm <span style="color:#c0392b;">*</span></label>
+                        <div class="pw-wrap">
+                            <input type="password" name="confirmPassword" id="otpConfirm" class="auth-input" placeholder="Re-enter password" required>
+                            <button type="button" class="pw-toggle" data-target="otpConfirm"><i class="fa-regular fa-eye"></i></button>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="auth-btn">
+                        <i class="fa-solid fa-circle-check"></i> Continue
+                    </button>
+                </form>
+
+                <form action="/signup/resend" method="POST" style="margin-top:12px;">
+                    <button type="submit" class="auth-btn ghost" id="resendBtn" <%= waitSeconds > 0 ? 'disabled' : '' %>>
+                        <i class="fa-solid fa-rotate"></i>
+                        <span id="resendLabel">Resend code<%= waitSeconds > 0 ? ' (' + waitSeconds + 's)' : '' %></span>
+                    </button>
+                </form>
+
+                <p class="auth-hint">
+                    Didn't receive it? Check your SMS inbox. The code expires in 10 minutes.
+                </p>
+
+                <form action="/signup/cancel" method="POST" style="margin-top:8px; text-align:center;">
+                    <button type="submit" class="auth-btn ghost">
+                        <i class="fa-solid fa-arrow-left"></i> Back
+                    </button>
+                </form>
+
+                <p class="auth-note">
+                    If you already have an account with us, please
+                    <a href="/login" class="auth-link">login at the login page</a>.
+                </p>
+
+            </div>
+        </div>
+    </div>
+
+    <%- include('../partials/footer') %>
+
+    <script>
+        (function () {
+            document.querySelectorAll('.pw-toggle').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var input = document.getElementById(btn.getAttribute('data-target'));
+                    if (!input) return;
+                    var show = input.type === 'password';
+                    input.type = show ? 'text' : 'password';
+                    btn.innerHTML = show ? '<i class="fa-regular fa-eye-slash"></i>' : '<i class="fa-regular fa-eye"></i>';
+                });
+            });
+
+            var remaining = <%= waitSeconds %>;
+            var btn = document.getElementById('resendBtn');
+            var label = document.getElementById('resendLabel');
+
+            if (!btn || !label || remaining <= 0) return;
+
+            var timer = setInterval(function () {
+                remaining -= 1;
+
+                if (remaining <= 0) {
+                    clearInterval(timer);
+                    btn.disabled = false;
+                    label.textContent = 'Resend code';
+                    return;
+                }
+
+                label.textContent = 'Resend code (' + remaining + 's)';
+            }, 1000);
+        })();
+    </script>
+    <script src="/js/main.js?v=4"></script>
+</body>
+</html>

@@ -21,7 +21,7 @@
                 </h1>
 
                 <p class="dashboard-subtitle">
-                    Manage your computer hardware products.
+                    Manage your computer hardware products. Listed serially by Category → Sub Category → Child Category.
                 </p>
             </div>
 
@@ -35,6 +35,13 @@
 
         </div>
 
+
+        <% if (duplicated) { %>
+            <div class="admin-flash">
+                <i class="fa-solid fa-circle-check"></i>
+                Product duplicated successfully — the new copy is highlighted below.
+            </div>
+        <% } %>
 
         <section class="dashboard-card">
 
@@ -81,6 +88,72 @@
             </div>
 
 
+            <form
+                method="POST"
+                action="/admin/products/bulk"
+                id="bulkForm"
+            >
+
+            <div class="bulk-panel">
+
+                <div class="bulk-group">
+                    <span class="bulk-label"><i class="fa-solid fa-sitemap"></i> Categories</span>
+                    <select id="bulkMain" name="mainCategory">
+                        <option value="">Main: keep current</option>
+                        <% categoryTree.forEach(function (cat) { %>
+                            <option value="<%= cat.name %>"><%= cat.name %></option>
+                        <% }) %>
+                    </select>
+                    <select id="bulkSub" name="subCategory">
+                        <option value="">Sub: keep current</option>
+                    </select>
+                    <select id="bulkChild" name="childCategory">
+                        <option value="">Child: keep current</option>
+                    </select>
+                    <button type="submit" name="mode" value="category" class="secondary-button">Apply</button>
+                </div>
+
+                <div class="bulk-group">
+                    <span class="bulk-label"><i class="fa-solid fa-boxes-stacked"></i> Stock</span>
+                    <select name="stockStatus">
+                        <option value="In Stock">In Stock</option>
+                        <option value="Pre Order">Pre Order</option>
+                        <option value="Coming Soon">Coming Soon</option>
+                        <option value="Out of Stock">Out of Stock</option>
+                    </select>
+                    <button type="submit" name="mode" value="stock" class="secondary-button">Apply</button>
+                </div>
+
+                <div class="bulk-group">
+                    <span class="bulk-label"><i class="fa-solid fa-tags"></i> Pricing</span>
+                    <input type="number" name="regularPrice" min="0" step="0.01" placeholder="Regular ৳">
+                    <input type="number" name="salePrice" min="0" step="0.01" placeholder="Sale ৳">
+                    <label class="bulk-check">
+                        <input type="checkbox" name="clearSale" value="on"> clear sale
+                    </label>
+                    <button type="submit" name="mode" value="price" class="secondary-button">Apply</button>
+                </div>
+
+                <div class="bulk-group">
+                    <span class="bulk-label"><i class="fa-solid fa-percent"></i> Discount</span>
+                    <input type="number" name="discountPercent" min="1" max="99" step="0.01" placeholder="% off">
+                    <span class="bulk-or">or</span>
+                    <input type="number" name="discountAmount" min="1" step="0.01" placeholder="৳ off">
+                    <select name="scope" class="bulk-scope">
+                        <option value="selected">Selected products</option>
+                        <option value="all">ALL products</option>
+                    </select>
+                    <button type="submit" name="mode" value="discount" class="secondary-button">Apply</button>
+                </div>
+
+                <span class="bulk-count" id="bulkCount">0 selected</span>
+
+            </div>
+
+            <p class="section-note">
+                Tick products below, then press an Apply button. Empty category selects keep the current value. Nothing is changed until you press Apply.
+            </p>
+
             <div class="table-wrapper">
 
                 <table class="admin-table">
@@ -88,6 +161,10 @@
                     <thead>
 
                         <tr>
+
+                            <th class="col-check">
+                                <input type="checkbox" id="checkAll" title="Select all">
+                            </th>
 
                             <th>Product</th>
 
@@ -120,7 +197,7 @@
                             <tr>
 
                                 <td
-                                    colspan="8"
+                                    colspan="9"
                                     class="empty-state"
                                 >
                                     No products found.
@@ -133,7 +210,11 @@
 
                         <% products.forEach(product => { %>
 
-                            <tr>
+                            <tr<%- String(product._id) === duplicated ? ' id="dup-row" class="dup-highlight"' : '' %>>
+
+                                <td class="col-check">
+                                    <input type="checkbox" name="ids" value="<%= product._id %>" class="row-check">
+                                </td>
 
                                 <td>
 
@@ -181,7 +262,15 @@
 
 
                                 <td>
-                                    <%= product.mainCategory || "-" %>
+                                    <div style="display:flex; flex-direction:column; gap:1px; line-height:1.35;">
+                                        <span><%= product.mainCategory || "-" %></span>
+                                        <% if (product.subCategory) { %>
+                                            <small style="color:#7b8794;">› <%= product.subCategory %></small>
+                                        <% } %>
+                                        <% if (product.childCategory) { %>
+                                            <small style="color:#98a2b0;">› <%= product.childCategory %></small>
+                                        <% } %>
+                                    </div>
                                 </td>
 
 
@@ -303,10 +392,106 @@
 
             </div>
 
+            </form>
+
         </section>
 
     </main>
 
 </div>
+
+<script>
+    (function () {
+        "use strict";
+
+        var tree = <%- JSON.stringify(categoryTree) %>;
+
+        var bulkForm = document.getElementById("bulkForm");
+        var checkAll = document.getElementById("checkAll");
+        var bulkCount = document.getElementById("bulkCount");
+        var bulkMain = document.getElementById("bulkMain");
+        var bulkSub = document.getElementById("bulkSub");
+        var bulkChild = document.getElementById("bulkChild");
+
+        function findIn(list, value) {
+            var arr = list || [];
+            for (var i = 0; i < arr.length; i++) {
+                if (arr[i].name === value) return arr[i];
+            }
+            return null;
+        }
+
+        function fillSelect(select, nodes, placeholder) {
+            if (!select) return;
+            var current = select.value;
+            select.innerHTML = "";
+            var empty = document.createElement("option");
+            empty.value = "";
+            empty.textContent = (nodes && nodes.length) ? placeholder : placeholder + " — none";
+            select.appendChild(empty);
+            (nodes || []).forEach(function (node) {
+                var option = document.createElement("option");
+                option.value = node.name;
+                option.textContent = node.name;
+                select.appendChild(option);
+            });
+            if (current) select.value = current;
+        }
+
+        if (bulkMain) {
+            bulkMain.addEventListener("change", function () {
+                var main = findIn(tree, bulkMain.value);
+                fillSelect(bulkSub, main ? main.children : [], "Sub: keep current");
+                fillSelect(bulkChild, [], "Child: keep current");
+            });
+        }
+
+        if (bulkSub) {
+            bulkSub.addEventListener("change", function () {
+                var main = findIn(tree, bulkMain ? bulkMain.value : "");
+                var sub = main ? findIn(main.children, bulkSub.value) : null;
+                fillSelect(bulkChild, sub ? sub.children : [], "Child: keep current");
+            });
+        }
+
+        function refreshCount() {
+            var checked = bulkForm.querySelectorAll(".row-check:checked").length;
+            if (bulkCount) bulkCount.textContent = checked + " selected";
+            if (checkAll && checkAll.checked && checked === 0) checkAll.checked = false;
+        }
+
+        if (checkAll) {
+            checkAll.addEventListener("change", function () {
+                bulkForm.querySelectorAll(".row-check").forEach(function (box) {
+                    box.checked = checkAll.checked;
+                });
+                refreshCount();
+            });
+        }
+
+        var dupRow = document.getElementById("dup-row");
+        if (dupRow) dupRow.scrollIntoView({ block: "center" });
+
+        if (bulkForm) {
+            bulkForm.addEventListener("change", function (event) {
+                if (event.target.classList.contains("row-check")) refreshCount();
+            });
+
+            bulkForm.addEventListener("submit", function (event) {
+                var submitter = event.submitter || {};
+                var scopeAll = bulkForm.querySelector(".bulk-scope");
+                var isAllDiscount =
+                    submitter.value === "discount" &&
+                    scopeAll && scopeAll.value === "all";
+
+                var checked = bulkForm.querySelectorAll(".row-check:checked").length;
+                if (!checked && !isAllDiscount) {
+                    event.preventDefault();
+                    alert("Tick at least one product first.");
+                }
+            });
+        }
+    })();
+</script>
 
 <%- include("partials/footer") %>

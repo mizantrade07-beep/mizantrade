@@ -1,3 +1,36 @@
+<link rel="icon" href="<%= (typeof site !== 'undefined' && site.faviconUrl) ? site.faviconUrl : '/images/logo.svg' %>">
+<link rel="preload" href="/fonts/inter/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+
+<%
+    var __mk = (typeof site !== "undefined" && site.marketing) ? site.marketing : {};
+
+    /* Per-page meta overrides configured in Admin → SEO & Marketing. */
+    var __path = (typeof currentPath !== "undefined" && currentPath) ? currentPath : "/";
+    if (__path.length > 1) __path = __path.replace(/\/+$/, "");
+    var __page = null;
+    if (typeof site !== "undefined" && Array.isArray(site.seoPages)) {
+        site.seoPages.forEach(function (p) {
+            if (p && p.active !== false && p.path === __path) __page = p;
+        });
+    }
+    if (typeof seo !== "undefined" && seo && __page) {
+        if (__page.title) seo.title = __page.title;
+        if (__page.description) seo.description = __page.description;
+        if (__page.keywords) seo.keywords = __page.keywords;
+        if (__page.robots === "noindex") seo.noindex = true;
+    }
+%>
+
+<% if (__mk.googleVerification) { %>
+    <meta name="google-site-verification" content="<%= __mk.googleVerification %>">
+<% } %>
+<% if (__mk.bingVerification) { %>
+    <meta name="msvalidate.01" content="<%= __mk.bingVerification %>">
+<% } %>
+<% if (__mk.fbVerification) { %>
+    <meta name="facebook-domain-verification" content="<%= __mk.fbVerification %>">
+<% } %>
+
 <% if (typeof seo !== "undefined" && seo) { %>
     <title><%= seo.title %></title>
 
@@ -36,4 +69,35 @@
     <% if (seo.jsonLd) { %>
         <script type="application/ld+json"><%- JSON.stringify(seo.jsonLd) %></script>
     <% } %>
+<% } %>
+
+<% if (__mk.gtmId) { %>
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','<%= __mk.gtmId %>');</script>
+<% } %>
+
+<% if (__mk.ga4Id) { %>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=<%= __mk.ga4Id %>"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', '<%= __mk.ga4Id %>');
+    </script>
+<% } %>
+
+<% if (__mk.fbPixelId) { %>
+    <script>
+        !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+        n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+        n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+        t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
+        document,'script','https://connect.facebook.net/en_US/fbevents.js');
+        fbq('init', '<%= __mk.fbPixelId %>');
+        fbq('track', 'PageView');
+    </script>
+    <noscript><img height="1" width="1" style="display:none" src="https://www.facebook.com/tr?id=<%= __mk.fbPixelId %>&ev=PageView&noscript=1" alt=""></noscript>
+<% } %>
+
+<% if (__mk.customHead) { %>
+    <%- __mk.customHead %>
 <% } %>

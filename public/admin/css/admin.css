@@ -37,6 +37,7 @@ body {
     background: var(--bg);
     color: var(--ink);
     font-size: 14px;
+    font-weight: 400;
     -webkit-font-smoothing: antialiased;
 }
 
@@ -127,14 +128,14 @@ p {
     background: linear-gradient(135deg, var(--orange), #ff7a45);
     color: #fff;
     font-size: 18px;
-    font-weight: 800;
+    font-weight: 700;
     box-shadow: 0 6px 14px rgba(239, 74, 35, .35);
 }
 
 .brand-text {
     color: #fff;
     font-size: 17px;
-    font-weight: 800;
+    font-weight: 700;
     letter-spacing: -.02em;
 }
 
@@ -166,7 +167,7 @@ p {
     border-radius: 9px;
     color: #b6c2d2;
     font-size: 13.5px;
-    font-weight: 500;
+    font-weight: 600;
     position: relative;
     transition: background .18s, color .18s;
 }
@@ -277,7 +278,7 @@ p {
 
 .topbar-title {
     font-size: 20px;
-    font-weight: 800;
+    font-weight: 700;
     color: var(--navy);
     white-space: nowrap;
     overflow: hidden;
@@ -410,7 +411,7 @@ p {
 
 .dashboard-title {
     font-size: 24px;
-    font-weight: 800;
+    font-weight: 700;
     color: var(--navy);
 }
 
@@ -687,7 +688,7 @@ p {
     background: #fff7ed;
     color: #9a3412;
     font-size: 13.5px;
-    font-weight: 500;
+    font-weight: 600;
 }
 
 
@@ -756,5 +757,260 @@ p {
 
     .logout-button {
         padding: 9px 12px;
+    }
+}
+
+/* ==========================================================
+   TEAM MEMBERS ADMIN (#140)
+========================================================== */
+
+.team-admin-alert {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-bottom: 18px;
+    font-size: 13px;
+    font-weight: 600;
+    border: 1px solid transparent;
+}
+
+.team-admin-alert.success {
+    background: #ecfdf5;
+    border-color: #a7f3d0;
+    color: #065f46;
+}
+
+.team-admin-alert.error {
+    background: #fef2f2;
+    border-color: #fecaca;
+    color: #991b1b;
+}
+
+.team-admin-alert.info {
+    background: #eff6ff;
+    border-color: #bfdbfe;
+    color: #1e40af;
+}
+
+.team-admin-member {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.team-admin-member img,
+.team-admin-initials {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    object-fit: cover;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.team-admin-initials {
+    background: #081621;
+    color: #ffb59f;
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: .5px;
+}
+
+.team-admin-member strong {
+    font-size: 13px;
+    color: #081621;
+}
+
+.team-admin-socials {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.team-admin-socials a {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: #fff;
+    transition: transform .15s ease, opacity .15s ease;
+}
+
+.team-admin-socials a:hover {
+    transform: translateY(-2px);
+    opacity: .88;
+}
+
+.team-admin-socials .ts-facebook {
+    background: #1877f2;
+}
+
+.team-admin-socials .ts-instagram {
+    background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+}
+
+.team-admin-socials .ts-tiktok {
+    background: #010101;
+}
+
+.team-admin-socials .ts-whatsapp {
+    background: #25d366;
+}
+
+.team-admin-socials .ts-youtube {
+    background: #ff0000;
+}
+
+.team-admin-socials .ts-twitter {
+    background: #0f1419;
+}
+
+.team-admin-socials .ts-linkedin {
+    background: #0a66c2;
+}
+
+.team-admin-socials .ts-telegram {
+    background: #229ed9;
+}
+
+.team-admin-socials .ts-website {
+    background: #081621;
+}
+
+.social-rows {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.social-row {
+    display: grid;
+    grid-template-columns: 168px minmax(0, 1fr) 38px;
+    gap: 8px;
+    align-items: center;
+}
+
+.social-row select,
+.social-row input[type="text"] {
+    width: 100%;
+    min-width: 0;
+    padding: 11px 13px;
+    border: 1px solid #d7dde6;
+    border-radius: 9px;
+    font-size: 13.5px;
+    color: #0f172a;
+    background: #fff;
+    outline: none;
+    transition: border-color .18s, box-shadow .18s;
+}
+
+.social-row select:focus,
+.social-row input[type="text"]:focus {
+    border-color: var(--orange);
+    box-shadow: 0 0 0 3px rgba(239, 74, 35, .12);
+}
+
+.social-row-remove {
+    width: 38px;
+    height: 38px;
+    border-radius: 9px;
+    border: 1px solid #fecaca;
+    background: #fef2f2;
+    color: #b91c1c;
+    font-size: 13px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background .15s ease, color .15s ease;
+}
+
+.social-row-remove:hover {
+    background: #b91c1c;
+    color: #fff;
+}
+
+@media (max-width: 640px) {
+    .social-row {
+        grid-template-columns: minmax(0, 1fr) 38px;
+    }
+
+    .social-row select {
+        grid-column: 1 / -1;
+    }
+}
+
+.team-photo-editor {
+    display: flex;
+    gap: 18px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+}
+
+.team-photo-preview {
+    width: 120px;
+    height: 120px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: linear-gradient(135deg, #081621 0%, #173247 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    border: 1px solid #e5eaf0;
+}
+
+.team-photo-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.team-photo-preview .tpp-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    color: #ffb59f;
+    font-size: 26px;
+    text-align: center;
+    padding: 10px;
+}
+
+.team-photo-preview .tpp-empty small {
+    font-size: 10.5px;
+    color: #cbd5e1;
+    line-height: 1.4;
+}
+
+.team-photo-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+    flex: 1 1 240px;
+}
+
+.team-photo-controls input[type="text"] {
+    flex: 1 1 200px;
+    min-width: 0;
+}
+
+@media (max-width: 640px) {
+    .team-photo-editor {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .team-photo-preview {
+        width: 100%;
+        height: 160px;
     }
 }

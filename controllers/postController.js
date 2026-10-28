@@ -26,6 +26,18 @@ function parseTags(value) {
         .filter(Boolean);
 }
 
+function uploadedFileUrl(file) {
+    if (!file) return "";
+
+    return String(
+        file.path ||
+        file.secure_url ||
+        file.url ||
+        file.location ||
+        ""
+    ).trim();
+}
+
 function cleanSeo(body) {
     return {
         metaTitle: String(body.metaTitle || "").trim(),
@@ -102,7 +114,7 @@ exports.postAddPost = async (req, res) => {
             slug: await uniqueSlug(Post, base),
             excerpt: String(excerpt || "").trim(),
             content: content || "",
-            coverImage: req.file ? "/uploads/" + req.file.filename : "",
+            coverImage: uploadedFileUrl(req.file),
             tags: parseTags(tags),
             author: String(author || "Mizan Trade").trim(),
             status: finalStatus,
@@ -161,7 +173,7 @@ exports.postEditPost = async (req, res) => {
         post.allowComments = allowComments !== "off";
 
         if (req.file) {
-            post.coverImage = "/uploads/" + req.file.filename;
+            post.coverImage = uploadedFileUrl(req.file);
         }
 
         const requested = status || (post.status === "published" ? "published" : "draft");

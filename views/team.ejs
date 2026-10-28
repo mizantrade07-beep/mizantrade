@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <%- include('partials/seo') %>
+    <link rel="stylesheet" href="/css/offers-team.css?v=6">
+</head>
+<body>
+
+    <%- include('partials/header') %>
+
+    <div class="container">
+
+        <div class="breadcrumb">
+            <a href="/"><i class="fa-solid fa-house"></i> Home</a>
+            <i class="fa-solid fa-angle-right" style="margin:0 6px; font-size:10px;"></i>
+            <span>Our Team</span>
+        </div>
+
+        <%- include('partials/promoTabs', { active: 'team' }) %>
+
+        <div class="team-page">
+
+            <section class="team-hero">
+                <span class="team-eyebrow"><i class="fa-solid fa-people-group"></i> The people behind MizanTrade</span>
+                <h1>Building the IT channel, together.</h1>
+                <p>
+                    Our team works directly with distributors, resellers and corporate buyers across Bangladesh.
+                    From sourcing and product planning to dealer pricing and after-sales support, every account
+                    is handled by a named specialist who knows the hardware market.
+                </p>
+                <div class="team-hero-stats">
+                    <div><strong><%= members.length %></strong><span>Specialists</span></div>
+                    <div><strong>64</strong><span>Districts served</span></div>
+                    <div><strong>B2B</strong><span>Dealer-first pricing</span></div>
+                </div>
+            </section>
+
+            <section class="team-promos">
+                <a href="/shop" class="team-promo">
+                    <img src="/images/team/wanna-buy.png" alt="Wanna Buy? Browse IT products at MizanTrade" loading="lazy">
+                    <span class="team-promo-overlay">
+                        <strong>Wanna Buy?</strong>
+                        <em>Genuine IT products, dealer-friendly prices, nationwide delivery.</em>
+                        <span class="team-promo-cta">Shop Now <i class="fa-solid fa-arrow-right"></i></span>
+                    </span>
+                </a>
+
+                <a href="/become-a-partner" class="team-promo">
+                    <img src="/images/team/be-our-partner.png" alt="Be our Partner! Join the MizanTrade partner network" loading="lazy">
+                    <span class="team-promo-overlay">
+                        <strong>Be our Partner!</strong>
+                        <em>Priority stock, partner pricing and dedicated account support.</em>
+                        <span class="team-promo-cta">Join the Network <i class="fa-solid fa-arrow-right"></i></span>
+                    </span>
+                </a>
+            </section>
+
+            <section class="team-intro">
+                <div class="team-intro-copy">
+                    <h2>Who we are</h2>
+                    <p>
+                        MizanTrade is a B2B-first IT hardware supplier serving resellers, dealers and corporate
+                        buyers. We combine direct distributor relationships with a product-first approach — so our
+                        partners get genuine stock, clear pricing and answers from people who understand the channel.
+                    </p>
+                    <p>
+                        Every team member below is reachable directly. Tap the phone number to call, or use their
+                        social links to follow and message the person handling your account.
+                    </p>
+                </div>
+
+                <div class="team-commitments">
+                    <div class="team-commitment">
+                        <span class="tc-icon"><i class="fa-solid fa-shield-halved"></i></span>
+                        <div><h3>Genuine Products</h3><p>Stock sourced through authorised distribution channels with warranty support.</p></div>
+                    </div>
+                    <div class="team-commitment">
+                        <span class="tc-icon"><i class="fa-solid fa-tags"></i></span>
+                        <div><h3>Dealer-Friendly Pricing</h3><p>Transparent partner pricing with quantity breaks on volume orders.</p></div>
+                    </div>
+                    <div class="team-commitment">
+                        <span class="tc-icon"><i class="fa-solid fa-truck-fast"></i></span>
+                        <div><h3>Nationwide Delivery</h3><p>Dispatch to all 64 districts with tracking and delivery updates.</p></div>
+                    </div>
+                    <div class="team-commitment">
+                        <span class="tc-icon"><i class="fa-solid fa-headset"></i></span>
+                        <div><h3>Direct Support</h3><p>Each account is backed by a named specialist — not a shared inbox.</p></div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="team-roster">
+                <div class="team-roster-head">
+                    <div>
+                        <h2>Meet Our Team</h2>
+                        <p>Speak directly with the person who manages your account.</p>
+                    </div>
+                    <% if (members.length) { %>
+                        <span class="team-roster-count"><%= members.length %> team member<%= members.length === 1 ? '' : 's' %></span>
+                    <% } %>
+                </div>
+
+                <% if (members.length) { %>
+                    <div class="team-grid">
+                        <% members.forEach(function (m) { %>
+                            <%
+                                const initials = String(m.name || "")
+                                    .split(/\s+/)
+                                    .filter(Boolean)
+                                    .slice(0, 2)
+                                    .map(function (word) { return word.charAt(0).toUpperCase(); })
+                                    .join("");
+
+                                const photoSrc = (function (url) {
+                                    const raw = String(url || "");
+                                    if (!/res\.cloudinary\.com/.test(raw) || raw.indexOf("/upload/") === -1) return raw;
+                                    const first = raw.split("/upload/")[1].split("/")[0] || "";
+                                    if (first.indexOf("_") > -1 || first.indexOf(",") > -1) return raw;
+                                    return raw.replace("/upload/", "/upload/c_fill,g_face,w_600,h_600,q_auto,f_auto/");
+                                })(m.photo);
+                            %>
+                            <article class="team-card">
+                                <div class="team-photo">
+                                    <% if (photoSrc) { %>
+                                        <img src="<%= photoSrc %>" alt="<%= m.name %>" loading="lazy" decoding="async">
+                                    <% } else { %>
+                                        <span class="team-initials" aria-hidden="true"><span><%= initials || 'MT' %></span></span>
+                                    <% } %>
+                                </div>
+
+                                <div class="team-card-body">
+                                    <h3><%= m.name %></h3>
+                                    <% if (m.designation) { %>
+                                        <p class="team-role"><%= m.designation %></p>
+                                    <% } %>
+
+                                    <div class="team-contact">
+                                        <% if (m.phone) { %>
+                                            <a class="team-phone" href="tel:<%= m.phone %>" title="Call <%= m.name %>">
+                                                <i class="fa-solid fa-phone"></i> <%= m.phone %>
+                                            </a>
+                                        <% } %>
+
+                                        <% if (m.socials && m.socials.length) { %>
+                                            <div class="team-socials">
+                                                <%- include('partials/socialLinks', { socials: m.socials, socialName: m.name }) %>
+                                            </div>
+                                        <% } %>
+                                    </div>
+                                </div>
+                            </article>
+                        <% }); %>
+                    </div>
+                <% } else { %>
+                    <div class="empty-box">
+                        <i class="fa-solid fa-users"></i>
+                        <h3 style="color:#081621; margin-bottom:8px;">Team profiles are coming soon</h3>
+                        <p>Our specialists are available through the hotline in the meantime.</p>
+                        <a href="tel:<%= hotline.replace(/[^\d+]/g, '') %>" class="btn btn-primary" style="margin-top:16px;">Call <%= hotline %></a>
+                    </div>
+                <% } %>
+            </section>
+
+            <section class="team-cta">
+                <div>
+                    <h2>Ready to work with us?</h2>
+                    <p>Talk to a specialist about pricing, stock and partner onboarding.</p>
+                </div>
+                <div class="team-cta-actions">
+                    <a href="tel:<%= hotline.replace(/[^\d+]/g, '') %>" class="team-cta-btn primary">
+                        <i class="fa-solid fa-phone-volume"></i> <%= hotline %>
+                    </a>
+                    <a href="mailto:<%= email %>" class="team-cta-btn ghost">
+                        <i class="fa-solid fa-envelope"></i> E-mail Us
+                    </a>
+                    <a href="/become-a-partner" class="team-cta-btn ghost">
+                        <i class="fa-solid fa-handshake"></i> Become a Partner
+                    </a>
+                </div>
+            </section>
+
+        </div>
+
+    </div>
+
+    <%- include('partials/footer') %>
+
+    <script src="/js/main.js?v=4"></script>
+</body>
+</html>

@@ -1,0 +1,30 @@
+<%
+    var socialItems = (typeof socials !== "undefined" && Array.isArray(socials)) ? socials : [];
+    var socialOwner = (typeof socialName !== "undefined" && socialName) ? socialName : "this team member";
+    var socialMetaMap = {
+        facebook: { icon: "fa-brands fa-facebook-f", cls: "ts-facebook", label: "Facebook" },
+        instagram: { icon: "fa-brands fa-instagram", cls: "ts-instagram", label: "Instagram" },
+        tiktok: { icon: "fa-brands fa-tiktok", cls: "ts-tiktok", label: "TikTok" },
+        whatsapp: { icon: "fa-brands fa-whatsapp", cls: "ts-whatsapp", label: "WhatsApp" },
+        youtube: { icon: "fa-brands fa-youtube", cls: "ts-youtube", label: "YouTube" },
+        twitter: { icon: "fa-brands fa-x-twitter", cls: "ts-twitter", label: "X (Twitter)" },
+        linkedin: { icon: "fa-brands fa-linkedin-in", cls: "ts-linkedin", label: "LinkedIn" },
+        telegram: { icon: "fa-brands fa-telegram", cls: "ts-telegram", label: "Telegram" },
+        snapchat: { icon: "fa-brands fa-snapchat", cls: "ts-snapchat", label: "Snapchat" },
+        discord: { icon: "fa-brands fa-discord", cls: "ts-discord", label: "Discord" },
+        threads: { icon: "fa-brands fa-threads", cls: "ts-threads", label: "Threads" },
+        pinterest: { icon: "fa-brands fa-pinterest-p", cls: "ts-pinterest", label: "Pinterest" },
+        reddit: { icon: "fa-brands fa-reddit-alien", cls: "ts-reddit", label: "Reddit" },
+        website: { icon: "fa-solid fa-globe", cls: "ts-website", label: "Website" }
+    };
+%>
+<% socialItems.forEach(function (item) { %>
+    <% var meta = item && socialMetaMap[item.platform]; %>
+    <% if (meta && item.url) { %>
+        <a href="<%= item.url %>" target="_blank" rel="noopener noreferrer"
+           class="<%= meta.cls %>" title="<%= meta.label %>"
+           aria-label="<%= socialOwner %> on <%= meta.label %>">
+            <i class="<%= meta.icon %>"></i>
+        </a>
+    <% } %>
+<% }); %>

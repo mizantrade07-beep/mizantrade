@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <%- include('partials/seo') %>
+    <link rel="stylesheet" href="/css/offers-team.css?v=6">
+    <style>
+        .offer-hero {
+            background: linear-gradient(120deg, #ef4a23 0%, #ff7a45 100%);
+            color: #fff; border-radius: 16px; padding: 30px 28px; margin-bottom: 22px;
+            display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+            box-shadow: 0 10px 30px rgba(239,74,35,.25);
+        }
+        .offer-hero .oh-icon { font-size: 42px; line-height: 1; }
+        .offer-hero h1 { font-size: 28px; margin: 0 0 6px; font-weight: 700; }
+        .offer-hero p { margin: 0; opacity: .95; font-size: 14.5px; }
+        .offer-hero .oh-count {
+            margin-left: auto; background: rgba(255,255,255,.18); border: 1px solid rgba(255,255,255,.35);
+            padding: 10px 18px; border-radius: 999px; font-weight: 700; font-size: 15px;
+        }
+
+        /* ---------- scope filter ---------- */
+        .offer-filter {
+            background: #fff; border: 1px solid #eceff3; border-radius: 14px;
+            padding: 16px 18px; margin-bottom: 22px;
+            box-shadow: 0 4px 14px rgba(8,22,33,.05);
+        }
+        .offer-filter-form {
+            display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end;
+        }
+        .offer-filter .of-field { display: flex; flex-direction: column; gap: 5px; min-width: 160px; flex: 1 1 170px; }
+        .offer-filter .of-field label { font-size: 11.5px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: .4px; }
+        .offer-filter select {
+            width: 100%; padding: 9px 10px; border: 1px solid #dbe3ec; border-radius: 8px;
+            font-size: 13px; color: #1f2937; background: #fff; outline: none;
+        }
+        .offer-filter select:focus { border-color: #ef4a23; box-shadow: 0 0 0 3px rgba(239,74,35,.12); }
+        .offer-filter .of-actions { display: flex; gap: 8px; align-items: center; }
+        .offer-filter .of-apply {
+            background: #ef4a23; color: #fff; border: none; border-radius: 8px;
+            padding: 10px 18px; font-size: 13px; font-weight: 700; cursor: pointer;
+        }
+        .offer-filter .of-apply:hover { background: #d63e1b; }
+        .offer-filter .of-clear {
+            color: #64748b; font-size: 12.5px; font-weight: 700; text-decoration: none;
+            padding: 10px 6px;
+        }
+        .offer-filter .of-clear:hover { color: #ef4a23; }
+        .offer-filter-summary { margin-top: 10px; font-size: 12.5px; color: #64748b; }
+        .offer-filter-summary strong { color: #081621; }
+        .of-hint { margin-top: 8px; font-size: 11.5px; color: #94a3b8; }
+
+        @media (max-width: 640px) {
+            .offer-hero { padding: 24px 20px; }
+            .offer-hero .oh-count { margin-left: 0; }
+            .offer-filter .of-field { flex: 1 1 100%; }
+            .offer-filter .of-actions { width: 100%; }
+            .offer-filter .of-apply { flex: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <%- include('partials/header') %>
+
+    <div class="container">
+
+        <div class="breadcrumb">
+            <a href="/"><i class="fa-solid fa-house"></i> Home</a>
+            <i class="fa-solid fa-angle-right" style="margin:0 6px; font-size:10px;"></i>
+            <span>Offers</span>
+        </div>
+
+        <% if (typeof partner !== 'undefined' && partner) { %>
+            <div class="offer-partner-bar">
+                <span style="font-size:13.5px;">
+                    <i class="fa-solid fa-handshake" style="color:#ff7a45;"></i>
+                    Signed in as <strong><%= partner.company %></strong> — partner pricing &amp; offers
+                </span>
+                <form action="/partner/logout" method="POST" style="margin:0;">
+                    <button type="submit">
+                        <i class="fa-solid fa-arrow-right-from-bracket"></i> Partner Logout
+                    </button>
+                </form>
+            </div>
+        <% } %>
+
+        <div class="offer-hero">
+            <div class="oh-icon"><i class="fa-solid fa-fire"></i></div>
+            <div>
+                <h1>Offers &amp; Deals</h1>
+                <p>Grab limited-time discounts on computer components and hardware.</p>
+            </div>
+            <div class="oh-count"><%= totalOffers %> offer<%= totalOffers === 1 ? '' : 's' %></div>
+        </div>
+
+        <%- include('partials/promoTabs', { active: 'offers' }) %>
+
+        <% if (totalOffers > 0) { %>
+            <section class="offer-filter">
+                <form method="GET" action="/offers" class="offer-filter-form">
+                    <div class="of-field">
+                        <label for="ofCategory">Category</label>
+                        <select id="ofCategory" name="category">
+                            <option value="">All categories</option>
+                            <% categoryOptions.filter(function (cat) { return cat.level === 1; }).forEach(function (cat) { %>
+                                <option value="<%= cat.slug %>" <%= filters.category === cat.slug ? 'selected' : '' %>><%= cat.name %></option>
+                            <% }); %>
+                        </select>
+                    </div>
+
+                    <div class="of-field">
+                        <label for="ofSub">Sub Category</label>
+                        <select id="ofSub" name="subCategory">
+                            <option value="">All sub categories</option>
+                            <% categoryOptions.filter(function (cat) { return cat.level === 2; }).forEach(function (cat) { %>
+                                <option value="<%= cat.slug %>" <%= filters.subCategory === cat.slug ? 'selected' : '' %>><%= cat.path %></option>
+                            <% }); %>
+                        </select>
+                    </div>
+
+                    <div class="of-field">
+                        <label for="ofChild">Child Category</label>
+                        <select id="ofChild" name="childCategory">
+                            <option value="">All child categories</option>
+                            <% categoryOptions.filter(function (cat) { return cat.level === 3; }).forEach(function (cat) { %>
+                                <option value="<%= cat.slug %>" <%= filters.childCategory === cat.slug ? 'selected' : '' %>><%= cat.path %></option>
+                            <% }); %>
+                        </select>
+                    </div>
+
+                    <div class="of-field">
+                        <label for="ofProduct">Product</label>
+                        <select id="ofProduct" name="product">
+                            <option value="">All products</option>
+                            <% filterProducts.forEach(function (product) { %>
+                                <option value="<%= product._id %>" <%= filters.product === String(product._id) ? 'selected' : '' %>><%= product.title %></option>
+                            <% }); %>
+                        </select>
+                    </div>
+
+                    <div class="of-actions">
+                        <button type="submit" class="of-apply"><i class="fa-solid fa-filter"></i> Apply</button>
+                        <a href="/offers" class="of-clear">Clear</a>
+                    </div>
+                </form>
+
+                <% if (hasFilters) { %>
+                    <div class="offer-filter-summary">
+                        Showing <strong><%= filteredOffers %></strong> of <strong><%= totalOffers %></strong> active offers.
+                        Category filters include their sub and child categories automatically.
+                    </div>
+                <% } else { %>
+                    <div class="of-hint">
+                        Tip: category filters also include offers for their sub/child categories and products.
+                    </div>
+                <% } %>
+            </section>
+        <% } %>
+
+        <% if (offerList.length > 0) { %>
+            <div class="offer-banner-list">
+                <% offerList.forEach(function (offer) { %>
+                    <a href="/offers/<%= offer._id %>" class="offer-banner-card" data-layout="<%= offer.layout || 'full' %>" aria-label="View details for <%= offer.name %>">
+                        <% if (offer.banner) { %>
+                            <img class="obc-img" src="<%= optimizeImage(offer.banner, 800) %>" alt="<%= offer.name %>" loading="lazy">
+                        <% } else { %>
+                            <div class="obc-img obc-placeholder">
+                                <i class="fa-solid <%= offer.typeIcon %>"></i>
+                                <span><%= offer.typeLabel %></span>
+                            </div>
+                        <% } %>
+
+                        <div class="obc-info">
+                            <div class="obc-info-copy">
+                                <span class="obc-type"><i class="fa-solid <%= offer.typeIcon %>"></i> <%= offer.typeLabel %></span>
+                                <h2><%= offer.name %></h2>
+                                <div class="obc-meta">
+                                    <% if (offer.priceLabel) { %>
+                                        <span class="obc-price"><%= offer.priceLabel %></span>
+                                    <% } %>
+                                    <% if (offer.offerQty) { %>
+                                        <span><i class="fa-solid fa-cubes"></i> <%= offer.offerQty %></span>
+                                    <% } %>
+                                    <% if (offer.gift) { %>
+                                        <span class="obc-gift"><i class="fa-solid fa-gift"></i> <%= offer.gift %></span>
+                                    <% } %>
+                                </div>
+                            </div>
+
+                            <span class="obc-cta">View Offer <i class="fa-solid fa-arrow-right"></i></span>
+                        </div>
+                    </a>
+                <% }); %>
+            </div>
+        <% } else { %>
+            <div class="empty-box">
+                <i class="fa-solid fa-tags"></i>
+                <% if (hasFilters) { %>
+                    <h3 style="color:#081621; margin-bottom:8px;">No offers match these filters</h3>
+                    <p>Try a different category or product, or clear the filters to see every offer.</p>
+                    <a href="/offers" class="btn btn-primary" style="margin-top:16px;">Clear Filters</a>
+                <% } else { %>
+                    <h3 style="color:#081621; margin-bottom:8px;">No offers right now</h3>
+                    <p>Please check back soon — new deals are added regularly.</p>
+                    <a href="/shop" class="btn btn-primary" style="margin-top:16px;">Browse All Products</a>
+                <% } %>
+            </div>
+        <% } %>
+
+    </div>
+
+    <%- include('partials/footer') %>
+
+    <script src="/js/main.js?v=4"></script>
+</body>
+</html>

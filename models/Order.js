@@ -77,6 +77,30 @@ const orderSchema = new mongoose.Schema({
             trim: true
         },
 
+        village: {
+            type: String,
+            trim: true,
+            default: ""
+        },
+
+        thana: {
+            type: String,
+            trim: true,
+            default: ""
+        },
+
+        postOffice: {
+            type: String,
+            trim: true,
+            default: ""
+        },
+
+        district: {
+            type: String,
+            trim: true,
+            default: ""
+        },
+
         city: {
             type: String,
             required: true,
@@ -92,7 +116,7 @@ const orderSchema = new mongoose.Schema({
 
     paymentMethod: {
         type: String,
-        enum: ["bkash", "cod", "bank"],
+        enum: ["bkash", "nagad", "rocket", "bank", "cod"],
         required: true
     },
 
@@ -104,6 +128,54 @@ const orderSchema = new mongoose.Schema({
         },
 
         senderNumber: {
+            type: String,
+            trim: true,
+            default: ""
+        },
+
+        accountLabel: {
+            type: String,
+            trim: true,
+            default: ""
+        },
+
+        accountType: {
+            type: String,
+            trim: true,
+            default: ""
+        },
+
+        receiverNumber: {
+            type: String,
+            trim: true,
+            default: ""
+        },
+
+        receiverBankName: {
+            type: String,
+            trim: true,
+            default: ""
+        },
+
+        receiverAccountName: {
+            type: String,
+            trim: true,
+            default: ""
+        },
+
+        receiverAccountNumber: {
+            type: String,
+            trim: true,
+            default: ""
+        },
+
+        receiverBranch: {
+            type: String,
+            trim: true,
+            default: ""
+        },
+
+        receiverRoutingNumber: {
             type: String,
             trim: true,
             default: ""
@@ -152,6 +224,44 @@ const orderSchema = new mongoose.Schema({
         min: 0
     },
 
+    /* Reward points spent on this order (integer) and their taka value */
+    rewardPointsRedeemed: {
+        type: Number,
+        default: 0,
+        min: 0
+    },
+
+    rewardDiscount: {
+        type: Number,
+        default: 0,
+        min: 0
+    },
+
+    /* Reward points credited after this order was placed */
+    rewardPointsEarned: {
+        type: Number,
+        default: 0,
+        min: 0
+    },
+
+    /* Tax / VAT row */
+    taxLabel: {
+        type: String,
+        trim: true,
+        default: ""
+    },
+
+    taxAmount: {
+        type: Number,
+        default: 0,
+        min: 0
+    },
+
+    taxIncluded: {
+        type: Boolean,
+        default: false
+    },
+
     total: {
         type: Number,
         required: true
@@ -178,5 +288,6 @@ orderSchema.index({ createdAt: -1 });
 orderSchema.index({ status: 1 });
 orderSchema.index({ paymentMethod: 1 });
 orderSchema.index({ customerId: 1, createdAt: -1 });
+orderSchema.index({ rewardPointsRedeemed: 1, createdAt: -1 });
 
 module.exports = mongoose.model("Order", orderSchema);

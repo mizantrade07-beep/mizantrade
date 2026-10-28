@@ -1,122 +1,224 @@
-<footer style="background: #000000; color: #fff; margin-top: 50px; padding: 50px 20px 20px 20px; font-size: 14px; font-family: Arial, sans-serif;">
-    <div style="max-width: 1600px; margin: 0 auto; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 30px;">
-        
-        <!-- Column 1: Logo & Address -->
-        <div style="flex: 1; min-width: 250px;">
-            <img src="/images/logo.svg" alt="Mizan Trade" style="max-height: 45px; margin-bottom: 20px;">
-            
-            <p style="color: #bbb; font-size: 13px; line-height: 1.6; margin-bottom: 15px;">
-                <strong style="color: #fff;">Address</strong><br>
-                <% if (site.address) { %>
-                    <%= site.address %>
-                <% } else { %>
-                    Shop No 301-303, Level 3, 69-71<br>
-                    New Elephant Road, Dhaka.
+<%
+    var f = (typeof footer !== "undefined" && footer) ? footer : null;
+
+    var fLogo = f ? f.logo : { image: "/images/logo.svg", link: "", height: 45, mobileHeight: 36 };
+    var fInfo = f ? f.infoBlocks : [];
+    var fCols = f ? f.columns : [];
+    var fMemb = f ? f.memberships : [];
+    var fIcons = f ? f.paymentIcons : [];
+    var fCopy = f ? f.copyright : "";
+    var fMembTitle = (f && f.membershipTitle) ? f.membershipTitle : "Membership";
+
+    var socialMap = {
+        facebook:  { icon: "fa-brands fa-facebook-f",   bg: "#1877f2" },
+        youtube:   { icon: "fa-brands fa-youtube",      bg: "#ff0000" },
+        instagram: { icon: "fa-brands fa-instagram",    bg: "#e1306c" },
+        tiktok:    { icon: "fa-brands fa-tiktok",       bg: "#010101" },
+        linkedin:  { icon: "fa-brands fa-linkedin-in",  bg: "#0a66c2" },
+        whatsapp:  { icon: "fa-brands fa-whatsapp",     bg: "#25d366" },
+        x:         { icon: "fa-brands fa-x-twitter",    bg: "#000000" },
+        snapchat:  { icon: "fa-brands fa-snapchat",     bg: "#f7d800", fg: "#111" },
+        discord:   { icon: "fa-brands fa-discord",      bg: "#5865f2" },
+        threads:   { icon: "fa-brands fa-threads",      bg: "#000000" },
+        pinterest: { icon: "fa-brands fa-pinterest-p",  bg: "#e60023" },
+        reddit:    { icon: "fa-brands fa-reddit-alien", bg: "#ff4500" },
+        telegram:  { icon: "fa-brands fa-telegram",     bg: "#229ed9" }
+    };
+    var footerSocials = (typeof site !== "undefined" && site.socials) ? site.socials : [];
+    var mailto = "mailto:" + ((typeof site !== "undefined" && site.email) ? site.email : "support@mizantrade.com");
+    var siteName = (typeof site !== "undefined" && site.siteName) ? site.siteName : "Mizan Trade";
+%>
+<footer class="site-footer">
+    <div class="sf-wrap">
+
+        <div class="sf-grid">
+
+            <!-- Logo + editable info blocks + shipping charges -->
+            <div class="sf-col sf-info">
+
+                <% if (fLogo.image) { %>
+                    <% if (fLogo.link) { %><a href="<%= fLogo.link %>" class="sf-logo-link"><% } %>
+                        <img
+                            src="<%= optimizeImage(fLogo.image, 400) %>"
+                            alt="<%= siteName %>"
+                            class="sf-logo"
+                            style="--sf-logo-h: <%= fLogo.height %>px; --sf-logo-mh: <%= fLogo.mobileHeight %>px;"
+                        >
+                    <% if (fLogo.link) { %></a><% } %>
                 <% } %>
-            </p>
 
-            <p style="color: #bbb; font-size: 13px; line-height: 1.6;">
-                <strong style="color: #fff;">Corporate Office</strong><br>
-                30 New Elephant Road, Level 4,<br>
-                Dhaka 1205.
-            </p>
-        </div>
+                <% fInfo.forEach(function (b) { %>
+                    <div class="sf-info-block">
+                        <% if (b.title) { %>
+                            <h4 class="sf-info-title"><%= b.title %></h4>
+                        <% } %>
 
-        <!-- Column 2: About Company -->
-        <div style="flex: 1; min-width: 160px;">
-            <h4 style="color: #fff; margin-bottom: 20px; border-bottom: 2px solid #ef4a23; display: inline-block; padding-bottom: 5px; font-size: 16px;">About Company</h4>
-            <ul style="list-style: none; padding: 0; margin: 0; color: #bbb; line-height: 2.2; font-size: 13px;">
-                <li><a href="/about" style="color: #bbb; text-decoration: none;">About Us</a></li>
-                <li><a href="/blog" style="color: #bbb; text-decoration: none;">Blog</a></li>
-                <li><a href="/contact" style="color: #bbb; text-decoration: none;">Contact Us</a></li>
-                <li><a href="/privacy-policy" style="color: #bbb; text-decoration: none;">Privacy Policy</a></li>
-                <li><a href="/our-brand" style="color: #bbb; text-decoration: none;">Our Brand</a></li>
-            </ul>
-        </div>
+                        <% if (b.kind === "image" && b.image) { %>
+                            <% if (b.link) { %><a href="<%= b.link %>"><% } %>
+                                <img src="<%= optimizeImage(b.image, 800) %>" alt="<%= b.title || 'Footer image' %>" class="sf-info-img" loading="lazy">
+                            <% if (b.link) { %></a><% } %>
+                        <% } %>
 
-        <!-- Column 3: Customer Help -->
-        <div style="flex: 1; min-width: 180px;">
-            <h4 style="color: #fff; margin-bottom: 20px; border-bottom: 2px solid #ef4a23; display: inline-block; padding-bottom: 5px; font-size: 16px;">Customer Help</h4>
-            <ul style="list-style: none; padding: 0; margin: 0; color: #bbb; line-height: 2.2; font-size: 13px;">
-                <li><a href="/warranty" style="color: #bbb; text-decoration: none;">Warranty</a></li>
-                <li><a href="/services" style="color: #bbb; text-decoration: none;">Repair and Services</a></li>
-                <li><a href="/refund-policy" style="color: #bbb; text-decoration: none;">Refund And Return Policy</a></li>
-                <li><a href="/terms" style="color: #bbb; text-decoration: none;">Terms and Conditions</a></li>
-                <li><a href="/cookie-policy" style="color: #bbb; text-decoration: none;">Cookie Policy</a></li>
-            </ul>
-        </div>
+                        <% if (b.kind === "video" && b.video) { %>
+                            <%
+                                var videoSrc = b.video;
+                                var ytMatch = b.video.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([A-Za-z0-9_-]{6,})/i);
+                                var vimeoMatch = b.video.match(/vimeo\.com\/(\d+)/i);
+                                var isVideoFile = /\.(mp4|webm|ogg)(\?|#|$)/i.test(b.video);
+                                if (ytMatch) videoSrc = "https://www.youtube.com/embed/" + ytMatch[1];
+                                else if (vimeoMatch) videoSrc = "https://player.vimeo.com/video/" + vimeoMatch[1];
+                            %>
+                            <% if (isVideoFile) { %>
+                                <video class="sf-info-video" src="<%= b.video %>" controls playsinline preload="metadata"></video>
+                            <% } else { %>
+                                <div class="sf-info-video">
+                                    <iframe src="<%= videoSrc %>" title="<%= b.title || 'Footer video' %>" loading="lazy" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
+                                </div>
+                            <% } %>
+                        <% } %>
 
-        <!-- Column 4: Customer Service -->
-        <div style="flex: 1; min-width: 160px;">
-            <h4 style="color: #fff; margin-bottom: 20px; border-bottom: 2px solid #ef4a23; display: inline-block; padding-bottom: 5px; font-size: 16px;">Customer Service</h4>
-            <ul style="list-style: none; padding: 0; margin: 0; color: #bbb; line-height: 2.2; font-size: 13px;">
-                <li><a href="/become-a-partner" style="color: #bbb; text-decoration: none;">Become a Partner</a></li>
-                <li><a href="/login" style="color: #bbb; text-decoration: none;">Login & Register</a></li>
-                <li><a href="/account" style="color: #bbb; text-decoration: none;">My Account</a></li>
-                <li><a href="/order-procedure" style="color: #bbb; text-decoration: none;">Order Procedure</a></li>
-                <li><a href="/delivery-method" style="color: #bbb; text-decoration: none;">Delivery Method</a></li>
-                <li><a href="/payment-method" style="color: #bbb; text-decoration: none;">Payment Method</a></li>
-            </ul>
-        </div>
-
-        <!-- Column 4.5: Dynamic CMS Pages (admin-controlled via showInFooter) -->
-        <% if (typeof footerPages !== "undefined" && footerPages && footerPages.length) { %>
-        <div style="flex: 1; min-width: 160px;">
-            <h4 style="color: #fff; margin-bottom: 20px; border-bottom: 2px solid #ef4a23; display: inline-block; padding-bottom: 5px; font-size: 16px;">More</h4>
-            <ul style="list-style: none; padding: 0; margin: 0; color: #bbb; line-height: 2.2; font-size: 13px;">
-                <% footerPages.forEach(function (fp) { %>
-                <li><a href="/page/<%= fp.slug %>" style="color: #bbb; text-decoration: none;"><%= fp.title %></a></li>
+                        <% if (b.text) { %>
+                            <% if (b.link) { %>
+                                <a href="<%= b.link %>" class="sf-info-text"><%= b.text %></a>
+                            <% } else { %>
+                                <p class="sf-info-text"><%= b.text %></p>
+                            <% } %>
+                        <% } %>
+                    </div>
                 <% }); %>
-            </ul>
-        </div>
-        <% } %>
 
-        <!-- Column 5: Membership & Social Links -->
-        <div style="flex: 1; min-width: 220px;">
-            <h4 style="color: #fff; margin-bottom: 20px; border-bottom: 2px solid #ef4a23; display: inline-block; padding-bottom: 5px; font-size: 16px;">Membership</h4>
-            <!-- Membership Badges -->
-            <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 15px; flex-wrap: wrap;">
-                <span style="background: #fff; color: #000; padding: 8px 12px; border-radius: 4px; font-weight: bold; font-size: 12px;">e-CAB</span>
-                <span style="background: #fff; color: #000; padding: 8px 12px; border-radius: 4px; font-weight: bold; font-size: 12px;">BASIS</span>
-                <span style="background: #fff; color: #000; padding: 8px 12px; border-radius: 4px; font-weight: bold; font-size: 12px;">BCC</span>
             </div>
-            
-            <!-- Social Icons with Links -->
-            <%
-                var soc = (typeof site !== "undefined" && site.social) ? site.social : {};
-                var fb = soc.facebook || "https://www.facebook.com/mizantrade/";
-                var yt = soc.youtube || "https://www.youtube.com/@MIZANTRADE-s3z";
-                var wa = soc.whatsapp || "https://wa.me/8801709867815";
-                var ig = soc.instagram || "";
-                var li = soc.linkedin || "";
-                var mailto = "mailto:" + ((typeof site !== "undefined" && site.email) ? site.email : "support@mizantrade.com");
-                var iconStyle = "color: #fff; width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border-radius: 4px; text-decoration: none;";
-            %>
-            <div style="display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
-                <% if (fb) { %><a href="<%= fb %>" target="_blank" rel="noopener" style="background: #3b5998; <%= iconStyle %>"><i class="fab fa-facebook-f"></i></a><% } %>
-                <% if (ig) { %><a href="<%= ig %>" target="_blank" rel="noopener" style="background: #e1306c; <%= iconStyle %>"><i class="fab fa-instagram"></i></a><% } %>
-                <% if (yt) { %><a href="<%= yt %>" target="_blank" rel="noopener" style="background: #ff0000; <%= iconStyle %>"><i class="fab fa-youtube"></i></a><% } %>
-                <% if (li) { %><a href="<%= li %>" target="_blank" rel="noopener" style="background: #0a66c2; <%= iconStyle %>"><i class="fab fa-linkedin-in"></i></a><% } %>
-                <a href="<%= mailto %>" style="background: #555; <%= iconStyle %>"><i class="fas fa-envelope"></i></a>
-                <% if (wa) { %><a href="<%= wa %>" target="_blank" rel="noopener" style="background: #25d366; <%= iconStyle %>"><i class="fab fa-whatsapp"></i></a><% } %>
+
+            <!-- Editable link columns -->
+            <% fCols.forEach(function (col) { %>
+                <div class="sf-col">
+                    <% if (col.title) { %>
+                        <h4 class="sf-title"><%= col.title %></h4>
+                    <% } %>
+                    <ul class="sf-links">
+                        <% col.links.forEach(function (l) { %>
+                            <li>
+                                <a href="<%= l.url || '#' %>">
+                                    <%= l.label || l.url %>
+                                </a>
+                            </li>
+                        <% }); %>
+                    </ul>
+                </div>
+            <% }); %>
+
+            <!-- Dynamic CMS pages (admin-controlled via showInFooter) -->
+            <% if (typeof footerPages !== "undefined" && footerPages && footerPages.length) { %>
+                <div class="sf-col">
+                    <h4 class="sf-title">More</h4>
+                    <ul class="sf-links">
+                        <% footerPages.forEach(function (fp) { %>
+                            <li><a href="/page/<%= fp.slug %>"><%= fp.title %></a></li>
+                        <% }); %>
+                    </ul>
+                </div>
+            <% } %>
+
+            <!-- Legacy admin-managed footer blocks from Settings -->
+            <% if (typeof site !== "undefined" && site.footerBlocks && site.footerBlocks.length) { %>
+                <% site.footerBlocks.forEach(function (block) { if (!block.items || !block.items.length) return; %>
+                    <div class="sf-col">
+                        <% if (block.title) { %>
+                            <h4 class="sf-title"><%= block.title %></h4>
+                        <% } %>
+                        <ul class="sf-links sf-blocks">
+                            <% block.items.forEach(function (it) { %>
+                                <% if (it.type === "link") { %>
+                                    <li>
+                                        <a href="<%= it.url || '#' %>" class="sf-link-icon">
+                                            <% if (it.image) { %><img src="<%= optimizeImage(it.image, 64) %>" alt="<%= it.text || 'link' %>" class="sf-inline-img"><% } %>
+                                            <%= it.text %>
+                                        </a>
+                                    </li>
+                                <% } else if (it.type === "image") { %>
+                                    <li class="sf-block-media">
+                                        <% if (it.url) { %><a href="<%= it.url %>" target="_blank" rel="noopener"><% } %>
+                                            <img src="<%= optimizeImage(it.image, 800) %>" alt="<%= it.text || 'image' %>" class="sf-block-img" loading="lazy">
+                                        <% if (it.url) { %></a><% } %>
+                                    </li>
+                                <% } else if (it.type === "video") { %>
+                                    <li class="sf-block-media">
+                                        <%
+                                            var vurl = String(it.url || "");
+                                            var ytMatch = vurl.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([\w-]{6,})/);
+                                        %>
+                                        <% if (ytMatch) { %>
+                                            <iframe class="sf-video" src="https://www.youtube.com/embed/<%= ytMatch[1] %>" title="<%= it.text || 'Video' %>" loading="lazy" allowfullscreen></iframe>
+                                        <% } else if (vurl) { %>
+                                            <a href="<%= vurl %>" target="_blank" rel="noopener" class="sf-link-icon"><i class="fa-solid fa-video"></i><%= it.text || "Watch video" %></a>
+                                        <% } %>
+                                    </li>
+                                <% } else { %>
+                                    <li class="sf-text-item"><%= it.text %></li>
+                                <% } %>
+                            <% }); %>
+                        </ul>
+                    </div>
+                <% }); %>
+            <% } %>
+
+            <!-- Membership logos + social links -->
+            <div class="sf-col sf-connect">
+                <% if (fMemb.length) { %>
+                    <h4 class="sf-title"><%= fMembTitle %></h4>
+                    <div class="sf-members">
+                        <% fMemb.forEach(function (m) { %>
+                            <% if (m.link) { %><a href="<%= m.link %>" target="_blank" rel="noopener" class="sf-member"><% } else { %><span class="sf-member"><% } %>
+                                <% if (m.image) { %>
+                                    <img src="<%= optimizeImage(m.image, 240) %>" alt="<%= m.name || 'Membership' %>" style="height: <%= m.height || 34 %>px;" loading="lazy">
+                                <% } else { %>
+                                    <span class="sf-member-text"><%= m.name %></span>
+                                <% } %>
+                            <% if (m.link) { %></a><% } else { %></span><% } %>
+                        <% }); %>
+                    </div>
+                <% } %>
+
+                <h4 class="sf-title sf-follow-title">Follow Us</h4>
+                <div class="sf-socials">
+                    <% footerSocials.forEach(function (s) { if (!s.url) return; var m = socialMap[s.platform]; if (!m) return; %>
+                        <a href="<%= s.url %>" target="_blank" rel="noopener" title="<%= s.label || s.platform %>" style="background: <%= m.bg %>; <%= m.fg ? 'color:' + m.fg : '' %>;">
+                            <i class="<%= m.icon %>"></i>
+                        </a>
+                    <% }); %>
+                    <a href="<%= mailto %>" class="sf-social-mail" title="Email us"><i class="fas fa-envelope"></i></a>
+                </div>
             </div>
+
         </div>
 
-    </div>
+        <div class="sf-bottom">
+            <div class="sf-copy">
+                <%= fCopy || ((typeof site !== "undefined" && site.footerText) ? site.footerText : "© " + new Date().getFullYear() + " " + siteName + " | All Rights Reserved.") %>
+            </div>
 
-    <!-- Bottom Bar with Copyright and Payment Logos -->
-    <div style="max-width: 1600px; margin: 40px auto 0 auto; border-top: 1px solid #1a2228; padding-top: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 20px;">
-        <div style="color: #888; font-size: 13px;">
-            <%= (typeof site !== "undefined" && site.footerText) ? site.footerText : "© 2026 MizanTrade | All Rights Reserved." %>
+            <% if (fIcons.length) { %>
+                <div class="sf-payments">
+                    <% fIcons.forEach(function (p) { %>
+                        <% if (p.image) { %>
+                            <span class="sf-pay"><img src="<%= optimizeImage(p.image, 160) %>" alt="<%= p.name || 'Payment method' %>" loading="lazy"></span>
+                        <% } else if (p.name) { %>
+                            <span class="sf-pay sf-pay-text"><%= p.name %></span>
+                        <% } %>
+                    <% }); %>
+                </div>
+            <% } %>
         </div>
-        
-        <!-- Payment Method Badges -->
-        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-            <span style="background: #fff; padding: 4px 8px; border-radius: 4px; font-weight: bold; color: #000; font-size: 11px;">VISA</span>
-            <span style="background: #fff; padding: 4px 8px; border-radius: 4px; font-weight: bold; color: #000; font-size: 11px;">MasterCard</span>
-            <span style="background: #fff; padding: 4px 8px; border-radius: 4px; font-weight: bold; color: #000; font-size: 11px;">bKash</span>
-            <span style="background: #fff; padding: 4px 8px; border-radius: 4px; font-weight: bold; color: #000; font-size: 11px;">Nagad</span>
-            <span style="background: #fff; padding: 4px 8px; border-radius: 4px; font-weight: bold; color: #000; font-size: 11px;">Rocket</span>
-        </div>
+
     </div>
 </footer>
+<%
+    var footerMarketing = (typeof site !== "undefined" && site.marketing) ? site.marketing : {};
+%>
+<% if (footerMarketing.gtmId) { %>
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=<%= footerMarketing.gtmId %>" height="0" width="0" style="display:none;visibility:hidden" title="Google Tag Manager"></iframe></noscript>
+<% } %>
+<% if (footerMarketing.customBody) { %>
+    <%- footerMarketing.customBody %>
+<% } %>
+<%- include("chatWidget") %>

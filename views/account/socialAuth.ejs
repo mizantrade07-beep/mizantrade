@@ -1,0 +1,45 @@
+<%
+    var socialText = (typeof socialDividerText !== 'undefined' && socialDividerText)
+        ? socialDividerText
+        : 'or continue with';
+
+    var checkProvider = (typeof oauthConfigured === 'function')
+        ? oauthConfigured
+        : function () { return false; };
+
+    var socials = [
+        { key: 'google', label: 'Google', icon: 'fa-google' },
+        { key: 'facebook', label: 'Facebook', icon: 'fa-facebook-f' },
+        { key: 'tiktok', label: 'TikTok', icon: 'fa-tiktok' }
+    ].filter(function (s) {
+        return checkProvider(s.key);
+    });
+
+    var whatsappReady = (typeof whatsappConfigured === 'function') && whatsappConfigured();
+
+    if (whatsappReady) {
+        socials.push({
+            key: 'whatsapp',
+            label: 'WhatsApp',
+            icon: 'fa-whatsapp',
+            href: '/login?tab=otp'
+        });
+    }
+%>
+
+<% if (socials.length) { %>
+    <div class="social-divider"><span><%= socialText %></span></div>
+
+    <div class="social-row">
+        <% socials.forEach(function (s) { %>
+            <a href="<%= s.href || ('/auth/' + s.key) %>" class="social-btn" rel="nofollow">
+                <i class="fa-brands <%= s.icon %>"></i><span><%= s.label %></span>
+            </a>
+        <% }); %>
+    </div>
+<% } else { %>
+    <p class="social-soon-note">
+        <i class="fa-solid fa-circle-info"></i>
+        Social sign-in will be available soon. Please use your e-mail and password.
+    </p>
+<% } %>

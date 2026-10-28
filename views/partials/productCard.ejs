@@ -10,6 +10,7 @@
     var discount = hasDiscount ? Math.round((1 - product.salePrice / product.regularPrice) * 100) : 0;
     var inStock = product.stockStatus === 'In Stock';
     var canBuy = price !== null && product.stockStatus !== 'Out of Stock';
+    var cardImage = product.mainImage || product.image || product.imageUrl || (Array.isArray(product.images) && product.images[0]) || '/images/logo.svg';
 %>
 <div class="product-card">
 
@@ -21,8 +22,17 @@
         <span class="pc-badge" style="background:#8e44ad;">Pre Order</span>
     <% } %>
 
+    <% if (Number(product.rewardPoints) > 0) { %>
+        <span
+            class="pc-reward <%= (hasDiscount || product.stockStatus === 'Out of Stock' || product.stockStatus === 'Pre Order') ? '' : 'pc-reward-top' %>"
+            title="Earn <%= product.rewardPoints %> reward points with this product"
+        >
+            <i class="fa-solid fa-gift"></i> +<%= Number(product.rewardPoints).toLocaleString('en-US') %> pts
+        </span>
+    <% } %>
+
     <a href="/product/<%= product.slug %>" class="pc-img-wrap">
-        <img src="<%= product.mainImage || product.image || product.imageUrl || (Array.isArray(product.images) && product.images[0]) || '/images/logo.svg' %>" alt="<%= product.title %>" loading="lazy" decoding="async">
+        <img src="<%= optimizeImage(cardImage, 600) %>" alt="<%= product.title %>" loading="lazy" decoding="async">
     </a>
 
     <a href="/product/<%= product.slug %>" class="pc-title"><%= product.title %></a>
@@ -44,7 +54,7 @@
 
     <div class="pc-actions">
         <% if (canBuy) { %>
-            <form action="/cart/add/<%= product._id %>" method="POST" style="flex:1; display:flex;">
+            <form action="/cart/add/<%= product._id %>" method="POST" class="pc-cart-form">
                 <input type="hidden" name="quantity" value="1">
                 <button type="submit" class="btn btn-cart js-add-cart" data-id="<%= product._id %>">
                     <i class="fa-solid fa-cart-plus"></i> Add to Cart
@@ -60,6 +70,10 @@
 
         <a href="/wishlist/add/<%= product._id %>" class="btn btn-wish" title="Wishlist">
             <i class="fa-regular fa-heart"></i>
+        </a>
+
+        <a href="/compare/add/<%= product._id %>" class="btn btn-wish btn-compare js-compare" data-id="<%= product._id %>" title="Compare">
+            <i class="fa-solid fa-code-compare"></i>
         </a>
     </div>
 

@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 
+const { stockRank } = require("../utils/stock");
+
 
 /* ======================================================
    REVIEW SCHEMA
@@ -145,6 +147,13 @@ const productSchema = new mongoose.Schema(
             default: false
         },
 
+        // Reward points earned per unit when a customer buys this product
+        rewardPoints: {
+            type: Number,
+            default: 0,
+            min: 0
+        },
+
         stockStatus: {
             type: String,
             enum: [
@@ -206,6 +215,18 @@ const productSchema = new mongoose.Schema(
         isActive: {
             type: Boolean,
             default: true
+        },
+
+        // হোমপেজের "New Products" সেকশনে দেখানো হবে
+        isNewArrival: {
+            type: Boolean,
+            default: false
+        },
+
+        // 0 = In Stock, 1 = Pre Order, 2 = Coming Soon, 3 = Out of Stock
+        stockRank: {
+            type: Number,
+            default: 0
         }
     },
     {
@@ -214,8 +235,14 @@ const productSchema = new mongoose.Schema(
 );
 
 
+productSchema.pre("save", function (next) {
+    this.stockRank = stockRank(this.stockStatus);
+    next();
+});
+
 // শপ/হোম লিস্টিং ও সার্চের জন্য ইনডেক্স
 productSchema.index({ isActive: 1, mainCategory: 1 });
+productSchema.index({ stockRank: 1, createdAt: -1 });
 productSchema.index({ createdAt: -1 });
 productSchema.index({ title: "text", brand: "text" });
 

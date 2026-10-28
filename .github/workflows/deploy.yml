@@ -1,0 +1,49 @@
+name: Deploy to live
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: live-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      SSH_HOST: ${{ secrets.SSH_HOST }}
+      SSH_PORT: ${{ secrets.SSH_PORT }}
+      SSH_USER: ${{ secrets.SSH_USER }}
+      SSH_PASS: ${{ secrets.SSH_PASS }}
+      SSH_KEY: ${{ secrets.SSH_KEY }}
+      APP_DIR: ${{ secrets.APP_DIR }}
+      HEALTH_URL: ${{ secrets.HEALTH_URL }}
+
+    steps:
+      - name: Check deploy secrets
+        id: gate
+        run: |
+          if [ -z "$SSH_HOST" ] || [ -z "$SSH_USER" ]; then
+            echo "SSH secrets are not set — skipping deploy."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.gate.outputs.ready == 'true'
+
+      - uses: actions/setup-node@v4
+        if: steps.gate.outputs.ready == 'true'
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install deploy tooling
+        if: steps.gate.outputs.ready == 'true'
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Deploy
+        if: steps.gate.outputs.ready == 'true'
+        run: npm run deploy

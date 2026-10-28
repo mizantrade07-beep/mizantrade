@@ -1,0 +1,178 @@
+<%- include("partials/head", {
+    title: "Team Members | MizanTrade Admin"
+}) %>
+
+<%- include("partials/sidebar") %>
+
+<div class="admin-main">
+
+    <%- include("partials/topbar", {
+        title: "Team Members"
+    }) %>
+
+    <main class="admin-content">
+
+        <div class="dashboard-header">
+            <div>
+                <h1 class="dashboard-title">Team Members</h1>
+                <p class="dashboard-subtitle">
+                    Manage the people shown on the public Team page — photo, designation, tap-to-call phone
+                    and any number of social links. Drag-free ordering uses the Sort Order field.
+                </p>
+            </div>
+
+            <% if (can('content.create')) { %>
+                <a href="/admin/team/add" class="primary-button">
+                    <i class="fa-solid fa-plus"></i>
+                    Add Team Member
+                </a>
+            <% } %>
+        </div>
+
+        <% if (message) { %>
+            <% var messageMap = {
+                added: { text: "Team member added successfully.", tone: "success" },
+                saved: { text: "Team member updated successfully.", tone: "success" },
+                deleted: { text: "Team member deleted.", tone: "success" },
+                error: { text: "Something went wrong. Please try again.", tone: "error" }
+            }; %>
+            <% var msg = messageMap[message] || { text: message, tone: "info" }; %>
+            <div class="team-admin-alert <%= msg.tone %>">
+                <i class="fa-solid <%= msg.tone === 'error' ? 'fa-circle-exclamation' : 'fa-circle-check' %>"></i>
+                <span><%= msg.text %></span>
+            </div>
+        <% } %>
+
+        <section class="stats-grid">
+
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+                <div class="stat-content">
+                    <span>Total Members</span>
+                    <strong><%= members.length %></strong>
+                </div>
+            </article>
+
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-eye"></i></div>
+                <div class="stat-content">
+                    <span>Visible</span>
+                    <strong><%= totalActive %></strong>
+                </div>
+            </article>
+
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-eye-slash"></i></div>
+                <div class="stat-content">
+                    <span>Hidden</span>
+                    <strong><%= totalInactive %></strong>
+                </div>
+            </article>
+
+        </section>
+
+        <section class="dashboard-card">
+
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fa-solid fa-users card-icon"></i>
+                    All Team Members
+                </h2>
+
+                <a href="/team" target="_blank" rel="noopener" class="secondary-button">
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                    View Public Page
+                </a>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Member</th>
+                            <th>Designation</th>
+                            <th>Phone</th>
+                            <th>Social</th>
+                            <th>Order</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        <% if (members.length === 0) { %>
+                            <tr>
+                                <td colspan="7" style="text-align:center; padding:30px; color:#64748b;">
+                                    No team members yet. Start with "Add Team Member".
+                                </td>
+                            </tr>
+                        <% } %>
+
+                        <% members.forEach(function (m) { %>
+                            <tr>
+                                <td>
+                                    <div class="team-admin-member">
+                                        <% if (m.photo) { %>
+                                            <img src="<%= m.photo %>" alt="<%= m.name %>">
+                                        <% } else { %>
+                                            <span class="team-admin-initials">
+                                                <%= String(m.name || 'MT').split(/\s+/).filter(Boolean).slice(0, 2).map(function (w) { return w.charAt(0).toUpperCase(); }).join('') %>
+                                            </span>
+                                        <% } %>
+                                        <strong><%= m.name %></strong>
+                                    </div>
+                                </td>
+                                <td style="font-size:13px; color:#475569;"><%= m.designation || '—' %></td>
+                                <td>
+                                    <% if (m.phone) { %>
+                                        <a href="tel:<%= m.phone %>" style="color:#081621; font-size:13px;"><%= m.phone %></a>
+                                    <% } else { %>
+                                        <span style="color:#94a3b8;">—</span>
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <div class="team-admin-socials">
+                                        <% if (m.socials && m.socials.length) { %>
+                                            <%- include("../partials/socialLinks", { socials: m.socials, socialName: m.name }) %>
+                                        <% } else { %>
+                                            <span style="color:#94a3b8;">—</span>
+                                        <% } %>
+                                    </div>
+                                </td>
+                                <td style="font-size:13px; color:#475569;"><%= m.order %></td>
+                                <td>
+                                    <% if (m.isActive !== false) { %>
+                                        <span class="badge badge-approved">Visible</span>
+                                    <% } else { %>
+                                        <span class="badge badge-pending">Hidden</span>
+                                    <% } %>
+                                </td>
+                                <td>
+                                    <div class="product-actions">
+                                        <% if (can('content.edit')) { %>
+                                            <a href="/admin/team/edit/<%= m._id %>" class="action-edit" title="Edit">
+                                                <i class="fa-solid fa-pen"></i>
+                                            </a>
+                                        <% } %>
+                                        <% if (can('content.delete')) { %>
+                                            <a href="/admin/team/delete/<%= m._id %>" class="action-delete" title="Delete"
+                                               onclick="return confirm('Delete <%= m.name.replace(/'/g, "\\'") %> from the team?');">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </a>
+                                        <% } %>
+                                    </div>
+                                </td>
+                            </tr>
+                        <% }); %>
+
+                    </tbody>
+                </table>
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+<%- include("partials/footer") %>

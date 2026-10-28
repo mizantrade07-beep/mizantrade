@@ -1,0 +1,180 @@
+<%- include("partials/head", {
+    title: "Order History | MizanTrade Admin"
+}) %>
+
+<%- include("partials/sidebar") %>
+
+<%
+    var fmt = function (value) {
+        return Number(value || 0).toLocaleString("en-US", { maximumFractionDigits: 2 });
+    };
+
+    var statusColors = {
+        Pending: "#b7791f",
+        Confirmed: "#2b6cb0",
+        Processing: "#6b46c1",
+        Shipped: "#0987a0",
+        Delivered: "#2f855a",
+        Cancelled: "#c53030"
+    };
+%>
+
+<div class="admin-main">
+
+    <%- include("partials/topbar", {
+        title: "Order History"
+    }) %>
+
+    <main class="admin-content">
+
+        <div class="dashboard-header">
+            <div>
+                <h1 class="dashboard-title">Order History</h1>
+                <p class="dashboard-subtitle">
+                    Date-wise order history with customer name and phone. Totals update with the selected range.
+                </p>
+            </div>
+        </div>
+
+        <section class="dashboard-card" style="margin-bottom:22px;">
+            <div class="card-body" style="padding:16px 18px;">
+                <form method="GET" action="/admin/order-history" class="report-filters">
+                    <div class="rf-field">
+                        <label for="ohFrom">From</label>
+                        <input type="date" id="ohFrom" name="from" value="<%= from %>">
+                    </div>
+                    <div class="rf-field">
+                        <label for="ohTo">To</label>
+                        <input type="date" id="ohTo" name="to" value="<%= to %>">
+                    </div>
+                    <div class="rf-field">
+                        <label for="ohStatus">Status</label>
+                        <select id="ohStatus" name="status">
+                            <option value="">All Status</option>
+                            <% ["Pending", "Confirmed", "Processing", "Shipped", "Delivered", "Cancelled"].forEach(function (s) { %>
+                                <option value="<%= s %>" <%= status === s ? "selected" : "" %>><%= s %></option>
+                            <% }); %>
+                        </select>
+                    </div>
+                    <div class="rf-field">
+                        <label for="ohSearch">Search</label>
+                        <input type="text" id="ohSearch" name="search" value="<%= search %>" placeholder="Order no / name / phone">
+                    </div>
+                    <button type="submit"><i class="fa-solid fa-filter"></i> Apply</button>
+                    <a href="/admin/order-history" class="report-reset">Reset</a>
+                </form>
+            </div>
+        </section>
+
+        <section class="stats-grid">
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-cart-shopping"></i></div>
+                <div class="stat-content">
+                    <span>Total Orders</span>
+                    <strong><%= summary.count %></strong>
+                    <span class="stat-note"><%= summary.pcs %> pcs in total</span>
+                </div>
+            </article>
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-sack-dollar"></i></div>
+                <div class="stat-content">
+                    <span>Total Amount</span>
+                    <strong>৳ <%= fmt(summary.amount) %></strong>
+                    <span class="stat-note"><%= rangeLabel %></span>
+                </div>
+            </article>
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-truck-fast"></i></div>
+                <div class="stat-content">
+                    <span>Delivered Orders</span>
+                    <strong><%= summary.delivered %></strong>
+                    <span class="stat-note">of <%= summary.count %> orders</span>
+                </div>
+            </article>
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-circle-xmark"></i></div>
+                <div class="stat-content">
+                    <span>Cancelled Orders</span>
+                    <strong><%= summary.cancelled %></strong>
+                    <span class="stat-note">excluded from payment history</span>
+                </div>
+            </article>
+        </section>
+
+        <section class="dashboard-card">
+            <div class="card-header">
+                <h2 class="card-title">
+                    <i class="fa-solid fa-clock-rotate-left card-icon"></i>
+                    Order History (<%= summary.count %>)
+                </h2>
+                <span class="stat-note"><%= rangeLabel %></span>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Time</th>
+                            <th>Order #</th>
+                            <th>Customer</th>
+                            <th>Phone</th>
+                            <th>Items</th>
+                            <th>Payment</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        <% if (days.length === 0) { %>
+                            <tr>
+                                <td colspan="9" class="empty-state">No orders found for this period.</td>
+                            </tr>
+                        <% } %>
+
+                        <% days.forEach(function (day) { %>
+                            <tr class="report-day-row">
+                                <td colspan="9">
+                                    <%= day.label %>
+                                    <span class="day-sum">
+                                        <%= day.orders.length %> order<%= day.orders.length === 1 ? "" : "s" %>
+                                        · <strong>৳ <%= fmt(day.total) %></strong>
+                                    </span>
+                                </td>
+                            </tr>
+
+                            <% day.orders.forEach(function (order) { %>
+                                <tr>
+                                    <td><%= order.timeLabel %></td>
+                                    <td><strong><%= order.orderNumber %></strong></td>
+                                    <td><%= order.customer.name %></td>
+                                    <td><a href="tel:<%= order.customer.phone %>"><%= order.customer.phone %></a></td>
+                                    <td><%= order.pcs %> pcs</td>
+                                    <td><%= paymentLabels[order.paymentMethod] || order.paymentMethod %></td>
+                                    <td><strong>৳ <%= fmt(order.total) %></strong></td>
+                                    <td>
+                                        <span style="background:<%= statusColors[order.status] %>; color:#fff; padding:3px 10px; border-radius:12px; font-size:11.5px; font-weight:600; white-space:nowrap;">
+                                            <%= order.status %>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="doc-links">
+                                            <a href="/admin/order/<%= order._id %>" title="View order">View</a>
+                                            <a href="/admin/order/<%= order._id %>/print/invoice" target="_blank" title="Print invoice">Invoice</a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            <% }); %>
+                        <% }); %>
+
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+</div>
+
+<%- include("partials/footer") %>

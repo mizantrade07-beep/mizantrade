@@ -1,0 +1,290 @@
+<%- include("partials/head", { title: "Reward Points | MizanTrade Admin" }) %>
+
+<%- include("partials/sidebar") %>
+
+<div class="admin-main">
+
+    <%- include("partials/topbar", { title: "Reward Points" }) %>
+
+    <main class="admin-content">
+
+        <div class="dashboard-header">
+            <div>
+                <h1 class="dashboard-title">Reward Points</h1>
+                <p class="dashboard-subtitle">
+                    Set the point-to-taka rate, track every redemption by customer and order, and review
+                    the loyalty programme's full analytics.
+                </p>
+            </div>
+            <a href="/admin/customers" class="secondary-button">
+                <i class="fa-solid fa-users"></i> Customers
+            </a>
+        </div>
+
+        <% if (message === "saved") { %>
+            <div style="margin-bottom:16px;padding:12px 16px;border-radius:8px;background:#ecfdf5;border:1px solid #a7f3d0;color:#065f46;font-weight:600;">
+                <i class="fa-solid fa-circle-check"></i> Reward settings saved.
+            </div>
+        <% } else if (message === "error") { %>
+            <div style="margin-bottom:16px;padding:12px 16px;border-radius:8px;background:#fef2f2;border:1px solid #fecaca;color:#991b1b;font-weight:600;">
+                <i class="fa-solid fa-triangle-exclamation"></i> Could not save. Please try again.
+            </div>
+        <% } else if (message === "range") { %>
+            <div style="margin-bottom:16px;padding:12px 16px;border-radius:8px;background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;font-weight:600;">
+                <i class="fa-solid fa-triangle-exclamation"></i> The start date must be before the end date.
+            </div>
+        <% } %>
+
+        <!-- ===== PROGRAMME SETTINGS ===== -->
+        <section class="dashboard-card">
+            <div class="card-header">
+                <h2 class="card-title"><i class="fa-solid fa-gift card-icon"></i> Programme Settings</h2>
+            </div>
+
+            <div class="tag-input-hint" style="margin-bottom:12px;">
+                Customers earn the product's points on every delivered order. They can spend them on a
+                later order once their balance reaches the minimum. Past orders keep the taka value they
+                were placed with — changing the rate never rewrites history.
+            </div>
+
+            <% if (can('settings.manage')) { %>
+            <form action="/admin/rewards" method="POST">
+                <div style="display:grid; grid-template-columns:160px 1fr 1fr 1.4fr; gap:12px; align-items:end;">
+                    <div class="form-group" style="margin:0;">
+                        <label>Programme</label>
+                        <select name="enabled">
+                            <option value="on" <%= settings.rewards && settings.rewards.enabled !== false ? 'selected' : '' %>>Enabled</option>
+                            <option value="off" <%= settings.rewards && settings.rewards.enabled === false ? 'selected' : '' %>>Disabled</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label>1 Reward = ৳ (taka)</label>
+                        <input type="number" name="pointValue" min="0" step="0.01" value="<%= pointValue %>" required>
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label>Minimum points to redeem</label>
+                        <input type="number" name="minRedeem" min="0" step="1" value="<%= settings.rewards ? settings.rewards.minRedeem : 50 %>" required>
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label>Display name</label>
+                        <input type="text" name="label" value="<%= settings.rewards ? settings.rewards.label : 'Reward Points' %>" placeholder="Reward Points">
+                    </div>
+                </div>
+
+                <div class="form-actions" style="margin-top:14px;">
+                    <button type="submit" class="primary-button">
+                        <i class="fa-solid fa-floppy-disk"></i> Save Settings
+                    </button>
+                </div>
+            </form>
+            <% } else { %>
+                <div class="tag-input-hint">
+                    Current rate: <strong>1 point = ৳ <%= pointValue %></strong> · Minimum redemption:
+                    <strong><%= settings.rewards ? settings.rewards.minRedeem : 50 %> points</strong>.
+                </div>
+            <% } %>
+        </section>
+
+        <!-- ===== KPI CARDS ===== -->
+        <section class="stats-grid">
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-arrow-up-right-dots"></i></div>
+                <div class="stat-content">
+                    <span>Points Issued (range)</span>
+                    <strong><%= stats.earned.toLocaleString('en-US') %></strong>
+                </div>
+            </article>
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+                <div class="stat-content">
+                    <span>Points Redeemed (range)</span>
+                    <strong><%= stats.redeemed.toLocaleString('en-US') %></strong>
+                </div>
+            </article>
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-money-bill-wave"></i></div>
+                <div class="stat-content">
+                    <span>Redeemed Value</span>
+                    <strong>৳ <%= stats.redeemedValue.toLocaleString('en-US', { maximumFractionDigits: 2 }) %></strong>
+                </div>
+            </article>
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-scale-balanced"></i></div>
+                <div class="stat-content">
+                    <span>Outstanding Liability</span>
+                    <strong>৳ <%= stats.outstandingValue.toLocaleString('en-US', { maximumFractionDigits: 2 }) %></strong>
+                </div>
+            </article>
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+                <div class="stat-content">
+                    <span>Members with Points</span>
+                    <strong><%= stats.members.toLocaleString('en-US') %></strong>
+                </div>
+            </article>
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-percent"></i></div>
+                <div class="stat-content">
+                    <span>Redemption Rate</span>
+                    <strong><%= stats.rate %>%</strong>
+                </div>
+            </article>
+        </section>
+
+        <div class="cms-two-col">
+
+            <!-- ===== MONTHLY TREND ===== -->
+            <section class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fa-solid fa-chart-column card-icon"></i> 6-Month Trend</h2>
+                </div>
+
+                <div style="padding:18px;">
+                    <% monthly.forEach(function (m) { %>
+                        <div style="margin-bottom:14px;">
+                            <div style="display:flex; justify-content:space-between; font-size:12.5px; color:#475569; margin-bottom:4px;">
+                                <strong><%= m.label %></strong>
+                                <span>
+                                    <span style="color:#1f8a3b;">+<%= m.earned %></span> ·
+                                    <span style="color:#c0392b;">−<%= m.redeemed %></span>
+                                </span>
+                            </div>
+                            <div style="height:9px; border-radius:6px; background:#eef2f7; overflow:hidden; margin-bottom:4px;">
+                                <div style="height:100%; width:<%= Math.round((m.earned / maxMonthly) * 100) %>%; background:linear-gradient(90deg,#82b440,#1f8a3b);"></div>
+                            </div>
+                            <div style="height:9px; border-radius:6px; background:#eef2f7; overflow:hidden;">
+                                <div style="height:100%; width:<%= Math.round((m.redeemed / maxMonthly) * 100) %>%; background:linear-gradient(90deg,#f59e0b,#c0392b);"></div>
+                            </div>
+                        </div>
+                    <% }); %>
+                    <div style="font-size:11.5px; color:#64748b; margin-top:6px;">
+                        Green = points issued · Orange = points redeemed (last 6 months, all time ranges).
+                    </div>
+                </div>
+            </section>
+
+            <!-- ===== TOP REDEEMERS ===== -->
+            <section class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fa-solid fa-ranking-star card-icon"></i> Top Redeemers</h2>
+                </div>
+
+                <div class="table-wrapper">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Customer</th>
+                                <th>Orders</th>
+                                <th>Points</th>
+                                <th>Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% if (topRedeemers.length === 0) { %>
+                                <tr><td colspan="4" style="text-align:center; color:#64748b; padding:20px;">No redemptions in this range.</td></tr>
+                            <% } %>
+                            <% topRedeemers.forEach(function (t) { %>
+                                <tr>
+                                    <td>
+                                        <strong><%= t.name %></strong>
+                                        <div style="font-size:11.5px; color:#64748b;"><%= t.phone || t.email || '—' %></div>
+                                    </td>
+                                    <td><%= t.orders %></td>
+                                    <td><strong><%= t.points.toLocaleString('en-US') %></strong></td>
+                                    <td>৳ <%= t.value.toLocaleString('en-US', { maximumFractionDigits: 2 }) %></td>
+                                </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+
+        <!-- ===== USAGE REPORT ===== -->
+        <section class="dashboard-card">
+            <div class="card-header">
+                <h2 class="card-title"><i class="fa-solid fa-receipt card-icon"></i> Redemption Report</h2>
+                <form action="/admin/rewards" method="GET" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                    <label style="font-size:12px; color:#475569; margin:0;">From</label>
+                    <input type="date" name="from" value="<%= range.from %>" style="padding:8px 10px; border:1px solid #d7dee8; border-radius:8px;">
+                    <label style="font-size:12px; color:#475569; margin:0;">To</label>
+                    <input type="date" name="to" value="<%= range.to %>" style="padding:8px 10px; border:1px solid #d7dee8; border-radius:8px;">
+                    <button type="submit" class="secondary-button"><i class="fa-solid fa-filter"></i> Filter</button>
+                </form>
+            </div>
+
+            <div class="tag-input-hint" style="margin-bottom:10px;">
+                Which customer spent how many points on which order — <%= stats.redeemOrders %> redemption order(s)
+                across <%= stats.uniqueCustomers %> customer(s) in this range.
+            </div>
+
+            <div class="table-wrapper">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Order</th>
+                            <th>Date</th>
+                            <th>Customer</th>
+                            <th>Points Used</th>
+                            <th>Discount</th>
+                            <th>Order Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if (rows.length === 0) { %>
+                            <tr><td colspan="6" style="text-align:center; color:#64748b; padding:24px;">No reward points were used in this date range.</td></tr>
+                        <% } %>
+                        <% rows.forEach(function (r) { %>
+                            <tr>
+                                <td><a href="/admin/order/<%= r.orderId %>" style="font-weight:700; color:#ef4a23;"><%= r.orderNumber %></a></td>
+                                <td><%= new Date(r.date).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) %></td>
+                                <td>
+                                    <strong><%= r.customerName %></strong>
+                                    <% if (r.customerPhone) { %>
+                                        <div style="font-size:11.5px; color:#64748b;"><%= r.customerPhone %></div>
+                                    <% } %>
+                                </td>
+                                <td><strong><%= r.points.toLocaleString('en-US') %></strong></td>
+                                <td style="color:#1f8a3b;">− ৳ <%= r.value.toLocaleString('en-US', { maximumFractionDigits: 2 }) %></td>
+                                <td>৳ <%= r.orderTotal.toLocaleString('en-US', { maximumFractionDigits: 2 }) %></td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ===== HIGHEST BALANCES ===== -->
+        <section class="dashboard-card">
+            <div class="card-header">
+                <h2 class="card-title"><i class="fa-solid fa-wallet card-icon"></i> Highest Current Balances</h2>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="admin-table">
+                    <thead>
+                        <tr><th>Customer</th><th>Phone</th><th>Balance</th><th>Value</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                        <% if (bestCustomers.length === 0) { %>
+                            <tr><td colspan="5" style="text-align:center; color:#64748b; padding:20px;">No customer has points yet.</td></tr>
+                        <% } %>
+                        <% bestCustomers.forEach(function (c) { %>
+                            <tr>
+                                <td><strong><%= c.name %></strong><div style="font-size:11.5px; color:#64748b;"><%= c.email || '—' %></div></td>
+                                <td><%= c.phone || '—' %></td>
+                                <td><strong><%= Number(c.rewardPoints).toLocaleString('en-US') %></strong></td>
+                                <td>৳ <%= (Number(c.rewardPoints) * pointValue).toLocaleString('en-US', { maximumFractionDigits: 2 }) %></td>
+                                <td><a href="/admin/customers/<%= c._id %>" class="mini-button">View</a></td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+</div>
+
+<%- include("partials/footer") %>

@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <%- include('partials/seo') %>
-    <link rel="icon" href="/images/logo.svg">
     <style>
         .blog-grid {
             display: grid;
@@ -29,8 +28,8 @@
         }
         .blog-card-img {
             width: 100%;
-            height: 165px;
-            object-fit: cover;
+            height: 190px;
+            object-fit: contain;
             background: #f4f6f9;
             display: block;
         }
@@ -40,6 +39,9 @@
             justify-content: center;
             color: #c3ccd6;
             font-size: 34px;
+        }
+        @media (max-width: 560px) {
+            .blog-card-img { height: 165px; }
         }
         .blog-card-body { padding: 16px 18px 20px; }
         .blog-card-title {
@@ -116,7 +118,7 @@
                 <% posts.forEach(function (p) { %>
                     <a href="/blog/<%= p.slug %>" class="blog-card">
                         <% if (p.coverImage) { %>
-                            <img class="blog-card-img" src="<%= p.coverImage %>" alt="<%= p.title %>">
+                            <img class="blog-card-img" src="<%= optimizeImage(p.coverImage, 600) %>" alt="<%= p.title %>">
                         <% } else { %>
                             <div class="blog-card-img placeholder"><i class="fa-solid fa-image"></i></div>
                         <% } %>
@@ -150,6 +152,6 @@
 
     <%- include('partials/footer') %>
 
-    <script src="/js/main.js?v=2"></script>
+    <script src="/js/main.js?v=4"></script>
 </body>
 </html>

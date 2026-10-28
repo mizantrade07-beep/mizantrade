@@ -1,0 +1,575 @@
+<%- include("partials/head", { title: "SEO & Marketing | MizanTrade Admin" }) %>
+
+<%- include("partials/sidebar") %>
+
+<div class="admin-main">
+
+    <%- include("partials/topbar", { title: "SEO & Marketing" }) %>
+
+    <main class="admin-content">
+
+        <div class="dashboard-header">
+            <div>
+                <h1 class="dashboard-title">SEO &amp; Marketing</h1>
+                <p class="dashboard-subtitle">
+                    Search visibility, traffic, leads, technical health and every tracking tag — managed
+                    from one place.
+                </p>
+            </div>
+            <form action="/admin/seo" method="GET" class="sm-range">
+                <input type="date" name="from" value="<%= range.from %>" aria-label="From date">
+                <span>to</span>
+                <input type="date" name="to" value="<%= range.to %>" aria-label="To date">
+                <button type="submit" class="secondary-button"><i class="fa-solid fa-filter"></i> Apply</button>
+            </form>
+        </div>
+
+        <% if (message === "saved") { %>
+            <div class="sm-alert ok"><i class="fa-solid fa-circle-check"></i> SEO settings saved successfully.</div>
+        <% } else if (message === "error") { %>
+            <div class="sm-alert bad"><i class="fa-solid fa-triangle-exclamation"></i> Could not save SEO settings. Please try again.</div>
+        <% } %>
+
+        <style>
+            .sm-range { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+            .sm-range input { padding: 8px 10px; border: 1px solid #dbe2ea; border-radius: 8px; font-family: inherit; font-size: 13px; }
+            .sm-range span { color: #8892a0; font-size: 12px; }
+            .sm-alert { margin-bottom: 16px; padding: 12px 16px; border-radius: 8px; font-weight: 600; }
+            .sm-alert.ok { background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46; }
+            .sm-alert.bad { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+
+            .sm-delta { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 700; margin-top: 4px; }
+            .sm-delta.up { color: #1f8a3b; }
+            .sm-delta.down { color: #c2410c; }
+            .sm-delta.flat { color: #8892a0; }
+            .sm-sub { display: block; font-size: 11.5px; color: #8892a0; margin-top: 4px; font-weight: 600; }
+            .sm-live { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; color: #1f8a3b; font-weight: 700; }
+            .sm-live .dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; box-shadow: 0 0 0 3px rgba(34,197,94,.18); }
+
+            .sm-two { display: grid; grid-template-columns: 1.35fr 1fr; gap: 18px; margin-bottom: 18px; }
+            .sm-chart { display: flex; align-items: flex-end; gap: 6px; height: 150px; padding: 10px 4px 0; }
+            .sm-bar { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; gap: 6px; }
+            .sm-bar i { display: block; width: 100%; border-radius: 5px 5px 2px 2px; background: linear-gradient(180deg, #2f80ed, #0b63ce); min-height: 3px; }
+            .sm-bar em { font-size: 9.5px; color: #8892a0; font-style: normal; white-space: nowrap; }
+            .sm-bar b { font-size: 9.5px; color: #374957; font-weight: 700; }
+            .sm-legend { display: flex; gap: 14px; font-size: 11.5px; color: #6b7785; margin-top: 6px; flex-wrap: wrap; }
+            .sm-legend span { display: inline-flex; align-items: center; gap: 6px; }
+            .sm-legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+
+            .sm-health { display: flex; gap: 22px; align-items: center; flex-wrap: wrap; }
+            .sm-ring {
+                width: 112px; height: 112px; border-radius: 50%;
+                display: flex; flex-direction: column; align-items: center; justify-content: center;
+                background: conic-gradient(#1f8a3b calc(var(--score) * 1%), #eef2f6 0);
+                position: relative; flex: 0 0 auto;
+            }
+            .sm-ring::after {
+                content: ""; position: absolute; inset: 9px; background: #fff; border-radius: 50%;
+            }
+            .sm-ring strong, .sm-ring span { position: relative; z-index: 1; }
+            .sm-ring strong { font-size: 24px; color: #081621; line-height: 1.1; }
+            .sm-ring span { font-size: 10.5px; color: #7b8794; font-weight: 700; text-transform: uppercase; letter-spacing: .4px; }
+            .sm-checks { flex: 1; min-width: 240px; display: grid; grid-template-columns: 1fr 1fr; gap: 7px 18px; }
+            .sm-check { display: flex; gap: 8px; align-items: flex-start; font-size: 12.5px; color: #374957; }
+            .sm-check i { margin-top: 2px; font-size: 12px; }
+            .sm-check .ok { color: #1f8a3b; }
+            .sm-check .no { color: #c2410c; }
+            .sm-check small { color: #98a2b0; font-size: 11px; }
+
+            .sm-sec-title { font-size: 13px; text-transform: uppercase; letter-spacing: .5px; color: #8892a0; margin: 0 0 10px; font-weight: 700; }
+            .sm-core { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+            .sm-core span {
+                display: inline-flex; align-items: center; gap: 6px; padding: 5px 9px; border-radius: 999px;
+                font-size: 11.5px; font-weight: 700; background: #f4f6f9; color: #6b7785; border: 1px solid #e7ebf0;
+            }
+            .sm-core span.done { background: #ecfdf5; color: #047857; border-color: #a7f3d0; }
+            .sm-row-head, .sm-row {
+                display: grid; grid-template-columns: 1.1fr 1.6fr 2fr 1.4fr 110px auto auto;
+                gap: 10px; align-items: end;
+            }
+            .sm-row-head { font-size: 11px; font-weight: 700; color: #8892a0; text-transform: uppercase; letter-spacing: .4px; padding: 0 12px 6px; }
+            .sm-row { border: 1px solid #e3e8ef; border-radius: 10px; padding: 12px; margin-bottom: 10px; background: #fbfcfe; }
+            .sm-row .form-group { margin: 0; }
+            .sm-row .form-group label { font-size: 11.5px; }
+            .sm-row .form-group input, .sm-row .form-group select { font-size: 12.5px; }
+            .sm-row .sm-inline { display: flex; gap: 8px; align-items: center; padding-bottom: 10px; }
+
+            .sm-tools { display: grid; grid-template-columns: repeat(auto-fit, minmax(215px, 1fr)); gap: 10px; }
+            .sm-tool {
+                border: 1px solid #eef0f3; border-radius: 10px; padding: 12px 14px; background: #fbfcfe;
+                text-decoration: none; color: #374957; display: flex; gap: 10px; align-items: flex-start;
+            }
+            .sm-tool:hover { border-color: #c7d6e6; background: #fff; }
+            .sm-tool i { width: 28px; height: 28px; border-radius: 8px; background: #eef4fb; color: #1d4ed8; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; }
+            .sm-tool strong { display: block; font-size: 12.5px; color: #081621; }
+            .sm-tool small { font-size: 11px; color: #8892a0; }
+
+            .sm-kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+            .sm-note { font-size: 12px; color: #8892a0; line-height: 1.55; margin: 0 0 12px; }
+            .sm-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 9px; border-radius: 999px; font-size: 11px; font-weight: 700; background: #eef4fb; color: #1d4ed8; }
+            .sm-badge.off { background: #f4f6f9; color: #8892a0; }
+
+            @media (max-width: 1100px) {
+                .sm-two { grid-template-columns: 1fr; }
+                .sm-row-head { display: none; }
+                .sm-row { grid-template-columns: 1fr 1fr; }
+                .sm-row .sm-full { grid-column: 1 / -1; }
+            }
+            @media (max-width: 720px) {
+                .sm-checks { grid-template-columns: 1fr; }
+                .sm-row { grid-template-columns: 1fr; }
+                .sm-tools { grid-template-columns: 1fr; }
+            }
+        </style>
+
+        <% function delta(value) {
+            var cls = value > 0 ? "up" : (value < 0 ? "down" : "flat");
+            var arrow = value > 0 ? "fa-arrow-trend-up" : (value < 0 ? "fa-arrow-trend-down" : "fa-minus");
+            return { cls: cls, arrow: arrow, text: (value > 0 ? "+" : "") + value + "% vs previous " + range.days + "d" };
+        } %>
+
+        <!-- ===== KPI CARDS ===== -->
+        <section class="stats-grid">
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-magnifying-glass"></i></div>
+                <div class="stat-content">
+                    <span>Organic Traffic</span>
+                    <strong><%= kpi.organic.toLocaleString('en-US') %></strong>
+                    <% var d = delta(kpi.organicChange); %>
+                    <small class="sm-delta <%= d.cls %>"><i class="fa-solid <%= d.arrow %>"></i> <%= d.text %></small>
+                </div>
+            </article>
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-chart-line"></i></div>
+                <div class="stat-content">
+                    <span>Storefront Visits</span>
+                    <strong><%= kpi.views.toLocaleString('en-US') %></strong>
+                    <% d = delta(kpi.viewsChange); %>
+                    <small class="sm-delta <%= d.cls %>"><i class="fa-solid <%= d.arrow %>"></i> <%= d.text %></small>
+                    <small class="sm-sub"><%= kpi.visitors.toLocaleString('en-US') %> unique visitors</small>
+                </div>
+            </article>
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-user-clock"></i></div>
+                <div class="stat-content">
+                    <span>Live Visibility</span>
+                    <strong><%= kpi.live.toLocaleString('en-US') %></strong>
+                    <small class="sm-live"><span class="dot"></span> visitors in the last 30 minutes</small>
+                </div>
+            </article>
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-user-tie"></i></div>
+                <div class="stat-content">
+                    <span>Quality Leads</span>
+                    <strong><%= kpi.leads.toLocaleString('en-US') %></strong>
+                    <% d = delta(kpi.leadsChange); %>
+                    <small class="sm-delta <%= d.cls %>"><i class="fa-solid <%= d.arrow %>"></i> <%= d.text %></small>
+                    <small class="sm-sub">৳ <%= kpi.leadValue.toLocaleString('en-US', { maximumFractionDigits: 0 }) %> confirmed pipeline</small>
+                </div>
+            </article>
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-user-plus"></i></div>
+                <div class="stat-content">
+                    <span>New Customers</span>
+                    <strong><%= kpi.newCustomers.toLocaleString('en-US') %></strong>
+                    <% d = delta(kpi.newCustomersChange); %>
+                    <small class="sm-delta <%= d.cls %>"><i class="fa-solid <%= d.arrow %>"></i> <%= d.text %></small>
+                </div>
+            </article>
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-star"></i></div>
+                <div class="stat-content">
+                    <span>Brand Credibility</span>
+                    <strong><%= reviews.avg ? reviews.avg.toFixed(1) : "0.0" %> / 5</strong>
+                    <small class="sm-sub"><%= reviews.count %> approved reviews · <%= marketing.brandCredibility || 0 %>% brand score</small>
+                </div>
+            </article>
+        </section>
+
+        <!-- ===== TRAFFIC + GROWTH ===== -->
+        <div class="sm-two">
+            <section class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fa-solid fa-chart-column card-icon"></i> Traffic — last 14 days</h2>
+                    <span class="sm-badge"><i class="fa-solid fa-server"></i> First-party tracking</span>
+                </div>
+                <div class="sm-chart">
+                    <% series.forEach(function (s) { %>
+                        <div class="sm-bar" title="<%= s.day %>: <%= s.views %> views, <%= s.organic %> organic">
+                            <b><%= s.views || "" %></b>
+                            <i style="height:<%= Math.max(3, Math.round((s.views / maxViews) * 100)) %>%; opacity:<%= s.organic ? 1 : 0.55 %>;"></i>
+                            <em><%= s.label %></em>
+                        </div>
+                    <% }); %>
+                </div>
+                <div class="sm-legend">
+                    <span><i style="background:#0b63ce"></i> Page views</span>
+                    <span>Organic share (range): <strong><%= kpi.views ? Math.round((kpi.organic / kpi.views) * 100) : 0 %>%</strong></span>
+                    <span>Social: <%= kpi.social %></span>
+                    <span>Referral: <%= kpi.referral %></span>
+                </div>
+            </section>
+
+            <section class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fa-solid fa-seedling card-icon"></i> Long-term Growth</h2>
+                    <span class="sm-badge <%= kpi.growth >= 0 ? '' : 'off' %>">
+                        <i class="fa-solid fa-arrow-trend-<%= kpi.growth >= 0 ? 'up' : 'down' %>"></i>
+                        <%= (kpi.growth > 0 ? "+" : "") + kpi.growth %>% MoM
+                    </span>
+                </div>
+                <div class="sm-chart">
+                    <% monthly.forEach(function (m) { %>
+                        <div class="sm-bar" title="<%= m.label %>: <%= m.orders %> orders">
+                            <b><%= m.orders || "" %></b>
+                            <i style="height:<%= Math.max(3, Math.round((m.orders / maxOrders) * 100)) %>%; background:linear-gradient(180deg,#1f8a3b,#15702f);"></i>
+                            <em><%= m.label.slice(2) %></em>
+                        </div>
+                    <% }); %>
+                </div>
+                <div class="sm-legend">
+                    <span>Orders per month</span>
+                    <span>Latest month revenue: <strong>৳ <%= (monthly[monthly.length - 1].revenue || 0).toLocaleString('en-US', { maximumFractionDigits: 0 }) %></strong></span>
+                </div>
+            </section>
+        </div>
+
+        <!-- ===== TECHNICAL HEALTH ===== -->
+        <section class="dashboard-card">
+            <div class="card-header">
+                <h2 class="card-title"><i class="fa-solid fa-heart-pulse card-icon"></i> Technical SEO Health</h2>
+                <span class="sm-badge <%= health.score >= 65 ? '' : 'off' %>"><%= health.grade %> · <%= health.passed %>/<%= health.total %> checks</span>
+            </div>
+            <div class="sm-health">
+                <div class="sm-ring" style="--score:<%= health.score %>">
+                    <strong><%= health.score %></strong>
+                    <span>Score</span>
+                </div>
+                <div class="sm-checks">
+                    <% health.checks.forEach(function (c) { %>
+                        <div class="sm-check">
+                            <i class="fa-solid <%= c.pass ? 'fa-circle-check ok' : 'fa-circle-exclamation no' %>"></i>
+                            <div>
+                                <%= c.label %>
+                                <% if (c.hint) { %><br><small><%= c.hint %></small><% } %>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            </div>
+        </section>
+
+        <!-- ===== MAIN FORM ===== -->
+        <form action="/admin/seo" method="POST" id="seoForm">
+
+            <!-- Default meta -->
+            <section class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fa-solid fa-tags card-icon"></i> Default Meta Tags</h2>
+                    <span class="sm-badge off">Used when a page has no custom override</span>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group form-full">
+                        <label>Meta title</label>
+                        <input type="text" name="metaTitle" maxlength="200" value="<%= settings.metaTitle || '' %>" placeholder="Mizan Trade — Computer Components Distributor in Bangladesh">
+                        <p class="sm-note">Keep it 50–60 characters. The site name is appended automatically on pages that build their own title.</p>
+                    </div>
+                    <div class="form-group form-full">
+                        <label>Meta description</label>
+                        <textarea name="metaDescription" rows="3" maxlength="400" placeholder="Genuine SSDs, RAM, graphics cards and PC components with nationwide delivery…"><%= settings.metaDescription || '' %></textarea>
+                        <p class="sm-note">Aim for 120–160 characters so Google shows the full snippet.</p>
+                    </div>
+                    <div class="form-group form-full">
+                        <label>Meta keywords</label>
+                        <input type="text" name="metaKeywords" maxlength="400" value="<%= settings.metaKeywords || '' %>" placeholder="SSD, RAM, graphics card, computer components, Bangladesh">
+                    </div>
+                    <div class="form-group form-full">
+                        <label>Social share image (OG image)</label>
+                        <div style="display:flex; gap:8px; align-items:center;">
+                            <input type="text" class="img-url" name="ogImage" value="<%= settings.ogImage || '' %>" placeholder="/uploads/seo/og-image.jpg">
+                            <label class="secondary-button" style="cursor:pointer; white-space:nowrap;">
+                                <i class="fa-solid fa-upload"></i> Upload
+                                <input type="file" class="img-file" accept="image/*" hidden>
+                            </label>
+                        </div>
+                        <p class="sm-note">Recommended 1200×630px. Used for Facebook, WhatsApp and Twitter previews.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Per-page meta -->
+            <section class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fa-solid fa-file-code card-icon"></i> Per-page Meta</h2>
+                    <button type="button" class="secondary-button" id="addSeoPage"><i class="fa-solid fa-plus"></i> Add page</button>
+                </div>
+
+                <p class="sm-sec-title">Core page coverage — <%= health.covered %>/<%= health.corePages.length %></p>
+                <div class="sm-core">
+                    <% health.corePages.forEach(function (p) {
+                        var row = seoPages.filter(function (x) { return x.active !== false && x.path === p.path; })[0];
+                        var done = row && row.title && row.description;
+                    %>
+                        <span class="<%= done ? 'done' : '' %>">
+                            <i class="fa-solid <%= done ? 'fa-check' : 'fa-minus' %>"></i>
+                            <%= p.label %> <code style="font-size:10.5px;color:#8892a0;"><%= p.path %></code>
+                        </span>
+                    <% }); %>
+                </div>
+
+                <div class="sm-row-head">
+                    <span>Path</span>
+                    <span>Title</span>
+                    <span>Description</span>
+                    <span>Keywords</span>
+                    <span>Robots</span>
+                    <span>Active</span>
+                    <span></span>
+                </div>
+
+                <div id="seoPageRows" data-key="seoPages">
+                    <% seoPages.forEach(function (p, i) { %>
+                        <div class="sm-row hc-row">
+                            <div class="form-group">
+                                <label>Path</label>
+                                <input type="text" name="seoPages[<%= i %>][path]" value="<%= p.path %>" placeholder="/shop" list="corePaths">
+                            </div>
+                            <div class="form-group">
+                                <label>Title</label>
+                                <input type="text" name="seoPages[<%= i %>][title]" maxlength="70" value="<%= p.title %>" placeholder="Shop all components">
+                            </div>
+                            <div class="form-group">
+                                <label>Description</label>
+                                <input type="text" name="seoPages[<%= i %>][description]" maxlength="160" value="<%= p.description %>" placeholder="Browse genuine…">
+                            </div>
+                            <div class="form-group">
+                                <label>Keywords</label>
+                                <input type="text" name="seoPages[<%= i %>][keywords]" maxlength="300" value="<%= p.keywords %>">
+                            </div>
+                            <div class="form-group">
+                                <label>Robots</label>
+                                <select name="seoPages[<%= i %>][robots]">
+                                    <option value="index" <%= p.robots !== 'noindex' ? 'selected' : '' %>>index</option>
+                                    <option value="noindex" <%= p.robots === 'noindex' ? 'selected' : '' %>>noindex</option>
+                                </select>
+                            </div>
+                            <label class="sm-inline">
+                                <input type="checkbox" name="seoPages[<%= i %>][active]" value="on" <%= p.active !== false ? 'checked' : '' %>> Active
+                            </label>
+                            <button type="button" class="mini-button danger seo-remove" style="margin-bottom:6px;"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    <% }); %>
+                </div>
+
+                <datalist id="corePaths">
+                    <% corePages.forEach(function (p) { %><option value="<%= p.path %>"><%= p.label %></option><% }); %>
+                </datalist>
+                <p class="sm-note">Paths must match exactly (e.g. <code>/shop</code>, <code>/page/faq</code>, <code>/blog/my-post-slug</code>). Dynamic product and blog pages keep their automatic meta.</p>
+            </section>
+
+            <!-- Tracking -->
+            <section class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fa-solid fa-code card-icon"></i> Analytics &amp; Pixel Integration</h2>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Google Analytics 4 — Measurement ID</label>
+                        <input type="text" name="marketing.ga4Id" value="<%= marketing.ga4Id || '' %>" placeholder="G-XXXXXXXXXX">
+                    </div>
+                    <div class="form-group">
+                        <label>Google Tag Manager — Container ID</label>
+                        <input type="text" name="marketing.gtmId" value="<%= marketing.gtmId || '' %>" placeholder="GTM-XXXXXXX">
+                    </div>
+                    <div class="form-group">
+                        <label>Meta (Facebook) Pixel ID</label>
+                        <input type="text" name="marketing.fbPixelId" value="<%= marketing.fbPixelId || '' %>" placeholder="123456789012345">
+                    </div>
+                    <div class="form-group">
+                        <label>Google Search Console verification</label>
+                        <input type="text" name="marketing.googleVerification" value="<%= marketing.googleVerification || '' %>" placeholder="content value from the meta tag">
+                    </div>
+                    <div class="form-group">
+                        <label>Bing Webmaster verification</label>
+                        <input type="text" name="marketing.bingVerification" value="<%= marketing.bingVerification || '' %>" placeholder="msvalidate.01 value">
+                    </div>
+                    <div class="form-group">
+                        <label>Facebook domain verification</label>
+                        <input type="text" name="marketing.fbVerification" value="<%= marketing.fbVerification || '' %>" placeholder="facebook-domain-verification value">
+                    </div>
+                    <div class="form-group form-full">
+                        <label>Custom &lt;head&gt; code</label>
+                        <textarea name="marketing.customHead" rows="4" style="font-family:ui-monospace,Consolas,monospace;font-size:12.5px;" placeholder="<!-- extra verification / preload tags -->"><%= marketing.customHead || '' %></textarea>
+                    </div>
+                    <div class="form-group form-full">
+                        <label>Custom code before &lt;/body&gt;</label>
+                        <textarea name="marketing.customBody" rows="4" style="font-family:ui-monospace,Consolas,monospace;font-size:12.5px;" placeholder="<!-- chat, remarketing, heatmap -->"><%= marketing.customBody || '' %></textarea>
+                    </div>
+                </div>
+                <p class="sm-note">Tags are injected on storefront pages only (never inside the admin panel). Leave custom code empty if you already load the same script through Tag Manager.</p>
+            </section>
+
+            <!-- Search visibility snapshot -->
+            <section class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fa-solid fa-binoculars card-icon"></i> Search Visibility Snapshot</h2>
+                    <% if (marketing.kpiUpdatedAt) { %>
+                        <span class="sm-badge off">Updated <%= new Date(marketing.kpiUpdatedAt).toLocaleString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) %></span>
+                    <% } %>
+                </div>
+                <p class="sm-note">
+                    Google ranking, local search visibility and brand score come from external tools
+                    (Search Console, Google Business Profile, Meta Events Manager). Enter the latest
+                    readings after each monthly check — traffic, leads and growth above update live from
+                    your own database.
+                </p>
+                <div class="sm-kpi-grid">
+                    <div class="form-group" style="margin:0;">
+                        <label>Google ranking (avg. position)</label>
+                        <input type="number" name="marketing.googleRanking" min="0" step="0.1" value="<%= marketing.googleRanking || 0 %>">
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label>Website visibility score (%)</label>
+                        <input type="number" name="marketing.searchVisibility" min="0" max="100" step="1" value="<%= marketing.searchVisibility || 0 %>">
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label>Local search visibility / 100</label>
+                        <input type="number" name="marketing.brandCredibility" min="0" max="100" step="1" value="<%= marketing.brandCredibility || 0 %>">
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label>Long-term growth index</label>
+                        <input type="number" name="marketing.longTermGrowth" step="0.1" value="<%= marketing.longTermGrowth || 0 %>">
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label>Organic visits (Search Console)</label>
+                        <input type="number" name="marketing.organicVisits" min="0" step="1" value="<%= marketing.organicVisits || 0 %>">
+                    </div>
+                    <div class="form-group" style="margin:0;">
+                        <label>Note</label>
+                        <input type="text" name="marketing.kpiNote" value="<%= marketing.kpiNote || '' %>" placeholder="e.g. September GSC snapshot">
+                    </div>
+                </div>
+            </section>
+
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                <button type="submit" class="primary-button"><i class="fa-solid fa-floppy-disk"></i> Save SEO &amp; Marketing</button>
+            </div>
+        </form>
+
+        <!-- External tools -->
+        <section class="dashboard-card" style="margin-top:18px;">
+            <div class="card-header">
+                <h2 class="card-title"><i class="fa-solid fa-arrow-up-right-from-square card-icon"></i> Connected Tools</h2>
+            </div>
+            <div class="sm-tools">
+                <a class="sm-tool" href="https://search.google.com/search-console" target="_blank" rel="noopener">
+                    <i class="fa-brands fa-google"></i>
+                    <div>
+                        <strong>Google Search Console</strong>
+                        <small>Rankings, queries, indexing · <%= marketing.googleVerification ? "verified" : "not verified" %></small>
+                    </div>
+                </a>
+                <a class="sm-tool" href="https://business.google.com/" target="_blank" rel="noopener">
+                    <i class="fa-solid fa-map-location-dot"></i>
+                    <div>
+                        <strong>Google Business Profile</strong>
+                        <small>Local search visibility &amp; reviews</small>
+                    </div>
+                </a>
+                <a class="sm-tool" href="https://analytics.google.com/" target="_blank" rel="noopener">
+                    <i class="fa-solid fa-chart-pie"></i>
+                    <div>
+                        <strong>Google Analytics</strong>
+                        <small><%= marketing.ga4Id ? marketing.ga4Id : "Not connected" %></small>
+                    </div>
+                </a>
+                <a class="sm-tool" href="https://business.facebook.com/events_manager2" target="_blank" rel="noopener">
+                    <i class="fa-brands fa-facebook"></i>
+                    <div>
+                        <strong>Meta Events Manager</strong>
+                        <small>Pixel events · <%= marketing.fbPixelId ? "connected" : "not connected" %></small>
+                    </div>
+                </a>
+                <a class="sm-tool" href="https://pagespeed.web.dev/" target="_blank" rel="noopener">
+                    <i class="fa-solid fa-gauge-high"></i>
+                    <div>
+                        <strong>PageSpeed Insights</strong>
+                        <small>Core Web Vitals &amp; speed audit</small>
+                    </div>
+                </a>
+                <a class="sm-tool" href="/sitemap.xml" target="_blank" rel="noopener">
+                    <i class="fa-solid fa-sitemap"></i>
+                    <div>
+                        <strong>XML Sitemap</strong>
+                        <small>/sitemap.xml · auto-generated</small>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+    </main>
+</div>
+
+<script>
+(function () {
+    var box = document.getElementById("seoPageRows");
+
+    function reindex() {
+        var rows = box.querySelectorAll(":scope > .sm-row");
+        Array.prototype.forEach.call(rows, function (row, i) {
+            Array.prototype.forEach.call(row.querySelectorAll('[name^="seoPages["]'), function (input) {
+                input.name = input.name.replace(/^seoPages\[\d+\]/, "seoPages[" + i + "]");
+            });
+        });
+    }
+
+    function rowTemplate() {
+        return '<div class="sm-row hc-row">' +
+            '<div class="form-group"><label>Path</label><input type="text" name="seoPages[0][path]" placeholder="/shop" list="corePaths"></div>' +
+            '<div class="form-group"><label>Title</label><input type="text" name="seoPages[0][title]" maxlength="70" placeholder="Shop all components"></div>' +
+            '<div class="form-group"><label>Description</label><input type="text" name="seoPages[0][description]" maxlength="160" placeholder="Browse genuine…"></div>' +
+            '<div class="form-group"><label>Keywords</label><input type="text" name="seoPages[0][keywords]" maxlength="300"></div>' +
+            '<div class="form-group"><label>Robots</label><select name="seoPages[0][robots]"><option value="index">index</option><option value="noindex">noindex</option></select></div>' +
+            '<label class="sm-inline"><input type="checkbox" name="seoPages[0][active]" value="on" checked> Active</label>' +
+            '<button type="button" class="mini-button danger seo-remove" style="margin-bottom:6px;"><i class="fa-solid fa-trash"></i></button>' +
+        '</div>';
+    }
+
+    document.getElementById("addSeoPage").addEventListener("click", function () {
+        box.insertAdjacentHTML("beforeend", rowTemplate());
+        reindex();
+    });
+
+    box.addEventListener("click", function (e) {
+        var btn = e.target.closest(".seo-remove");
+        if (!btn) return;
+        var row = btn.closest(".sm-row");
+        if (row) {
+            row.remove();
+            reindex();
+        }
+    });
+
+    /* image upload */
+    document.addEventListener("change", function (e) {
+        var input = e.target.closest(".img-file");
+        if (!input || !input.files || !input.files[0]) return;
+        var wrap = input.closest("div");
+        var urlInput = wrap ? wrap.querySelector(".img-url") : null;
+        var fd = new FormData();
+        fd.append("media", input.files[0]);
+        fetch("/admin/upload-media", { method: "POST", body: fd })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (data && data.success && data.urls && data.urls.length) {
+                    if (urlInput) urlInput.value = data.urls[0];
+                } else {
+                    alert("Upload failed: " + ((data && data.message) || "unknown error"));
+                }
+            })
+            .catch(function (err) { alert("Upload error: " + err.message); });
+    });
+
+    document.getElementById("seoForm").addEventListener("submit", reindex);
+})();
+</script>

@@ -153,143 +153,140 @@
     }
 
     /* ==================================================
-       RICH TEXT EDITORS
+       IMAGE MANAGER (reorder / set main / remove)
     ================================================== */
 
-    var savedRange = null;
-
-    function saveSelection(editor) {
-        var sel = window.getSelection();
-        if (sel.rangeCount && editor.contains(sel.anchorNode)) {
-            savedRange = sel.getRangeAt(0).cloneRange();
-        }
-    }
-
-    function restoreSelection() {
-        if (!savedRange) return;
-        var sel = window.getSelection();
-        sel.removeAllRanges();
-        sel.addRange(savedRange);
-    }
-
-    var imageInput = document.getElementById("rteImageInput");
-    var imageTarget = null;
-
-    document.querySelectorAll(".rte-toolbar").forEach(function (toolbar) {
-        var editor = document.getElementById(toolbar.dataset.editor);
-        var source = editor && editor.nextElementSibling;
-
-        if (!editor) return;
-
-        if (editor.id === "shortEditor") {
-            source = document.getElementById("shortDescSource");
-        } else {
-            source = document.getElementById("longDescSource");
-        }
-
-        if (source && source.value) {
-            editor.innerHTML = source.value;
-        }
-
-        ["keyup", "mouseup", "focus"].forEach(function (evt) {
-            editor.addEventListener(evt, function () {
-                saveSelection(editor);
-            });
-        });
-
-        toolbar.querySelectorAll(".rte-btn").forEach(function (btn) {
-            btn.addEventListener("mousedown", function (event) {
-                event.preventDefault();
-            });
-
-            btn.addEventListener("click", function () {
-                editor.focus();
-                restoreSelection();
-
-                if (btn.dataset.role === "image") {
-                    imageTarget = editor;
-                    if (imageInput) imageInput.click();
-                    return;
-                }
-
-                if (btn.dataset.cmd === "createLink") {
-                    var url = prompt("Link URL:", "https://");
-                    if (url) document.execCommand("createLink", false, url);
-                    return;
-                }
-
-                document.execCommand(btn.dataset.cmd, false, null);
-            });
-        });
-
-        var blockSelect = toolbar.querySelector(".rte-select");
-
-        if (blockSelect) {
-            blockSelect.addEventListener("change", function () {
-                editor.focus();
-                restoreSelection();
-                document.execCommand("formatBlock", false, "<" + blockSelect.value + ">");
-            });
-        }
-    });
-
-    if (imageInput) {
-        imageInput.addEventListener("change", function () {
-            if (!imageInput.files || !imageInput.files[0]) return;
-
-            var formData = new FormData();
-            formData.append("image", imageInput.files[0]);
-
-            fetch("/admin/upload-image", {
-                method: "POST",
-                body: formData
-            })
-                .then(function (res) { return res.json(); })
-                .then(function (data) {
-                    if (!data.success || !imageTarget) return;
-
-                    imageTarget.focus();
-                    restoreSelection();
-                    document.execCommand("insertImage", false, data.url);
-                })
-                .catch(function () {
-                    alert("Image upload failed. Please try again.");
-                })
-                .finally(function () {
-                    imageInput.value = "";
-                });
-        });
-    }
-
-    /* ==================================================
-       IMAGE PREVIEWS
-    ================================================== */
-
+    var imgManager = document.getElementById("imgManager");
     var mainImageInput = document.getElementById("mainImageInput");
-    var mainPreview = document.getElementById("mainPreview");
+    var galleryInput = document.getElementById("galleryInput");
 
-    if (mainImageInput && mainPreview) {
-        mainImageInput.addEventListener("change", function () {
-            if (!mainImageInput.files || !mainImageInput.files[0]) return;
-            mainPreview.src = URL.createObjectURL(mainImageInput.files[0]);
-            mainPreview.style.display = "";
+    /* Newly picked files that are not uploaded yet: file + its tile blob URL. */
+    var pendingFiles = [];
+
+    function tileHtml(blobUrl) {
+        return (
+            '<div class="img-tile" data-new="1" data-url="' + blobUrl + '">' +
+            '<img src="' + blobUrl + '" alt="New product image">' +
+            '<span class="main-badge"><i class="fa-solid fa-star"></i> Main</span>' +
+            '<div class="tile-actions">' +
+            '<button type="button" class="tile-btn tile-main" title="Set as main image"><i class="fa-solid fa-star"></i></button>' +
+            '<button type="button" class="tile-btn tile-left" title="Move left"><i class="fa-solid fa-arrow-left"></i></button>' +
+            '<button type="button" class="tile-btn tile-right" title="Move right"><i class="fa-solid fa-arrow-right"></i></button>' +
+            '<button type="button" class="tile-btn danger tile-remove" title="Remove image"><i class="fa-solid fa-trash"></i></button>' +
+            "</div>" +
+            "</div>"
+        );
+    }
+
+    function addPendingFiles(fileList) {
+        if (!imgManager) return;
+
+        Array.prototype.forEach.call(fileList || [], function (file) {
+            var blobUrl = URL.createObjectURL(file);
+            pendingFiles.push({ file: file, blobUrl: blobUrl });
+            imgManager.insertAdjacentHTML("beforeend", tileHtml(blobUrl));
         });
     }
 
-    var galleryInput = document.getElementById("galleryInput");
-    var galleryPreview = document.getElementById("galleryPreview");
-
-    if (galleryInput && galleryPreview) {
-        galleryInput.addEventListener("change", function () {
-            galleryPreview.innerHTML = "";
-
-            Array.prototype.forEach.call(galleryInput.files, function (file) {
-                var img = document.createElement("img");
-                img.className = "preview-tile";
-                img.src = URL.createObjectURL(file);
-                galleryPreview.appendChild(img);
-            });
+    if (mainImageInput) {
+        mainImageInput.addEventListener("change", function () {
+            addPendingFiles(mainImageInput.files);
+            mainImageInput.value = "";
         });
+    }
+
+    if (galleryInput) {
+        galleryInput.addEventListener("change", function () {
+            addPendingFiles(galleryInput.files);
+            galleryInput.value = "";
+        });
+    }
+
+    if (imgManager) {
+        imgManager.addEventListener("click", function (event) {
+            var btn = event.target.closest(".tile-btn");
+            if (!btn) return;
+
+            var tile = btn.closest(".img-tile");
+
+            if (btn.classList.contains("tile-main")) {
+                imgManager.querySelectorAll(".img-tile").forEach(function (t) {
+                    t.classList.remove("is-main");
+                });
+                tile.classList.add("is-main");
+                return;
+            }
+
+            if (btn.classList.contains("tile-left") && tile.previousElementSibling) {
+                tile.parentNode.insertBefore(tile, tile.previousElementSibling);
+                return;
+            }
+
+            if (btn.classList.contains("tile-right") && tile.nextElementSibling) {
+                tile.parentNode.insertBefore(tile.nextElementSibling, tile);
+                return;
+            }
+
+            if (btn.classList.contains("tile-remove")) {
+                if (!confirm("Remove this image?")) return;
+                if (tile.dataset.new === "1") {
+                    pendingFiles = pendingFiles.filter(function (pf) {
+                        if (pf.blobUrl === tile.dataset.url) {
+                            URL.revokeObjectURL(pf.blobUrl);
+                            return false;
+                        }
+                        return true;
+                    });
+                }
+                tile.remove();
+            }
+        });
+    }
+
+    /* Rebuild the real file inputs from the grid order right before submit. */
+    function syncImageInputs() {
+        if (!imgManager || !form) return;
+
+        var orderedMain = null;
+        var orderedExisting = [];
+        var orderedFiles = [];
+
+        imgManager.querySelectorAll(".img-tile").forEach(function (tile) {
+            var isMain = tile.classList.contains("is-main");
+
+            if (tile.dataset.new === "1") {
+                var found = null;
+                pendingFiles.forEach(function (pf) {
+                    if (pf.blobUrl === tile.dataset.url) found = pf.file;
+                });
+                if (found) {
+                    if (isMain && !orderedMain) orderedMain = found;
+                    else orderedFiles.push(found);
+                }
+            } else {
+                if (isMain) {
+                    if (!orderedMain) orderedMain = tile.dataset.url;
+                } else {
+                    orderedExisting.push(tile.dataset.url);
+                }
+            }
+        });
+
+        var dtGallery = new DataTransfer();
+        orderedFiles.forEach(function (f) { dtGallery.items.add(f); });
+        if (galleryInput) galleryInput.files = dtGallery.files;
+
+        var dtMain = new DataTransfer();
+        if (orderedMain && typeof orderedMain !== "string") {
+            dtMain.items.add(orderedMain);
+        }
+        if (mainImageInput) mainImageInput.files = dtMain.files;
+
+        form.querySelector('[name="galleryOrdered"]').value = "1";
+        form.querySelector('[name="mainImageKeep"]').value =
+            typeof orderedMain === "string" ? orderedMain : "";
+        form.querySelector('[name="existingImagesJoined"]').value =
+            orderedExisting.join("\n");
     }
 
     /* ==================================================
@@ -358,7 +355,8 @@
     }
 
     /* ==================================================
-       SUBMIT — sync editors + auto sku
+       SUBMIT — image order + auto sku
+       (editor HTML is synced by rte.js via data-rte-source)
     ================================================== */
 
     var form = document.getElementById("productForm");
@@ -369,13 +367,7 @@
                 skuInput.value = randomSku();
             }
 
-            var shortEditor = document.getElementById("shortEditor");
-            var shortSource = document.getElementById("shortDescSource");
-            if (shortEditor && shortSource) shortSource.value = shortEditor.innerHTML;
-
-            var longEditor = document.getElementById("longEditor");
-            var longSource = document.getElementById("longDescSource");
-            if (longEditor && longSource) longSource.value = longEditor.innerHTML;
+            syncImageInputs();
         });
     }
 })();

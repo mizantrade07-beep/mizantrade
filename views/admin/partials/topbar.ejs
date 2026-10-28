@@ -17,7 +17,7 @@
             </p>
 
             <h1 class="topbar-title">
-                <%= pageTitle || "Dashboard" %>
+                <%= (typeof pageTitle !== "undefined" && pageTitle) ? pageTitle : "Dashboard" %>
             </h1>
         </div>
 

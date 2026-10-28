@@ -64,6 +64,24 @@ app.set(
     path.join(__dirname, "views")
 );
 
+app.locals.mailConfigured = function () {
+    return require("./utils/mailer").isMailConfigured();
+};
+
+app.locals.oauthConfigured = function (provider) {
+    return require("./utils/oauth").isConfigured(provider);
+};
+
+app.locals.whatsappConfigured = function () {
+    return require("./utils/whatsapp").isConfigured();
+};
+
+const images = require("./utils/images");
+
+app.locals.optimizeImage = images.setTransform;
+
+app.locals.optimizeHtml = images.setTransformHtml;
+
 
 // ======================================================
 // BODY PARSER
@@ -105,6 +123,15 @@ app.use(attachCustomer);
 
 app.use(
     require("./middleware/siteData")
+);
+
+
+// ======================================================
+// STOREFRONT TRAFFIC (SEO & MARKETING DASHBOARD)
+// ======================================================
+
+app.use(
+    require("./middleware/traffic")
 );
 
 
@@ -179,59 +206,6 @@ cloudinary.api.ping()
         );
 
     });
-
-
-// ======================================================
-// TEMPORARY CLOUDINARY UPLOAD TEST
-//
-// IMPORTANT:
-// This route is ONLY for local testing.
-// Remove it after Cloudinary upload is confirmed.
-// ======================================================
-
-app.post(
-    "/test-cloudinary",
-    upload.single("image"),
-    function (req, res) {
-
-        console.log(
-            "Cloudinary test upload received."
-        );
-
-        console.log(
-            "Uploaded file:",
-            req.file
-        );
-
-        if (!req.file) {
-
-            return res.status(400).json({
-                success: false,
-                message: "No image received."
-            });
-
-        }
-
-        return res.status(200).json({
-            success: true,
-            message: "Cloudinary upload successful.",
-
-            file: {
-                filename: req.file.filename || null,
-                path: req.file.path || null,
-                url: req.file.path || null,
-                public_id: req.file.public_id || null,
-                originalname:
-                    req.file.originalname || null,
-                mimetype:
-                    req.file.mimetype || null,
-                size:
-                    req.file.size || null
-            }
-        });
-
-    }
-);
 
 
 // ======================================================

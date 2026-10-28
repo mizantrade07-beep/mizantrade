@@ -1,0 +1,22 @@
+<%
+    var mediaVideo = im.kind === "video" && im.video ? String(im.video) : "";
+    var mediaSrc = mediaVideo;
+    var videoMatch = mediaVideo.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([A-Za-z0-9_-]{6,})/i);
+    var vimeoMatch = mediaVideo.match(/vimeo\.com\/(\d+)/i);
+    var isVideoFile = /\.(mp4|webm|ogg)(\?|#|$)/i.test(mediaVideo);
+    if (videoMatch) mediaSrc = "https://www.youtube.com/embed/" + videoMatch[1];
+    else if (vimeoMatch) mediaSrc = "https://player.vimeo.com/video/" + vimeoMatch[1];
+%>
+<div class="home-banner<%= mediaVideo ? ' home-banner-video' : '' %>">
+    <% if (mediaVideo) { %>
+        <% if (isVideoFile) { %>
+            <video src="<%= mediaVideo %>" controls playsinline preload="metadata"></video>
+        <% } else { %>
+            <iframe src="<%= mediaSrc %>" title="<%= im.alt || 'Banner video' %>" loading="lazy" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
+        <% } %>
+    <% } else { %>
+        <% if (im.link) { %><a href="<%= im.link %>"><% } %>
+            <img src="<%= optimizeImage(im.image, 1600) %>" alt="<%= im.alt || 'Banner' %>" loading="lazy" decoding="async">
+        <% if (im.link) { %></a><% } %>
+    <% } %>
+</div>

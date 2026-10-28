@@ -1,0 +1,461 @@
+<%- include("partials/head", { title: "Footer | MizanTrade Admin" }) %>
+
+<%- include("partials/sidebar") %>
+
+<div class="admin-main">
+
+    <%- include("partials/topbar", { title: "Footer" }) %>
+
+    <main class="admin-content">
+
+        <div class="dashboard-header">
+            <div>
+                <h1 class="dashboard-title">Footer</h1>
+                <p class="dashboard-subtitle">
+                    Everything below the home page: logo, address blocks, link columns, memberships and copyright.
+                    Shipping zones live in Settings and payment accounts in Payment Methods.
+                </p>
+            </div>
+            <a href="/" target="_blank" class="secondary-button">
+                <i class="fa-solid fa-arrow-up-right-from-square"></i> View Site
+            </a>
+        </div>
+
+        <% if (message === "saved") { %>
+            <div style="padding:12px 16px; border-radius:10px; margin-bottom:18px; font-weight:600; background:#e8f7ee; color:#1f8a3b; border:1px solid #bfe8cd;">
+                <i class="fa-solid fa-circle-check"></i> Footer saved successfully.
+            </div>
+        <% } else if (message === "error") { %>
+            <div style="padding:12px 16px; border-radius:10px; margin-bottom:18px; font-weight:600; background:#fdecea; color:#c0392b; border:1px solid #f5c6c0;">
+                <i class="fa-solid fa-triangle-exclamation"></i> Could not save the footer. Please try again.
+            </div>
+        <% } %>
+
+        <form method="POST" action="/admin/footer" id="footerForm">
+
+            <!-- ===== LOGO ===== -->
+            <section class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fa-solid fa-image card-icon"></i> Footer Logo</h2>
+                </div>
+                <div class="tag-input-hint" style="margin-bottom:10px;">
+                    Set the logo size for desktop and mobile. Leave height 0 to use the theme default.
+                </div>
+                <div style="display:grid; grid-template-columns:2fr 1.4fr 1fr 1fr; gap:12px; align-items:end;">
+                    <div class="form-group" style="margin:0;">
+                        <label>Logo image (URL)</label>
+                        <div style="display:flex; gap:8px;">
+                            <input type="text" name="logo.image" class="img-url" value="<%= content.logo.image || '' %>" placeholder="https://… or upload">
+                            <label class="secondary-button" style="cursor:pointer; white-space:nowrap;">
+                                <i class="fa-solid fa-upload"></i> Upload
+                                <input type="file" accept="image/*" class="img-file" hidden>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin:0;"><label>Logo link</label>
+                        <input type="text" name="logo.link" value="<%= content.logo.link || '' %>" placeholder="/"></div>
+                    <div class="form-group" style="margin:0;"><label>Desktop height (px)</label>
+                        <input type="number" name="logo.height" min="0" max="200" value="<%= content.logo.height || 0 %>"></div>
+                    <div class="form-group" style="margin:0;"><label>Mobile height (px)</label>
+                        <input type="number" name="logo.mobileHeight" min="0" max="200" value="<%= content.logo.mobileHeight || 0 %>"></div>
+                </div>
+            </section>
+
+            <!-- ===== INFO BLOCKS ===== -->
+            <section class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fa-solid fa-location-dot card-icon"></i> Address / Info Blocks</h2>
+                    <button type="button" class="secondary-button" data-add="info">
+                        <i class="fa-solid fa-plus"></i> Add Block
+                    </button>
+                </div>
+                <div class="tag-input-hint" style="margin-bottom:10px;">
+                    Add or delete address lines, or replace them with any text, image or video. Use line breaks for multiple lines.
+                </div>
+                <div data-key="infoBlocks" id="infoRows">
+                    <% (content.infoBlocks || []).forEach(function (b, i) { %>
+                        <div class="hc-row" data-kind="<%= b.kind %>" style="border:1px solid #e3e8ef; border-radius:10px; padding:12px; margin-bottom:10px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                                <strong style="color:#081621;">Info block <%= i + 1 %></strong>
+                                <span style="display:flex; gap:6px; align-items:center;">
+                                    <button type="button" class="mini-button hc-move" data-dir="-1"><i class="fa-solid fa-arrow-up"></i></button>
+                                    <button type="button" class="mini-button hc-move" data-dir="1"><i class="fa-solid fa-arrow-down"></i></button>
+                                    <label style="display:flex; gap:6px; align-items:center; font-size:13px; margin:0 4px;">
+                                        <input type="checkbox" name="infoBlocks[<%= i %>][active]" value="on" <%= b.active !== false ? 'checked' : '' %>> Show
+                                    </label>
+                                    <button type="button" class="mini-button danger hc-remove"><i class="fa-solid fa-trash"></i></button>
+                                </span>
+                            </div>
+                            <div style="display:grid; grid-template-columns:130px 1fr 1.4fr 1.4fr; gap:10px; align-items:end;">
+                                <div class="form-group" style="margin:0;"><label>Type</label>
+                                    <select name="infoBlocks[<%= i %>][kind]" class="info-kind">
+                                        <option value="text" <%= b.kind !== 'image' && b.kind !== 'video' ? 'selected' : '' %>>Text</option>
+                                        <option value="image" <%= b.kind === 'image' ? 'selected' : '' %>>Image</option>
+                                        <option value="video" <%= b.kind === 'video' ? 'selected' : '' %>>Video</option>
+                                    </select></div>
+                                <div class="form-group" style="margin:0;"><label>Title</label>
+                                    <input type="text" name="infoBlocks[<%= i %>][title]" value="<%= b.title %>" placeholder="Address"></div>
+                                <div class="form-group info-text" style="margin:0;"><label>Text</label>
+                                    <textarea name="infoBlocks[<%= i %>][text]" rows="2" placeholder="Shop No…, Road…"><%= b.text %></textarea></div>
+                                <div class="form-group info-image" style="margin:0;"><label>Image (URL)</label>
+                                    <div style="display:flex; gap:6px;">
+                                        <input type="text" name="infoBlocks[<%= i %>][image]" class="img-url" value="<%= b.image %>">
+                                        <label class="secondary-button" style="cursor:pointer; white-space:nowrap;">
+                                            <i class="fa-solid fa-upload"></i><input type="file" accept="image/*" class="img-file" hidden>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group info-video" style="margin:10px 0 0; max-width:520px;">
+                                <label>Video (YouTube, Vimeo or .mp4 URL)</label>
+                                <input type="text" name="infoBlocks[<%= i %>][video]" value="<%= b.video %>" placeholder="https://www.youtube.com/watch?v=…">
+                            </div>
+                            <div class="form-group" style="margin:10px 0 0; max-width:420px;"><label>Link (optional)</label>
+                                <input type="text" name="infoBlocks[<%= i %>][link]" value="<%= b.link %>" placeholder="/contact"></div>
+                        </div>
+                    <% }); %>
+                </div>
+            </section>
+
+            <!-- ===== LINK COLUMNS ===== -->
+            <section class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fa-solid fa-table-columns card-icon"></i> Link Columns</h2>
+                    <button type="button" class="secondary-button" data-add="column">
+                        <i class="fa-solid fa-plus"></i> Add Column
+                    </button>
+                </div>
+                <div class="tag-input-hint" style="margin-bottom:10px;">
+                    Rename About Company, Customer Help, Customer Service, and add, edit or delete any link inside them.
+                </div>
+                <div data-key="columns" id="columnRows">
+                    <% (content.columns || []).forEach(function (c, i) { %>
+                        <div class="hc-row column-row" style="border:1px solid #e3e8ef; border-radius:10px; padding:12px; margin-bottom:12px;">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                                <strong style="color:#081621;">Column <%= i + 1 %></strong>
+                                <span style="display:flex; gap:6px; align-items:center;">
+                                    <button type="button" class="mini-button hc-move" data-dir="-1"><i class="fa-solid fa-arrow-up"></i></button>
+                                    <button type="button" class="mini-button hc-move" data-dir="1"><i class="fa-solid fa-arrow-down"></i></button>
+                                    <label style="display:flex; gap:6px; align-items:center; font-size:13px; margin:0 4px;">
+                                        <input type="checkbox" name="columns[<%= i %>][active]" value="on" <%= c.active !== false ? 'checked' : '' %>> Show
+                                    </label>
+                                    <button type="button" class="mini-button danger hc-remove"><i class="fa-solid fa-trash"></i></button>
+                                </span>
+                            </div>
+                            <div class="form-group" style="max-width:420px; margin-bottom:10px;">
+                                <label>Column title</label>
+                                <input type="text" name="columns[<%= i %>][title]" value="<%= c.title %>" placeholder="About Company">
+                            </div>
+                            <div class="links-box">
+                                <% (c.links || []).forEach(function (l, j) { %>
+                                    <div class="hc-row link-row" style="display:grid; grid-template-columns:1.4fr 2fr auto auto; gap:10px; align-items:end; border:1px dashed #d6dde6; border-radius:8px; padding:8px; margin-bottom:8px; background:#fafbfd;">
+                                        <div class="form-group" style="margin:0;"><label>Label</label>
+                                            <input type="text" name="columns[<%= i %>][links][<%= j %>][label]" value="<%= l.label %>"></div>
+                                        <div class="form-group" style="margin:0;"><label>URL</label>
+                                            <input type="text" name="columns[<%= i %>][links][<%= j %>][url]" value="<%= l.url %>" placeholder="/about"></div>
+                                        <label style="display:flex; gap:6px; align-items:center; font-size:13px; padding-bottom:10px;">
+                                            <input type="checkbox" name="columns[<%= i %>][links][<%= j %>][active]" value="on" <%= l.active !== false ? 'checked' : '' %>> Show
+                                        </label>
+                                        <button type="button" class="mini-button danger link-remove" style="margin-bottom:6px;"><i class="fa-solid fa-trash"></i></button>
+                                    </div>
+                                <% }); %>
+                            </div>
+                            <button type="button" class="secondary-button add-link"><i class="fa-solid fa-plus"></i> Add Link</button>
+                        </div>
+                    <% }); %>
+                </div>
+            </section>
+
+            <!-- ===== MEMBERSHIPS ===== -->
+            <section class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fa-solid fa-id-badge card-icon"></i> Membership / Partner Logos</h2>
+                    <button type="button" class="secondary-button" data-add="membership">
+                        <i class="fa-solid fa-plus"></i> Add Logo
+                    </button>
+                </div>
+                <div class="tag-input-hint" style="margin-bottom:10px;">
+                    e-CAB, BASIS, BCC or any partner logo — each with its own link and size.
+                </div>
+                <div class="form-group" style="max-width:320px; margin-bottom:12px;">
+                    <label>Section title</label>
+                    <input type="text" name="membershipTitle" value="<%= content.membershipTitle %>" placeholder="Membership">
+                </div>
+                <div data-key="memberships" id="membershipRows">
+                    <% (content.memberships || []).forEach(function (m, i) { %>
+                        <div class="hc-row" style="display:grid; grid-template-columns:1.2fr 1.6fr 1.6fr 1fr auto auto auto; gap:10px; align-items:end; border:1px solid #e3e8ef; border-radius:10px; padding:12px; margin-bottom:10px;">
+                            <div class="form-group" style="margin:0;"><label>Name</label>
+                                <input type="text" name="memberships[<%= i %>][name]" value="<%= m.name %>"></div>
+                            <div class="form-group" style="margin:0;"><label>Image (URL)</label>
+                                <div style="display:flex; gap:6px;">
+                                    <input type="text" name="memberships[<%= i %>][image]" class="img-url" value="<%= m.image %>">
+                                    <label class="secondary-button" style="cursor:pointer; white-space:nowrap;">
+                                        <i class="fa-solid fa-upload"></i><input type="file" accept="image/*" class="img-file" hidden>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="form-group" style="margin:0;"><label>Link (optional)</label>
+                                <input type="text" name="memberships[<%= i %>][link]" value="<%= m.link %>"></div>
+                            <div class="form-group" style="margin:0;"><label>Height (px, 0 = auto)</label>
+                                <input type="number" name="memberships[<%= i %>][height]" min="0" max="200" value="<%= m.height || 0 %>"></div>
+                            <label style="display:flex; gap:6px; align-items:center; font-size:13px; padding-bottom:10px;">
+                                <input type="checkbox" name="memberships[<%= i %>][active]" value="on" <%= m.active !== false ? 'checked' : '' %>> Show
+                            </label>
+                            <button type="button" class="mini-button hc-move" data-dir="1" style="margin-bottom:6px;"><i class="fa-solid fa-arrow-down"></i></button>
+                            <button type="button" class="mini-button danger hc-remove" style="margin-bottom:6px;"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    <% }); %>
+                </div>
+                <div class="tag-input-hint" style="margin-top:10px;">
+                    Social links are managed in <a href="/admin/settings#social-links" style="color:#ef4a23; font-weight:700;">Settings → Social Links</a>.
+                </div>
+            </section>
+
+            <!-- ===== COPYRIGHT ===== -->
+            <section class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fa-regular fa-copyright card-icon"></i> Copyright</h2>
+                </div>
+                <div class="form-group">
+                    <label>Footer copyright text</label>
+                    <input type="text" name="copyrightText" value="<%= content.copyrightText %>" placeholder="© {year} MizanTrade | All Rights Reserved.">
+                    <div class="tag-input-hint">Use <strong>{year}</strong> and it will update automatically every year.</div>
+                </div>
+                <div class="tag-input-hint" style="margin-top:10px;">
+                    Shipping zones are in <a href="/admin/settings#shipping" style="color:#ef4a23; font-weight:700;">Settings → Shipping</a>.
+                    Meta tags and analytics are in <a href="/admin/seo" style="color:#ef4a23; font-weight:700;">SEO &amp; Marketing</a>.
+                </div>
+            </section>
+
+            <div class="form-actions">
+                <button type="submit" class="primary-button">
+                    <i class="fa-solid fa-floppy-disk"></i> Save Footer
+                </button>
+                <a href="/" target="_blank" class="secondary-button">View Home Page</a>
+            </div>
+
+        </form>
+
+    </main>
+
+</div>
+
+<%- include("partials/footer") %>
+
+<script>
+(function () {
+    function esc(s) {
+        return String(s === undefined || s === null ? '' : s)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function uploadField(name, placeholder) {
+        return '<div style="display:flex; gap:6px;">' +
+            '<input type="text" name="' + name + '" class="img-url" placeholder="' + (placeholder || 'https://… or upload') + '">' +
+            '<label class="secondary-button" style="cursor:pointer; white-space:nowrap;"><i class="fa-solid fa-upload"></i>' +
+            '<input type="file" accept="image/*" class="img-file" hidden></label></div>';
+    }
+
+    function activeBox(name) {
+        return '<label style="display:flex; gap:6px; align-items:center; font-size:13px; padding-bottom:10px;">' +
+            '<input type="checkbox" name="' + name + '" value="on" checked> Show</label>';
+    }
+
+    /* ---------- generic reindex ---------- */
+    function reindex(box) {
+        var key = box.getAttribute('data-key');
+        if (key === 'columns') { reindexColumns(box); return; }
+        var rows = box.querySelectorAll(':scope > .hc-row');
+        Array.prototype.forEach.call(rows, function (row, i) {
+            Array.prototype.forEach.call(row.querySelectorAll('[name^="' + key + '["]'), function (input) {
+                input.name = input.name.replace(new RegExp('^' + key + '\\[\\d+\\]'), key + '[' + i + ']');
+            });
+        });
+    }
+
+    function reindexColumns(box) {
+        var rows = box.querySelectorAll(':scope > .hc-row.column-row');
+        Array.prototype.forEach.call(rows, function (row, i) {
+            Array.prototype.forEach.call(row.querySelectorAll('[name^="columns["]'), function (input) {
+                input.name = input.name.replace(/^columns\[\d+\]/, 'columns[' + i + ']');
+            });
+            var links = row.querySelectorAll('.links-box > .link-row');
+            Array.prototype.forEach.call(links, function (lr, j) {
+                Array.prototype.forEach.call(lr.querySelectorAll('[name^="columns["]'), function (input) {
+                    input.name = input.name.replace(/^columns\[\d+\]\[links\]\[\d+\]/, 'columns[' + i + '][links][' + j + ']');
+                });
+            });
+        });
+    }
+
+    function reindexAll() {
+        document.querySelectorAll('[data-key]').forEach(reindex);
+    }
+
+    function addTo(container, html) {
+        container.insertAdjacentHTML('beforeend', html);
+        reindex(container);
+    }
+
+    /* ---------- templates ---------- */
+    function infoTemplate(i) {
+        return '<div class="hc-row" data-kind="text" style="border:1px solid #e3e8ef; border-radius:10px; padding:12px; margin-bottom:10px;">' +
+            '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">' +
+                '<strong style="color:#081621;">New info block</strong>' +
+                '<span style="display:flex; gap:6px; align-items:center;">' +
+                    '<button type="button" class="mini-button hc-move" data-dir="-1"><i class="fa-solid fa-arrow-up"></i></button>' +
+                    '<button type="button" class="mini-button hc-move" data-dir="1"><i class="fa-solid fa-arrow-down"></i></button>' +
+                    activeBox('infoBlocks[' + i + '][active]') +
+                    '<button type="button" class="mini-button danger hc-remove"><i class="fa-solid fa-trash"></i></button>' +
+                '</span></div>' +
+            '<div style="display:grid; grid-template-columns:130px 1fr 1.4fr 1.4fr; gap:10px; align-items:end;">' +
+                '<div class="form-group" style="margin:0;"><label>Type</label><select name="infoBlocks[' + i + '][kind]" class="info-kind">' +
+                    '<option value="text">Text</option><option value="image">Image</option><option value="video">Video</option></select></div>' +
+                '<div class="form-group" style="margin:0;"><label>Title</label><input type="text" name="infoBlocks[' + i + '][title]"></div>' +
+                '<div class="form-group info-text" style="margin:0;"><label>Text</label><textarea name="infoBlocks[' + i + '][text]" rows="2"></textarea></div>' +
+                '<div class="form-group info-image" style="margin:0;"><label>Image (URL)</label>' + uploadField('infoBlocks[' + i + '][image]', '') + '</div>' +
+            '</div>' +
+            '<div class="form-group info-video" style="margin:10px 0 0; max-width:520px;"><label>Video (YouTube, Vimeo or .mp4 URL)</label>' +
+                '<input type="text" name="infoBlocks[' + i + '][video]" placeholder="https://www.youtube.com/watch?v=…"></div>' +
+            '<div class="form-group" style="margin:10px 0 0; max-width:420px;"><label>Link (optional)</label>' +
+                '<input type="text" name="infoBlocks[' + i + '][link]" placeholder="/contact"></div></div>';
+    }
+
+    function linkTemplate(colIdx, j) {
+        return '<div class="hc-row link-row" style="display:grid; grid-template-columns:1.4fr 2fr auto auto; gap:10px; align-items:end; border:1px dashed #d6dde6; border-radius:8px; padding:8px; margin-bottom:8px; background:#fafbfd;">' +
+            '<div class="form-group" style="margin:0;"><label>Label</label><input type="text" name="columns[' + colIdx + '][links][' + j + '][label]"></div>' +
+            '<div class="form-group" style="margin:0;"><label>URL</label><input type="text" name="columns[' + colIdx + '][links][' + j + '][url]" placeholder="/about"></div>' +
+            '<label style="display:flex; gap:6px; align-items:center; font-size:13px; padding-bottom:10px;">' +
+                '<input type="checkbox" name="columns[' + colIdx + '][links][' + j + '][active]" value="on" checked> Show</label>' +
+            '<button type="button" class="mini-button danger link-remove" style="margin-bottom:6px;"><i class="fa-solid fa-trash"></i></button></div>';
+    }
+
+    function columnTemplate(i) {
+        return '<div class="hc-row column-row" style="border:1px solid #e3e8ef; border-radius:10px; padding:12px; margin-bottom:12px;">' +
+            '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">' +
+                '<strong style="color:#081621;">New column</strong>' +
+                '<span style="display:flex; gap:6px; align-items:center;">' +
+                    '<button type="button" class="mini-button hc-move" data-dir="-1"><i class="fa-solid fa-arrow-up"></i></button>' +
+                    '<button type="button" class="mini-button hc-move" data-dir="1"><i class="fa-solid fa-arrow-down"></i></button>' +
+                    activeBox('columns[' + i + '][active]') +
+                    '<button type="button" class="mini-button danger hc-remove"><i class="fa-solid fa-trash"></i></button>' +
+                '</span></div>' +
+            '<div class="form-group" style="max-width:420px; margin-bottom:10px;"><label>Column title</label>' +
+                '<input type="text" name="columns[' + i + '][title]" placeholder="About Company"></div>' +
+            '<div class="links-box"></div>' +
+            '<button type="button" class="secondary-button add-link"><i class="fa-solid fa-plus"></i> Add Link</button></div>';
+    }
+
+    function membershipTemplate(i) {
+        return '<div class="hc-row" style="display:grid; grid-template-columns:1.2fr 1.6fr 1.6fr 1fr auto auto auto; gap:10px; align-items:end; border:1px solid #e3e8ef; border-radius:10px; padding:12px; margin-bottom:10px;">' +
+            '<div class="form-group" style="margin:0;"><label>Name</label><input type="text" name="memberships[' + i + '][name]"></div>' +
+            '<div class="form-group" style="margin:0;"><label>Image (URL)</label>' + uploadField('memberships[' + i + '][image]', '') + '</div>' +
+            '<div class="form-group" style="margin:0;"><label>Link (optional)</label><input type="text" name="memberships[' + i + '][link]"></div>' +
+            '<div class="form-group" style="margin:0;"><label>Height (px, 0 = auto)</label><input type="number" name="memberships[' + i + '][height]" min="0" max="200" value="0"></div>' +
+            activeBox('memberships[' + i + '][active]') +
+            '<button type="button" class="mini-button hc-move" data-dir="1" style="margin-bottom:6px;"><i class="fa-solid fa-arrow-down"></i></button>' +
+            '<button type="button" class="mini-button danger hc-remove" style="margin-bottom:6px;"><i class="fa-solid fa-trash"></i></button></div>';
+    }
+
+    /* ---------- add buttons ---------- */
+    document.querySelectorAll('[data-add]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var key = btn.getAttribute('data-add');
+            if (key === 'info') addTo(document.getElementById('infoRows'), infoTemplate(0));
+            else if (key === 'column') addTo(document.getElementById('columnRows'), columnTemplate(0));
+            else if (key === 'membership') addTo(document.getElementById('membershipRows'), membershipTemplate(0));
+        });
+    });
+
+    /* ---------- add link inside a column ---------- */
+    document.addEventListener('click', function (e) {
+        var addLink = e.target.closest('.add-link');
+        if (addLink) {
+            var column = addLink.closest('.column-row');
+            var box = column.querySelector('.links-box');
+            box.insertAdjacentHTML('beforeend', linkTemplate(0, box.querySelectorAll('.link-row').length));
+            reindex(document.getElementById('columnRows'));
+            return;
+        }
+
+        var removeLink = e.target.closest('.link-remove');
+        if (removeLink) {
+            removeLink.closest('.link-row').remove();
+            reindex(document.getElementById('columnRows'));
+            return;
+        }
+
+        var rm = e.target.closest('.hc-remove');
+        if (rm) {
+            var row = rm.closest('.hc-row');
+            if (row && confirm('Remove this row?')) {
+                var container = row.closest('[data-key]');
+                row.remove();
+                if (container) reindex(container);
+            }
+            return;
+        }
+
+        var mv = e.target.closest('.hc-move');
+        if (mv) {
+            var rowEl = mv.closest('.hc-row');
+            if (!rowEl) return;
+            var container2 = rowEl.parentElement;
+            var dir = Number(mv.getAttribute('data-dir')) || 0;
+            if (dir < 0 && rowEl.previousElementSibling) {
+                container2.insertBefore(rowEl, rowEl.previousElementSibling);
+                reindex(container2.closest('[data-key]') || container2);
+            } else if (dir > 0 && rowEl.nextElementSibling) {
+                container2.insertBefore(rowEl.nextElementSibling, rowEl);
+                reindex(container2.closest('[data-key]') || container2);
+            }
+        }
+    });
+
+    /* ---------- info type toggle ---------- */
+    function syncInfo(row) {
+        if (!row) return;
+        var kind = row.querySelector('.info-kind').value;
+        row.setAttribute('data-kind', kind);
+        var textBox = row.querySelector('.info-text');
+        var imgBox = row.querySelector('.info-image');
+        var vidBox = row.querySelector('.info-video');
+        if (textBox) textBox.style.display = kind === 'text' ? '' : 'none';
+        if (imgBox) imgBox.style.display = kind === 'image' ? '' : 'none';
+        if (vidBox) vidBox.style.display = kind === 'video' ? '' : 'none';
+    }
+
+    document.querySelectorAll('.info-kind').forEach(function (sel) {
+        syncInfo(sel.closest('.hc-row'));
+    });
+
+    document.addEventListener('change', function (e) {
+        if (e.target.classList && e.target.classList.contains('info-kind')) {
+            syncInfo(e.target.closest('.hc-row'));
+            return;
+        }
+
+        var fileInput = e.target.closest('.img-file');
+        if (!fileInput || !fileInput.files || !fileInput.files[0]) return;
+
+        var wrap = fileInput.closest('div');
+        var urlInput = wrap.querySelector('.img-url');
+        var fd = new FormData();
+        fd.append('media', fileInput.files[0]);
+
+        fetch('/admin/upload-media', { method: 'POST', body: fd })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (data && data.success && data.urls && data.urls.length) {
+                    if (urlInput) urlInput.value = data.urls[0];
+                } else {
+                    alert('Upload failed: ' + ((data && data.message) || 'unknown error'));
+                }
+            })
+            .catch(function (err) { alert('Upload error: ' + err.message); });
+    });
+
+    document.getElementById('footerForm').addEventListener('submit', reindexAll);
+})();
+</script>

@@ -1,11 +1,11 @@
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/fonts.css?v=1">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<link rel="stylesheet" href="/css/style.css?v=5">
+<link rel="stylesheet" href="/css/style.css?v=26">
 
 <style>
 /* Header & Search Bar Styling */
 .site-header {
-    background: #111;
+    background: var(--th-header-bg, #111);
     position: relative;
     width: 100%;
     z-index: 1000;
@@ -17,7 +17,7 @@
     justify-content: space-between;
     gap: 20px;
     padding: 12px 25px;
-    background: #111;
+    background: var(--th-header-bg, #111);
     width: 100%;
     box-sizing: border-box;
 }
@@ -34,7 +34,7 @@
 /* Search Bar Wrapper */
 .header-search {
     flex: 1;
-    max-width: 650px;
+    max-width: 680px;
     position: relative;
     margin: 0 15px;
 }
@@ -97,17 +97,153 @@
     flex-shrink: 0;
 }
 
-.btn-partner {
+/* Header action tiles: icon with the title label BELOW it */
+.ha-tile {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 6px;
-    background: #222;
-    padding: 8px 14px;
-    border-radius: 4px;
+    gap: 3px;
+    padding: 5px 10px;
+    border-radius: 8px;
     color: #fff;
-    font-size: 13px;
+    font-size: 11px;
+    font-weight: 600;
+    line-height: 1.2;
     text-decoration: none;
     white-space: nowrap;
+    transition: color 0.2s, background 0.2s, transform 0.2s, box-shadow 0.2s;
+}
+
+.ha-tile i {
+    font-size: 17px;
+}
+
+.ha-tile:hover {
+    color: var(--orange) !important;
+    transform: translateY(-1px);
+}
+
+.ha-tile-boxed {
+    border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.ha-tile-icon {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Utility group: wishlist / cart / account inside one bordered pill */
+.ha-group {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+    padding: 3px 5px;
+}
+
+.ha-group .ha-tile {
+    border-radius: 9px;
+    padding: 5px 12px;
+}
+
+.ha-group .ha-tile:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--orange) !important;
+    transform: translateY(-1px);
+}
+
+/* Eye-catching animated button (Top Header Panel → "Eye-catching button") */
+.ha-tile-hot {
+    background: linear-gradient(120deg, #ef4a23, #ff7a45);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    padding: 6px 20px;
+    min-width: 92px;
+    position: relative;
+    overflow: hidden;
+    animation: ha-hot-glow 2.6s ease-in-out infinite;
+}
+
+.ha-tile-hot::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -80%;
+    width: 45%;
+    height: 100%;
+    background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.45), transparent);
+    transform: skewX(-20deg);
+    animation: ha-hot-shine 3.2s ease-in-out infinite;
+    pointer-events: none;
+}
+
+.ha-tile-hot:hover {
+    color: #fff !important;
+    transform: translateY(-1px);
+}
+
+@keyframes ha-hot-shine {
+    0% { left: -80%; }
+    55% { left: 130%; }
+    100% { left: 130%; }
+}
+
+@keyframes ha-hot-glow {
+    0%, 100% { box-shadow: 0 0 5px rgba(239, 74, 35, 0.35); }
+    50% { box-shadow: 0 0 14px rgba(239, 74, 35, 0.75); }
+}
+
+/* smaller desktops: slim the tiles so the search bar keeps room */
+@media (max-width: 1200px) {
+    .ha-tile {
+        padding: 5px 8px;
+    }
+    .ha-tile-hot {
+        padding: 6px 14px;
+        min-width: 0;
+    }
+    .ha-group .ha-tile {
+        padding: 5px 8px;
+    }
+}
+
+/* tablet/phone header: hamburger + centered logo + compact icon row — tiles must not cover the logo */
+@media (max-width: 1024px) {
+    .header-actions {
+        gap: 6px;
+    }
+    .ha-tile {
+        padding: 3px 5px;
+    }
+    .ha-tile i {
+        font-size: 15px;
+    }
+    .ha-tile-hot {
+        padding: 4px 8px;
+    }
+    .ha-group {
+        padding: 2px;
+        gap: 0;
+    }
+    .ha-group .ha-tile {
+        padding: 3px 6px;
+    }
+    .ha-tile-label {
+        display: none;
+    }
+}
+
+/* phone: account sits alone in the row — no group chrome */
+@media (max-width: 560px) {
+    .ha-group {
+        background: transparent;
+        border: none;
+        padding: 0;
+        gap: 0;
+    }
 }
 
 .icon-link {
@@ -226,7 +362,7 @@
         max-width: none;
         margin: 0;
     }
-    .btn-partner span {
+    .ha-tile-label {
         display: none;
     }
 }
@@ -235,14 +371,16 @@
 <!-- Top Header -->
 <%- include('topHeader') %>
 
-<header class="site-header">
+<% var thTopbar = (typeof site !== "undefined" && site.topbar) ? site.topbar : {}; %>
+<% var thColors = thTopbar.colors || {}; %>
+<header class="site-header" <%- thColors.headerBg ? 'style="--th-header-bg:' + thColors.headerBg + ';"' : '' %>>
     <div class="main-header">
         <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Menu">
             <i class="fa-solid fa-bars"></i>
         </button>
 
         <a href="/" class="site-logo">
-            <img src="/images/logo.svg" alt="Mizan Trade">
+            <img src="<%= optimizeImage(thTopbar.logoUrl || (site.general && site.general.logoUrl) || '/images/logo.svg', 400) %>" alt="Mizan Trade">
         </a>
 
         <div class="header-search-row">
@@ -254,7 +392,7 @@
                         <span class="search-icon"><i class="fa-solid fa-magnifying-glass"></i></span>
                         <input type="text" id="liveSearchInput" name="search" autocomplete="off"
                                value="<%= typeof search !== 'undefined' ? search : '' %>"
-                               placeholder="Search motherboard, SSD, RAM, graphics card...">
+                               placeholder="<%= thTopbar.searchPlaceholder || 'Search motherboard, SSD, RAM, graphics card...' %>">
                     </div>
                     <button type="submit">Search</button>
                 </div>
@@ -273,52 +411,51 @@
         </div>
 
         <div class="header-actions">
-            <a href="/category/desktop-offer" class="btn-partner ha-item" title="Latest Offers">
-                <i class="fa-solid fa-fire" style="color:#ef4a23;"></i> <span>Offer</span>
-            </a>
-            <a href="/become-a-partner" class="btn-partner ha-item" title="Become a Partner">
-                <i class="fa-solid fa-handshake"></i> <span>Become a Partner</span>
-            </a>
-            <a href="/wishlist" class="icon-link ha-item" title="Wishlist">
-                <i class="fa-regular fa-heart"></i>
-                <span class="icon-badge js-wish-count"><%= wishlistCount %></span>
-            </a>
-            <a href="/cart" class="icon-link ha-item" title="Cart">
-                <i class="fa-solid fa-cart-shopping"></i>
-                <span class="icon-badge js-cart-count"><%= cartCount %></span>
-            </a>
-            <% if (customer) { %>
-                <a href="/account" class="icon-link ha-account" title="<%= customer.name %> (My Account)">
-                    <i class="fa-solid fa-user-check" style="color:#ef4a23;"></i>
+            <% var thActions = ((typeof site !== "undefined" && site.topbar && site.topbar.actions) || []).filter(function (a) { return a && a.title && a.showDesktop !== false; }); %>
+            <% thActions.forEach(function (act) { if (!act.highlight) return; %>
+                <% var bD = act.badge === 'wishlist' ? '<span class="icon-badge js-wish-count">' + wishlistCount + '</span>' : (act.badge === 'cart' ? '<span class="icon-badge js-cart-count">' + cartCount + '</span>' : (act.badge === 'compare' ? '<span class="icon-badge js-compare-count">' + compareCount + '</span>' : '')); %>
+                <% var aSt = ''; if (act.bgColor) { aSt += 'background:' + act.bgColor + ';'; } if (act.textColor) { aSt += 'color:' + act.textColor + ';'; } %>
+                <a href="<%= act.link || '#' %>" class="ha-tile ha-item ha-tile-hot<%= act.bgColor ? ' ha-tile-boxed' : '' %>" title="<%= act.title %>" style="<%- aSt %>">
+                    <span class="ha-tile-icon"><% if (act.icon) { %><i class="<%= act.icon %>"></i><% } %><%- bD %></span>
+                    <span class="ha-tile-label"><%= act.title %></span>
                 </a>
-            <% } else { %>
-                <a href="/login" class="icon-link ha-account" title="Login / Sign Up">
-                    <i class="fa-regular fa-user"></i>
-                </a>
-            <% } %>
+            <% }); %>
+            <div class="ha-group">
+                <% thActions.forEach(function (act) { if (act.highlight) return; %>
+                    <% var bD = act.badge === 'wishlist' ? '<span class="icon-badge js-wish-count">' + wishlistCount + '</span>' : (act.badge === 'cart' ? '<span class="icon-badge js-cart-count">' + cartCount + '</span>' : (act.badge === 'compare' ? '<span class="icon-badge js-compare-count">' + compareCount + '</span>' : '')); %>
+                    <% var aSt = ''; if (act.bgColor) { aSt += 'background:' + act.bgColor + ';'; } if (act.textColor) { aSt += 'color:' + act.textColor + ';'; } %>
+                    <a href="<%= act.link || '#' %>" class="ha-tile ha-item<%= act.bgColor ? ' ha-tile-boxed' : '' %>" title="<%= act.title %>" style="<%- aSt %>">
+                        <span class="ha-tile-icon"><% if (act.icon) { %><i class="<%= act.icon %>"></i><% } %><%- bD %></span>
+                        <span class="ha-tile-label"><%= act.title %></span>
+                    </a>
+                <% }); %>
+                <% if (customer) { %>
+                    <a href="/account" class="ha-tile ha-account" title="<%= customer.name %> (My Account)">
+                        <span class="ha-tile-icon"><i class="fa-solid fa-user-check" style="color:#ef4a23;"></i></span>
+                        <span class="ha-tile-label">My Account</span>
+                    </a>
+                <% } else { %>
+                    <a href="/login" class="ha-tile ha-account" title="Login / Sign Up">
+                        <span class="ha-tile-icon"><i class="fa-regular fa-user"></i></span>
+                        <span class="ha-tile-label">Login / Register</span>
+                    </a>
+                <% } %>
+            </div>
         </div>
     </div>
 
-    <!-- Phone-only: Offer / Partner / Wishlist / Cart row (icon + title), sits below the search bar -->
+    <!-- Phone-only: action row (icon + title below), rendered from Top Header Panel actions -->
     <div class="mobile-action-bar" id="mobileActionBar">
-        <a href="/category/desktop-offer" class="mab-item" title="Latest Offers">
-            <i class="fa-solid fa-fire"></i>
-            <span class="mab-label">Offer</span>
-        </a>
-        <a href="/become-a-partner" class="mab-item" title="Become a Partner">
-            <i class="fa-solid fa-handshake"></i>
-            <span class="mab-label">Partner</span>
-        </a>
-        <a href="/wishlist" class="mab-item" title="Wishlist">
-            <i class="fa-regular fa-heart"></i>
-            <span class="mab-badge js-wish-count"><%= wishlistCount %></span>
-            <span class="mab-label">Wishlist</span>
-        </a>
-        <a href="/cart" class="mab-item" title="Cart">
-            <i class="fa-solid fa-cart-shopping"></i>
-            <span class="mab-badge js-cart-count"><%= cartCount %></span>
-            <span class="mab-label">Cart</span>
-        </a>
+        <% ((typeof site !== "undefined" && site.topbar && site.topbar.actions) || []).forEach(function (act) { %>
+            <% if (!act || !act.title || act.showMobile === false) return; %>
+            <% var bM = act.badge === 'wishlist' ? '<span class="mab-badge js-wish-count">' + wishlistCount + '</span>' : (act.badge === 'cart' ? '<span class="mab-badge js-cart-count">' + cartCount + '</span>' : ''); %>
+            <% var aStM = ''; if (act.bgColor) { aStM += 'background:' + act.bgColor + ';'; } if (act.textColor) { aStM += 'color:' + act.textColor + ';'; } %>
+            <a href="<%= act.link || '#' %>" class="mab-item" title="<%= act.title %>" style="<%- aStM %>">
+                <% if (act.icon) { %><i class="<%= act.icon %>"></i><% } %>
+                <%- bM %>
+                <span class="mab-label"><%= act.title %></span>
+            </a>
+        <% }); %>
     </div>
 
     <!-- Category Nav Bar -->
@@ -421,20 +558,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     seeAllBtn.href = `/shop?search=${encodeURIComponent(query)}`;
                 })
                 .catch(err => {
-                    console.error('Search fetch error, loading fallback dummy data:', err);
-                    
-                    // Fallback dummy data jate 3 letter likhlei pop-up test kora jay
-                    cachedData.products = [
-                        { name: `Sample Product for ${query} 1`, slug: 'sample-1', price: '4,500৳', image: '/images/default-product.png' },
-                        { name: `Sample Product for ${query} 2`, slug: 'sample-2', price: '7,200৳', image: '/images/default-product.png' }
-                    ];
-                    cachedData.categories = [
-                        { name: `Category matching ${query}`, slug: 'sample-cat', icon: 'fa-solid fa-microchip' }
-                    ];
-
+                    console.error('Search fetch error:', err);
+                    cachedData.products = [];
+                    cachedData.categories = [];
                     renderResults();
                     dropdown.style.display = 'block';
-                    seeAllBtn.href = `/shop?search=${encodeURIComponent(query)}`;
                 });
         }, 300);
     });
@@ -453,13 +581,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     link.innerHTML = `
                         <img src="${item.image || '/images/default-product.png'}" alt="${item.name}">
                         <div>
-                            <div style="font-weight: 500; color: #333; line-height: 1.3;">${item.name}</div>
+                            <div style="font-weight: 600; color: #333; line-height: 1.3;">${item.name}</div>
                             <div style="color: #ef4a23; font-weight: 600; margin-top: 3px;">${item.price}</div>
                         </div>
                     `;
                 } else {
                     link.innerHTML = `
-                        <div style="padding: 5px 0; font-weight: 500; color: #333;">
+                        <div style="padding: 5px 0; font-weight: 600; color: #333;">
                             <i class="${item.icon || 'fa-solid fa-folder'}" style="margin-right: 8px; color: #ef4a23;"></i> ${item.name}
                         </div>
                     `;
