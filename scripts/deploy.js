@@ -1,22 +1,22 @@
 #!/usr/bin/env node
 /**
- * Deploy the working tree to the live InMotion/Passenger server.
+ * Deploy the working tree to the live server over SFTP only.
+ * Works on cPanel accounts where SSH shell access is disabled:
+ * no exec, no tar, no npm — just file mirroring + Passenger restart.
  *
- * Credentials come from .env.deploy (never committed) or from the
- * environment (used by GitHub Actions). Server .env is never uploaded
- * or overwritten.
+ *   npm run deploy            # sync changed files + restart
+ *   npm run deploy -- --dry   # show what would change
  *
- *   npm run deploy            # full deploy
- *   npm run deploy -- --dry   # build + connect + show plan only
+ * Credentials: .env.deploy (never committed) or environment (CI).
+ * Never uploads .env, node_modules, uploads, storage, .git or logs.
  */
 
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
-const { spawn } = require("child_process");
 const { Client } = require("ssh2");
 
-require("dotenv").config({ path: path.join(__dirname, "..", ".env.deploy"), quiet: true });
+require("dotenv").config({ path: path.join(__dirname, "..", ".env.deploy") });
 
 const ROOT = path.join(__dirname, "..");
 const DRY = process.argv.includes("--dry");
@@ -26,27 +26,20 @@ const PORT = Number(process.env.SSH_PORT || 2222);
 const USER = process.env.SSH_USER;
 const PASS = process.env.SSH_PASS;
 const KEY = process.env.SSH_KEY_PATH || (process.env.SSH_KEY ? materialiseKey(process.env.SSH_KEY) : "");
+const APP_DIR = (process.env.APP_DIR || "").replace(/\/+$/, "");
+const HEALTH_URL = process.env.HEALTH_URL || "https://www.mizantrade.com/health";
+
+const SKIP_DIRS = new Set([".git", "node_modules", "tmp", ".qoder", ".github"]);
+const SKIP_PATHS = new Set([
+    ".env", ".env.deploy", "server.log",
+    "public/uploads", "storage/private"
+]);
 
 function materialiseKey(value) {
     const file = path.join(os.tmpdir(), "mizantrade-ci-key");
     fs.writeFileSync(file, value.replace(/\\n/g, "\n"), { mode: 0o600 });
     return file;
 }
-const APP_DIR = process.env.APP_DIR || "";
-const HEALTH_URL = process.env.HEALTH_URL || "https://www.mizantrade.com/health";
-
-const EXCLUDES = [
-    "./.env",
-    "./.env.*",
-    "./.git",
-    "./.qoder",
-    "./node_modules",
-    "./public/uploads",
-    "./storage/private",
-    "./tmp",
-    "./server.log",
-    "./*.log"
-];
 
 function log(msg) {
     console.log(msg);
@@ -61,60 +54,29 @@ function requireConfig() {
     const missing = [];
     if (!HOST) missing.push("SSH_HOST");
     if (!USER) missing.push("SSH_USER");
+    if (!APP_DIR) missing.push("APP_DIR");
     if (!PASS && !KEY) missing.push("SSH_PASS or SSH_KEY_PATH");
-    if (missing.length) {
-        fail(
-            "missing " + missing.join(", ") + " in D:\\mizantrade\\.env.deploy\n" +
-            "Run: npm run deploy:setup   (creates the template)"
-        );
+    if (missing.length) fail("missing " + missing.join(", ") + " in D:\\mizantrade\\.env.deploy");
+}
+
+/* ---------------- local tree ---------------- */
+
+function walk(dir, base = "", out = []) {
+    for (const entry of fs.readdirSync(path.join(ROOT, dir), { withFileTypes: true })) {
+        const rel = base ? base + "/" + entry.name : entry.name;
+        if (SKIP_PATHS.has(rel)) continue;
+        if (entry.isDirectory()) {
+            if (SKIP_DIRS.has(entry.name)) continue;
+            walk(path.join(dir, entry.name), rel, out);
+        } else if (entry.isFile()) {
+            if (/.\.log$/i.test(entry.name)) continue;
+            out.push(rel);
+        }
     }
-    if (!HOST || /^(your-|example)/i.test(HOST)) fail("SSH_HOST still holds the template value");
-    if (KEY && !fs.existsSync(KEY.replace(/^~/, os.homedir()))) {
-        fail("SSH_KEY_PATH not found: " + KEY);
-    }
+    return out;
 }
 
-/* ---------------- local archive ---------------- */
-
-function buildArchive() {
-    // Keep the archive path relative: MSYS tar treats "C:\..." as a remote host.
-    const tmpDir = path.join(ROOT, "tmp");
-    fs.mkdirSync(tmpDir, { recursive: true });
-    const name = "deploy-" + Date.now() + ".tar.gz";
-    const file = path.join(tmpDir, name);
-    log("1/7 packing working tree (18MB, node_modules/.env/uploads excluded)");
-    return new Promise((resolve, reject) => {
-        const args = ["-czf", "tmp/" + name, "--exclude=node_modules", ...EXCLUDES.map((e) => "--exclude=" + e), "."];
-        const tar = spawn("tar", args, { cwd: ROOT, stdio: ["ignore", "inherit", "pipe"] });
-        let err = "";
-        tar.stderr.on("data", (d) => { err += d.toString(); });
-        tar.on("error", reject);
-        tar.on("close", (code) => {
-            if (code !== 0) return reject(new Error("tar failed: " + err.trim()));
-            const size = (fs.statSync(file).size / 1048576).toFixed(1);
-            log("    archive ready: " + size + " MB");
-            verifyArchive(file).then(() => resolve(file)).catch(reject);
-        });
-    });
-}
-
-function verifyArchive(file) {
-    return new Promise((resolve, reject) => {
-        const tar = spawn("tar", ["-tzf", path.relative(ROOT, file)], { cwd: ROOT });
-        let out = "";
-        tar.stdout.on("data", (d) => { out += d.toString(); });
-        tar.on("close", () => {
-            const bad = out
-                .split("\n")
-                .filter((line) => /(^|\/)(\.env(\.[^/]*)?|server\.log);?$/i.test(line) && !/\.env\.example$/i.test(line));
-            if (bad.length) return reject(new Error("secret file leaked into archive: " + bad[0]));
-            log("    archive checked: no .env / log files inside");
-            resolve();
-        });
-    });
-}
-
-/* ---------------- ssh plumbing ---------------- */
+/* ---------------- ssh ---------------- */
 
 function connect() {
     return new Promise((resolve, reject) => {
@@ -128,80 +90,53 @@ function connect() {
             password: PASS || undefined,
             privateKey: KEY ? fs.readFileSync(KEY.replace(/^~/, os.homedir())) : undefined,
             readyTimeout: 30000,
-            tryKeyboard: true
-        });
-        conn.on("keyboard-interactive", (n, i, l, prompts, finish) => finish([PASS || ""]));
-    });
-}
-
-function exec(conn, command) {
-    return new Promise((resolve, reject) => {
-        conn.exec(command, { pty: false }, (err, stream) => {
-            if (err) return reject(err);
-            let stdout = "";
-            let stderr = "";
-            stream.on("data", (d) => { stdout += d.toString(); });
-            stream.stderr.on("data", (d) => { stderr += d.toString(); });
-            stream.on("close", (code) => resolve({ code: code || 0, stdout: stdout.trim(), stderr: stderr.trim() }));
+            keepaliveInterval: 15000
         });
     });
 }
 
-async function sh(conn, command) {
-    return exec(conn, "bash -lc " + JSON.stringify(command));
+function sftpSession(conn) {
+    return new Promise((resolve, reject) => conn.sftp((err, sftp) => (err ? reject(err) : resolve(sftp))));
 }
 
-function upload(conn, localFile, remoteFile) {
-    return new Promise((resolve, reject) => {
-        conn.sftp((err, sftp) => {
-            if (err) return reject(err);
-            const rs = fs.createReadStream(localFile);
-            const ws = sftp.createWriteStream(remoteFile);
-            ws.on("close", resolve);
-            ws.on("error", reject);
-            rs.pipe(ws);
-        });
+const call = (sftp, method, ...args) =>
+    new Promise((resolve, reject) => sftp[method](...args, (err, result) => (err ? reject(err) : resolve(result))));
+
+async function ensureDir(sftp, remoteDir, made = new Set()) {
+    if (made.has(remoteDir)) return;
+    const parts = remoteDir.split("/");
+    let current = "";
+    for (const part of parts) {
+        if (!part) continue;
+        current += "/" + part;
+        if (made.has(current)) continue;
+        try {
+            await call(sftp, "mkdir", current);
+        } catch (err) { /* already exists */ }
+        made.add(current);
+    }
+}
+
+async function statOrNull(sftp, remote) {
+    try {
+        return await call(sftp, "stat", remote);
+    } catch (err) {
+        return null;
+    }
+}
+
+async function pool(items, limit, worker) {
+    let index = 0;
+    const runners = Array.from({ length: Math.min(limit, items.length) }, async () => {
+        while (index < items.length) {
+            const item = items[index++];
+            await worker(item);
+        }
     });
+    await Promise.all(runners);
 }
-
-async function findAppDir(conn) {
-    if (APP_DIR) return APP_DIR;
-    log("2/7 locating app root on server");
-    const res = await sh(
-        conn,
-        "find \"$HOME\" -maxdepth 5 -name server.js -not -path '*/node_modules/*' -not -path '*/.git/*' 2>/dev/null"
-    );
-    const candidates = res.stdout.split("\n").map((s) => s.trim()).filter(Boolean);
-    const withPackage = [];
-    for (const dir of candidates) {
-        const parent = dir.replace(/\/server\.js$/, "");
-        const check = await sh(conn, "test -f " + JSON.stringify(parent + "/package.json") + " && echo yes");
-        if (check.stdout === "yes") withPackage.push(parent);
-    }
-    if (withPackage.length === 0) fail("no app root (server.js + package.json) found under $HOME. Set APP_DIR in .env.deploy.");
-    if (withPackage.length > 1) {
-        log("    candidates:");
-        withPackage.forEach((d) => log("      " + d));
-        fail("multiple app roots found. Set APP_DIR in .env.deploy to the right one.");
-    }
-    log("    app root: " + withPackage[0]);
-    return withPackage[0];
-}
-
-async function checkNode(conn, appDir) {
-    log("3/7 checking Node on server");
-    let res = await sh(conn, "cd " + JSON.stringify(appDir) + " && node -v && npm -v");
-    if (res.code !== 0) {
-        res = await sh(conn, "node -v && npm -v");
-        if (res.code !== 0) fail("node/npm not on PATH in the non-interactive shell. Add a nodealias or set PATH in .bashrc.\n" + res.stderr);
-    }
-    log("    " + res.stdout.replace(/\n/g, " / "));
-}
-
-/* ---------------- health ---------------- */
 
 async function healthCheck() {
-    log("7/7 health check " + HEALTH_URL);
     for (let i = 1; i <= 10; i++) {
         const ok = await new Promise((resolve) => {
             const https = require("https");
@@ -213,7 +148,7 @@ async function healthCheck() {
             req.on("error", () => resolve(false));
         });
         if (ok) { log("    live: 200 OK"); return true; }
-        log("    attempt " + i + "/10 not ready, retrying in 3s");
+        log("    health attempt " + i + "/10 not ready");
         await new Promise((r) => setTimeout(r, 3000));
     }
     return false;
@@ -223,59 +158,83 @@ async function healthCheck() {
 
 (async () => {
     requireConfig();
-    log("Deploying to " + USER + "@" + HOST + ":" + PORT);
-
-    const archive = await buildArchive();
-    if (DRY) {
-        log("dry run: skipping upload");
-        fs.unlinkSync(archive);
-        return;
-    }
+    const files = walk("").sort();
+    log("1/5 local tree: " + files.length + " files");
 
     const conn = await connect();
-    log("    connected");
-
+    log("2/5 connected to " + HOST);
     try {
-        const appDir = await findAppDir(conn);
-        await checkNode(conn, appDir);
-
-        const remoteTar = "mizantrade-deploy-" + Date.now() + ".tar.gz";
-        const before = await sh(conn, "cd " + JSON.stringify(appDir) + " && md5sum package-lock.json 2>/dev/null | cut -d' ' -f1");
-        const envCheck = await sh(conn, "cd " + JSON.stringify(appDir) + " && test -f .env && echo has-env || echo no-env");
-        if (envCheck.stdout !== "has-env") {
-            log("    WARNING: server has no .env — the app will not start. Copy the live .env manually first.");
+        const sftp = await sftpSession(conn);
+        const manifestPath = APP_DIR + "/.deploy-manifest.json";
+        let manifest = {};
+        const remoteManifest = await statOrNull(sftp, manifestPath);
+        if (remoteManifest) {
+            try {
+                manifest = JSON.parse((await call(sftp, "readFile", manifestPath)).toString("utf8"));
+            } catch (err) { manifest = {}; }
         }
 
-        log("4/7 uploading archive");
-        await upload(conn, archive, remoteTar);
-
-        log("5/7 extracting into " + appDir);
-        const extract = await sh(
-            conn,
-            "cd " + JSON.stringify(appDir) + " && tar -xzf " + JSON.stringify(remoteTar) + " && rm -f " + JSON.stringify(remoteTar)
-        );
-        if (extract.code !== 0) fail("extract failed: " + extract.stderr);
-
-        const after = await sh(conn, "cd " + JSON.stringify(appDir) + " && md5sum package-lock.json 2>/dev/null | cut -d' ' -f1");
-        if (before.stdout !== after.stdout) {
-            log("6/7 dependencies changed — npm install --omit=dev");
-            const install = await sh(conn, "cd " + JSON.stringify(appDir) + " && npm install --omit=dev --no-audit --no-fund");
-            log("    " + (install.stdout.split("\n").slice(-2).join(" ") || install.stderr.split("\n").slice(-2).join(" ")));
-            if (install.code !== 0) fail("npm install failed: " + install.stderr);
-        } else {
-            log("6/7 dependencies unchanged — skipping npm install");
+        const made = new Set();
+        const todo = [];
+        const nextManifest = {};
+        for (const rel of files) {
+            const localStat = fs.statSync(path.join(ROOT, rel));
+            const stamp = localStat.size + ":" + Math.floor(localStat.mtimeMs);
+            nextManifest[rel] = stamp;
+            const remote = await statOrNull(sftp, APP_DIR + "/" + rel);
+            if (!remote || remote.size !== localStat.size || manifest[rel] !== stamp) {
+                todo.push({ rel, localStat });
+            }
         }
 
-        const restart = await sh(conn, "cd " + JSON.stringify(appDir) + " && mkdir -p tmp && touch tmp/restart.txt");
-        if (restart.code !== 0) fail("restart failed: " + restart.stderr);
+        const vanished = Object.keys(manifest).filter((rel) => !(rel in nextManifest));
+        log("3/5 changed: " + todo.length + " to upload, " + vanished.length + " to remove");
+
+        if (DRY) {
+            todo.slice(0, 40).forEach((f) => log("    + " + f.rel));
+            if (todo.length > 40) log("    ... " + (todo.length - 40) + " more");
+            vanished.forEach((rel) => log("    - " + rel));
+            conn.end();
+            return;
+        }
+
+        await pool(todo, 6, async ({ rel, localStat }) => {
+            const remote = APP_DIR + "/" + rel;
+            await ensureDir(sftp, path.posix.dirname(remote), made);
+            await new Promise((resolve, reject) =>
+                sftp.fastPut(path.join(ROOT, rel), remote, (err) => (err ? reject(err) : resolve()))
+            );
+            await call(sftp, "setstat", remote, { atime: Math.floor(localStat.atimeMs / 1000), mtime: Math.floor(localStat.mtimeMs / 1000) });
+        });
+        log("4/5 upload done");
+
+        if (vanished.length) {
+            await pool(vanished, 6, async (rel) => {
+                try { await call(sftp, "unlink", APP_DIR + "/" + rel); } catch (err) { /* already gone */ }
+            });
+        }
+
+        const lockLocal = fs.statSync(path.join(ROOT, "package-lock.json")).size;
+        const lockRemote = await statOrNull(sftp, APP_DIR + "/package-lock.json");
+        const depsChanged = !lockRemote || lockRemote.size !== lockLocal;
+
+        await call(sftp, "writeFile", manifestPath, JSON.stringify(nextManifest, null, 1));
+
+        await ensureDir(sftp, APP_DIR + "/tmp", made);
+        await call(sftp, "writeFile", APP_DIR + "/tmp/restart.txt", "deploy " + new Date().toISOString() + "\n");
         log("    Passenger restart signalled");
 
         conn.end();
+
+        if (depsChanged) {
+            log("\nWARNING: package-lock.json changed but node_modules was not updated.");
+            log("cPanel -> Setup Node.js App -> your app -> Run NPM Install, then restart.");
+        }
+
         const healthy = await healthCheck();
-        log(healthy ? "\nDeploy complete." : "\nDeploy uploaded but health check failed — check Passenger log: " + appDir + "/stderr.log");
+        log(healthy ? "\nDeploy complete." : "\nFiles uploaded but health check failed.");
         if (!healthy) process.exitCode = 1;
     } finally {
-        try { conn.end(); } catch (_) { /* already closed */ }
-        fs.unlinkSync(archive);
+        try { conn.end(); } catch (err) { /* closed */ }
     }
 })().catch((err) => fail(err.message));

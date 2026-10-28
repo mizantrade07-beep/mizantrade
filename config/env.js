@@ -6,7 +6,8 @@ const dotenv = require("dotenv");
 ====================================================== */
 
 dotenv.config({
-    path: path.resolve(__dirname, "../.env")
+    path: path.resolve(__dirname, "../.env"),
+    override: true
 });
 
 /* ======================================================
