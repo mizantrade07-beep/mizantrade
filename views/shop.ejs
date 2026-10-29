@@ -17,6 +17,25 @@
         .spec-check { display: flex; align-items: center; gap: 8px; padding: 5px 0; font-size: 13.5px; color: #44505c; cursor: pointer; }
         .spec-check input { accent-color: #ef4a23; width: 15px; height: 15px; flex: 0 0 15px; }
         .shop-filter-form .filter-apply { width: 100%; margin-top: 12px; }
+
+        /* ====== Mobile / tablet: filter becomes a dropdown ====== */
+        .filter-toggle {
+            display: flex; align-items: center; justify-content: space-between; gap: 8px;
+            width: 100%; background: none; border: 0; border-bottom: 2px solid #ef4a23;
+            padding: 0 2px 10px; margin-bottom: 14px;
+            font: inherit; font-size: 14.5px; font-weight: 700; color: #081621; cursor: pointer; text-align: left;
+        }
+        .filter-toggle .filter-left { display: flex; align-items: center; gap: 8px; }
+        .filter-reset { font-size: 12px; color: #ef4a23; font-weight: 600; }
+        .filter-caret { display: none; font-size: 12px; color: #8892a0; transition: transform .2s; }
+        @media (max-width: 900px) {
+            .filter-card { padding: 12px 14px; }
+            .filter-toggle { margin-bottom: 0; }
+            .filter-caret { display: inline-block; }
+            .filter-card .filter-body { display: none; padding-top: 14px; }
+            .filter-card.filter-open .filter-body { display: block; }
+            .filter-card.filter-open .filter-caret { transform: rotate(180deg); }
+        }
     </style>
 </head>
 <body>
@@ -53,13 +72,26 @@
         <div class="shop-layout">
 
             <!-- ========== ফিল্টার সাইডবার ========== -->
-            <aside class="filter-card">
+            <%
+                var hasActiveFilters = false;
+                if ((typeof inStock !== 'undefined' && inStock) ||
+                    (typeof min !== 'undefined' && min !== '') ||
+                    (typeof max !== 'undefined' && max !== '')) hasActiveFilters = true;
+                if (!hasActiveFilters && brandOptions && brandOptions.some(function (b) { return b.selected; })) hasActiveFilters = true;
+                if (!hasActiveFilters && specSel && specSel.length) hasActiveFilters = true;
+            %>
+            <aside class="filter-card <%= hasActiveFilters ? 'filter-open' : '' %>">
 
-                <div class="filter-title" style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
-                    <span><i class="fa-solid fa-filter" style="color:#ef4a23;"></i> Filter By</span>
-                    <a href="<%= activeCategory ? '/category/' + encodeURIComponent(activeCategory.slug) : '/shop' %>"
-                       style="font-size:12px; color:#ef4a23; font-weight:600;">Reset</a>
-                </div>
+                <button type="button" class="filter-toggle" id="filterToggle" aria-expanded="<%= hasActiveFilters ? 'true' : 'false' %>">
+                    <span class="filter-left"><i class="fa-solid fa-filter" style="color:#ef4a23;"></i> Filter By</span>
+                    <span style="display:flex; align-items:center; gap:10px;">
+                        <a href="<%= activeCategory ? '/category/' + encodeURIComponent(activeCategory.slug) : '/shop' %>"
+                           class="filter-reset" onclick="event.stopPropagation();">Reset</a>
+                        <i class="fa-solid fa-chevron-down filter-caret"></i>
+                    </span>
+                </button>
+
+                <div class="filter-body">
 
                 <form method="GET" action="<%= activeCategory ? '/category/' + encodeURIComponent(activeCategory.slug) : '/shop' %>" class="shop-filter-form">
                     <% if (!activeCategory && typeof catSlug !== 'undefined' && catSlug) { %><input type="hidden" name="cat" value="<%= catSlug %>"><% } %>
@@ -128,6 +160,8 @@
                     <a href="/pages/payment-methods"><i class="fa-solid fa-credit-card" style="width:16px;"></i> Payment Methods</a>
                     <a href="/pages/shipping-info"><i class="fa-solid fa-truck" style="width:16px;"></i> Shipping Info</a>
                     <a href="/become-a-partner"><i class="fa-solid fa-handshake" style="width:16px;"></i> Become a Partner</a>
+                </div>
+
                 </div>
 
             </aside>
@@ -229,6 +263,17 @@
     <%- include('partials/footer') %>
 
     <script>
+        /* Mobile / tablet: filter panel opens as a dropdown */
+        (function () {
+            var card = document.querySelector('.filter-card');
+            var toggle = document.getElementById('filterToggle');
+            if (!card || !toggle) return;
+            toggle.addEventListener('click', function () {
+                var open = card.classList.toggle('filter-open');
+                toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+            });
+        })();
+
         /* Auto-apply attribute, brand & availability filters on click (price
            range still uses the Apply button since it is typed). */
         (function () {
