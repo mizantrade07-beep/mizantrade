@@ -125,6 +125,13 @@ const settingSchema = new mongoose.Schema(
             kpiUpdatedAt: { type: Date, default: null }
         },
 
+        /* ---- Product page banner (global fallback, shown under every product's gallery) ---- */
+        productBanner: {
+            enabled: { type: Boolean, default: false },
+            image: { type: String, trim: true, default: "" },
+            link: { type: String, trim: true, default: "" }
+        },
+
         /* ---- Per-page meta overrides ---- */
         seoPages: [
             new mongoose.Schema(

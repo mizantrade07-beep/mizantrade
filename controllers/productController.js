@@ -735,6 +735,8 @@ exports.postAddProduct = async (
             rewardPoints,
             isNewArrival,
             isActive,
+            bannerImage,
+            bannerLink,
         } = req.body;
 
         if (!title || !String(title).trim()) {
@@ -822,6 +824,12 @@ exports.postAddProduct = async (
                 mainImages[0] || "",
 
             galleryImages,
+
+            bannerImage:
+                String(bannerImage || "").trim(),
+
+            bannerLink:
+                String(bannerLink || "").trim(),
         });
 
         await product.save();
@@ -946,6 +954,8 @@ exports.postEditProduct = async (
             rewardPoints,
             isNewArrival,
             isActive,
+            bannerImage,
+            bannerLink,
         } = req.body;
 
         if (
@@ -1023,6 +1033,12 @@ exports.postEditProduct = async (
 
         product.specs =
             parseSpecs(specs, specKey, specValue);
+
+        product.bannerImage =
+            String(bannerImage || "").trim();
+
+        product.bannerLink =
+            String(bannerLink || "").trim();
 
         // ----------------------------------------------
         // IMAGES — the form's image manager posts the full

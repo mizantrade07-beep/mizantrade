@@ -234,7 +234,13 @@ exports.postUpdateSettings = async (req, res) => {
                 linkedin: str(body["social.linkedin"])
             },
 
-            socials: normSocials(body.socials)
+            socials: normSocials(body.socials),
+
+            productBanner: {
+                enabled: bool(body["productBanner.enabled"]),
+                image: str(body["productBanner.image"]),
+                link: str(body["productBanner.link"])
+            }
         };
 
         /* SEO defaults are managed in SEO & Marketing; only touch them when posted. */

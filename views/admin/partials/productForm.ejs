@@ -319,6 +319,58 @@
     </section>
 
 
+    <!-- ================= PRODUCT PAGE BANNER ================= -->
+
+    <section class="dashboard-card">
+
+        <div class="card-header">
+            <h2 class="card-title">
+                <i class="fa-solid fa-image card-icon"></i>
+                Product Page Banner
+            </h2>
+        </div>
+
+        <p class="section-note" style="margin-bottom:12px;">
+            Optional banner shown under this product's image gallery. Leave empty to use the global banner
+            from Settings → Product Banner.
+        </p>
+
+        <div class="form-grid">
+
+            <div class="form-group">
+                <label for="bannerImageInput">Banner Image (URL)</label>
+                <div style="display:flex; gap:6px;">
+                    <input
+                        type="text"
+                        id="bannerImageInput"
+                        name="bannerImage"
+                        value="<%= p.bannerImage || '' %>"
+                        class="img-url"
+                        placeholder="Paste an image URL or upload"
+                    >
+                    <label class="secondary-button" style="cursor:pointer; white-space:nowrap;">
+                        <i class="fa-solid fa-upload"></i>
+                        <input type="file" accept="image/*" class="img-file" hidden>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="bannerLinkInput">Banner Link (optional)</label>
+                <input
+                    type="text"
+                    id="bannerLinkInput"
+                    name="bannerLink"
+                    value="<%= p.bannerLink || '' %>"
+                    placeholder="/offers"
+                >
+            </div>
+
+        </div>
+
+    </section>
+
+
     <!-- ================= DESCRIPTIONS ================= -->
 
     <section class="dashboard-card">
@@ -570,6 +622,30 @@
 
 </form>
 
+
+<script>
+    /* Banner image upload: file -> /admin/upload-media -> URL into the text field. */
+    document.addEventListener("change", function (e) {
+        var fileInput = e.target.closest(".img-file");
+        if (!fileInput || !fileInput.files || !fileInput.files[0]) return;
+
+        var wrap = fileInput.closest("div");
+        var urlInput = wrap ? wrap.querySelector(".img-url") : null;
+        var fd = new FormData();
+        fd.append("media", fileInput.files[0]);
+
+        fetch("/admin/upload-media", { method: "POST", body: fd })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (data && data.success && data.urls && data.urls.length) {
+                    if (urlInput) urlInput.value = data.urls[0];
+                } else {
+                    alert("Upload failed: " + ((data && data.message) || "unknown error"));
+                }
+            })
+            .catch(function (err) { alert("Upload error: " + err.message); });
+    });
+</script>
 
 <script>
     window.MT_CATEGORIES = <%- JSON.stringify(categories) %>;

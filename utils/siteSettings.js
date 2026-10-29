@@ -46,6 +46,7 @@ function toPlain(doc) {
     const security = doc.userSecurity || {};
     const rewards = doc.rewards || {};
     const marketing = doc.marketing || {};
+    const productBanner = doc.productBanner || {};
 
     return {
         siteName: doc.siteName,
@@ -131,6 +132,12 @@ function toPlain(doc) {
             longTermGrowth: Number(marketing.longTermGrowth) || 0,
             kpiNote: marketing.kpiNote || "",
             kpiUpdatedAt: marketing.kpiUpdatedAt || null
+        },
+
+        productBanner: {
+            enabled: productBanner.enabled === true,
+            image: productBanner.image || "",
+            link: productBanner.link || ""
         },
 
         seoPages: (doc.seoPages || []).map(function (p) {

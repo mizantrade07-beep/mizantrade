@@ -175,6 +175,20 @@ const productSchema = new mongoose.Schema(
             default: []
         },
 
+        // Product-page sidebar banner (under the image gallery).
+        // Empty means the global banner from Settings is used.
+        bannerImage: {
+            type: String,
+            trim: true,
+            default: ""
+        },
+
+        bannerLink: {
+            type: String,
+            trim: true,
+            default: ""
+        },
+
         shortDesc: {
             type: String,
             trim: true,

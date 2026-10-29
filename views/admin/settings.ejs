@@ -98,6 +98,7 @@
             <button type="button" class="st-tab" data-tab="tax"><i class="fa-solid fa-percent"></i> Tax &amp; VAT</button>
             <button type="button" class="st-tab" data-tab="security"><i class="fa-solid fa-shield-halved"></i> User &amp; Security</button>
             <button type="button" class="st-tab" data-tab="social-links"><i class="fa-solid fa-share-nodes"></i> Social Links</button>
+            <button type="button" class="st-tab" data-tab="product-banner"><i class="fa-solid fa-image"></i> Product Banner</button>
         </div>
 
         <form action="/admin/settings" method="POST" id="settingsForm" enctype="application/x-www-form-urlencoded">
@@ -552,6 +553,46 @@
                                 </button>
                             </div>
                         <% }); %>
+                    </div>
+                </section>
+            </div>
+
+            <!-- ================= PRODUCT BANNER ================= -->
+            <div class="st-panel" data-panel="product-banner" id="product-banner">
+                <section class="dashboard-card">
+                    <div class="card-header">
+                        <h2 class="card-title"><i class="fa-solid fa-image card-icon"></i> Product Page Banner</h2>
+                    </div>
+                    <p class="st-note" style="margin-bottom:12px;">
+                        A global banner shown under the image gallery on every product page. A product that has
+                        its own banner (set in the product form) uses that instead.
+                    </p>
+
+                    <div class="form-grid">
+                        <div class="form-group form-full">
+                            <label for="pbImage">Banner Image (URL)</label>
+                            <div style="display:flex; gap:6px;">
+                                <input type="text" id="pbImage" name="productBanner.image"
+                                       value="<%= settings.productBanner ? settings.productBanner.image : '' %>"
+                                       class="img-url" placeholder="Paste an image URL or upload">
+                                <label class="secondary-button" style="cursor:pointer; white-space:nowrap;">
+                                    <i class="fa-solid fa-upload"></i><input type="file" accept="image/*" class="img-file" hidden>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-group form-full">
+                            <label for="pbLink">Link (optional — e.g. /offers)</label>
+                            <input type="text" id="pbLink" name="productBanner.link"
+                                   value="<%= settings.productBanner ? settings.productBanner.link : '' %>"
+                                   placeholder="/offers">
+                        </div>
+                        <div class="form-group checkbox-group">
+                            <label>
+                                <input type="checkbox" name="productBanner.enabled" value="on"
+                                       <%= settings.productBanner && settings.productBanner.enabled ? 'checked' : '' %>>
+                                Show this banner on all product pages
+                            </label>
+                        </div>
                     </div>
                 </section>
             </div>

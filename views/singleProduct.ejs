@@ -23,7 +23,11 @@
         .product-top-card { background: #fff; padding: 30px; border-radius: 6px; border: 1px solid #e5e5e5; display: flex; gap: 40px; }
         
         /* Advanced Gallery Section */
-        .gallery-container { display: flex; gap: 20px; flex: 1.2; }
+        .product-gallery-col { flex: 1.2; min-width: 0; display: flex; flex-direction: column; gap: 18px; }
+        .gallery-container { display: flex; gap: 20px; }
+        .product-side-banner { border: 1px solid #e5e5e5; border-radius: 6px; background: #fff; padding: 8px; }
+        .product-side-banner a { display: block; }
+        .product-side-banner img { width: 100%; height: auto; display: block; border-radius: 4px; }
         .thumbnail-list { display: flex; flex-direction: column; gap: 12px; max-height: 450px; overflow-y: auto; padding-right: 5px; }
         .thumb-img { width: 75px; height: 75px; object-fit: contain; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; padding: 4px; transition: 0.2s; background: #fff; }
         .thumb-img:hover, .thumb-img.active { border-color: #ef4a23; box-shadow: 0 0 5px rgba(239, 74, 35, 0.2); }
@@ -186,6 +190,7 @@
         <div class="single-product-layout">
             <!-- Top Overview Box & Gallery -->
             <div class="product-top-card">
+                <div class="product-gallery-col">
                 <div class="gallery-container">
                     <!-- Product Gallery Thumbnails -->
                     <div class="thumbnail-list">
@@ -208,6 +213,23 @@
                     <div class="main-display-img">
                         <img id="mainProductImg" src="<%= optimizeImage(product.mainImage || (galleryImages && galleryImages[0]), 1200) || 'https://via.placeholder.com/400' %>" alt="<%= product.title %>" decoding="async" fetchpriority="high">
                     </div>
+                </div>
+
+                <%
+                    var pbGlobal = (typeof site !== 'undefined' && site && site.productBanner) ? site.productBanner : null;
+                    var pbUseGlobal = !product.bannerImage && pbGlobal && pbGlobal.enabled && pbGlobal.image;
+                    var pbImg = product.bannerImage || (pbUseGlobal ? pbGlobal.image : '');
+                    var pbUrl = product.bannerImage ? (product.bannerLink || '') : (pbUseGlobal ? (pbGlobal.link || '') : '');
+                %>
+                <% if (pbImg) { %>
+                    <div class="product-side-banner">
+                        <% if (pbUrl) { %>
+                            <a href="<%= pbUrl %>"<% if (/^https?:/i.test(pbUrl)) { %> target="_blank" rel="noopener"<% } %>>
+                        <% } %>
+                            <img src="<%= optimizeImage(pbImg, 900) %>" alt="Special offer banner" loading="lazy" decoding="async">
+                        <% if (pbUrl) { %></a><% } %>
+                    </div>
+                <% } %>
                 </div>
 
                 <div class="product-info-container">
