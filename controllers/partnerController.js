@@ -6,6 +6,40 @@ const bcrypt = require("bcryptjs");
 const PartnerRequest = require("../models/PartnerRequest");
 const Partner = require("../models/Partner");
 const { notifyPartnerLogin } = require("../utils/notify");
+const { cloudinary } = require("../middleware/upload");
+
+/* Upload fields for the public partner form. Each field maps to a document
+   label shown to the admin, and every field accepts several files. */
+const DOCUMENT_FIELDS = [
+    { name: "visitingCard", label: "Visiting Card", maxCount: 3 },
+    { name: "tradeLicenseDoc", label: "Trade License", maxCount: 3 },
+    { name: "binDoc", label: "BIN Certificate", maxCount: 3 },
+    { name: "tinDoc", label: "TIN Certificate", maxCount: 3 },
+    { name: "nidDoc", label: "NID / Passport", maxCount: 3 },
+    { name: "ownerPhoto", label: "Owner Photo", maxCount: 2 },
+    { name: "otherDocs", label: "Other Document", maxCount: 10 }
+];
+
+const REQUIRED_DOCUMENTS = ["visitingCard", "tradeLicenseDoc"];
+
+const PROJECT_ROOT = path.join(__dirname, "..");
+const PARTNER_DOC_ROOT = path.join(PROJECT_ROOT, "storage", "private", "partners");
+
+exports.DOCUMENT_FIELDS = DOCUMENT_FIELDS;
+
+function removeUploadedFiles(req) {
+    const files = req.files || {};
+
+    Object.keys(files).forEach(function (field) {
+        (files[field] || []).forEach(function (file) {
+            try {
+                if (file.path) fs.unlinkSync(file.path);
+            } catch (err) { /* already gone */ }
+        });
+    });
+}
+
+exports.cleanupPartnerUploads = removeUploadedFiles;
 
 /* ======================================================
    PARTNER AUTH — separate realm from customers.
@@ -116,14 +150,29 @@ exports.partnerLogout = async (req, res) => {
    PUBLIC - PARTNER FORM
 ====================================================== */
 
+function renderPartnerForm(res, status, options) {
+    const opts = options || {};
+
+    return res.status(status).render("partnerForm", {
+        pageTitle: "Become a Partner",
+        successMessage: null,
+        errorMessage: opts.errorMessage || "",
+        form: opts.form || {}
+    });
+}
+
 exports.getPartnerForm = (req, res) => {
     res.render("partnerForm", {
         pageTitle: "Become a Partner",
         successMessage: req.query.success
             ? "Your application has been submitted successfully! We will review your documents and contact you."
-            : null
+            : null,
+        errorMessage: "",
+        form: {}
     });
 };
+
+exports.renderPartnerForm = renderPartnerForm;
 
 exports.postPartnerForm = async (req, res) => {
     try {
@@ -137,17 +186,60 @@ exports.postPartnerForm = async (req, res) => {
             businessDetails
         } = req.body;
 
+        const form = {
+            companyName: companyName || "",
+            ownerName: ownerName || "",
+            email: email || "",
+            phone: phone || "",
+            address: address || "",
+            tradeLicense: tradeLicense || "",
+            businessDetails: businessDetails || ""
+        };
+
         if (!companyName || !ownerName || !email || !phone || !businessDetails) {
-            return res.status(400).send(
-                "Please fill in all required fields. <a href='/become-a-partner'>Go Back</a>"
-            );
+            return renderPartnerForm(res, 400, {
+                errorMessage: "Please fill in all required fields.",
+                form
+            });
         }
 
-        const documents = (req.files || []).map((file) => ({
-            originalName: file.originalname,
-            filename: file.filename,
-            path: file.path || file.secure_url
-        }));
+        const uploaded = req.files || {};
+
+        const missing = REQUIRED_DOCUMENTS.filter(function (field) {
+            return !(uploaded[field] && uploaded[field].length);
+        }).map(function (field) {
+            const match = DOCUMENT_FIELDS.find(function (f) { return f.name === field; });
+            return match ? match.label : field;
+        });
+
+        if (missing.length) {
+            removeUploadedFiles(req);
+
+            return renderPartnerForm(res, 400, {
+                errorMessage: "Please upload: " + missing.join(", ") + ".",
+                form
+            });
+        }
+
+        const documents = [];
+
+        DOCUMENT_FIELDS.forEach(function (field) {
+            (uploaded[field.name] || []).forEach(function (file) {
+                const relativePath = file.path
+                    ? path.relative(PROJECT_ROOT, file.path).split(path.sep).join("/")
+                    : "";
+
+                documents.push({
+                    label: field.label,
+                    originalName: file.originalname,
+                    filename: file.filename,
+                    localPath: relativePath,
+                    mimeType: file.mimetype,
+                    size: file.size || 0,
+                    uploadedAt: new Date()
+                });
+            });
+        });
 
         await PartnerRequest.create({
             companyName: companyName.trim(),
@@ -163,6 +255,8 @@ exports.postPartnerForm = async (req, res) => {
         return res.redirect("/become-a-partner?success=true");
     } catch (error) {
         console.error("Partner form error:", error);
+        removeUploadedFiles(req);
+
         return res
             .status(500)
             .send("Sorry, there was a server error. Please try again.");
@@ -222,7 +316,19 @@ exports.postUpdatePartnerStatus = async (req, res) => {
 
 exports.deletePartner = async (req, res) => {
     try {
-        await PartnerRequest.findByIdAndDelete(req.params.id);
+        const removed = await PartnerRequest.findByIdAndDelete(req.params.id).lean();
+
+        if (removed) {
+            (removed.documents || []).forEach(function (doc) {
+                if (!doc.localPath) return;
+
+                const absolute = path.resolve(PROJECT_ROOT, doc.localPath);
+                if (!absolute.startsWith(PARTNER_DOC_ROOT + path.sep)) return;
+
+                try { fs.unlinkSync(absolute); } catch (err) { /* already gone */ }
+            });
+        }
+
         return res.redirect("/admin/partners");
     } catch (error) {
         console.error("Delete partner error:", error);
@@ -230,13 +336,90 @@ exports.deletePartner = async (req, res) => {
     }
 };
 
-// Document download handler for cloud storage
-exports.getPartnerDocument = (req, res) => {
+/* Documents live on Cloudinary. Older applications only stored the public id,
+   so build a delivery URL for those. */
+function documentUrl(doc) {
+    if (!doc) return "";
+
+    if (doc.url) return doc.url;
+
+    if (doc.filename && /^https?:\/\//i.test(doc.filename)) {
+        return doc.filename;
+    }
+
+    if (doc.filename) {
+        const ext = (String(doc.originalName || "").match(/\.([a-z0-9]+)$/i) || [])[1];
+        const options = { secure: true };
+
+        if (ext && !/\.[a-z0-9]+$/i.test(doc.filename)) {
+            options.format = ext;
+        }
+
+        return cloudinary.url(doc.filename, options);
+    }
+
+    return "";
+}
+
+exports.getPartnerDocument = async (req, res) => {
     try {
-        return res.status(400).send("Document storage has been migrated to Cloudinary.");
+        const index = Number(req.params.index);
+
+        if (!Number.isInteger(index) || index < 0) {
+            return res.status(400).send("Invalid document.");
+        }
+
+        const request = await PartnerRequest
+            .findById(req.params.id)
+            .select("documents")
+            .lean();
+
+        if (!request) {
+            return res.status(404).send("Partner request not found.");
+        }
+
+        const doc = (request.documents || [])[index];
+
+        if (!doc) {
+            return res.status(404).send("Document not found.");
+        }
+
+        const download = req.query.download === "1";
+
+        if (doc.localPath) {
+            const absolute = path.resolve(PROJECT_ROOT, doc.localPath);
+
+            if (!absolute.startsWith(PARTNER_DOC_ROOT + path.sep) || !fs.existsSync(absolute)) {
+                return res.status(404).send("This document file is missing on the server.");
+            }
+
+            const safeName = String(doc.originalName || doc.filename || "document")
+                .replace(/["\r\n]/g, "");
+
+            res.setHeader("Content-Type", doc.mimeType || "application/octet-stream");
+            res.setHeader(
+                "Content-Disposition",
+                (download ? "attachment" : "inline") + '; filename="' + safeName + '"'
+            );
+            res.setHeader("Cache-Control", "private, no-store");
+
+            return res.sendFile(absolute);
+        }
+
+        let url = documentUrl(doc);
+
+        if (!url) {
+            return res.status(404).send("This document is no longer available.");
+        }
+
+        if (download) {
+            url = url.replace("/upload/", "/upload/fl_attachment/");
+        }
+
+        return res.redirect(url);
     } catch (error) {
         console.error("Partner document error:", error);
-        return res.status(500).send("Unable to download document.");
+        return res.status(500).send("Unable to open document.");
     }
 };
 

@@ -207,7 +207,7 @@ router.post("/partners/:id/reset-password", partnerController.resetPartnerPasswo
 
 router.get("/partners/delete/:id", partnerController.deletePartner);
 
-router.get("/partners/document/:filename", partnerController.getPartnerDocument);
+router.get("/partners/:id/document/:index", partnerController.getPartnerDocument);
 
 
 /* ======================================================

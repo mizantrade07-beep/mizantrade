@@ -88,7 +88,27 @@ router.get('/api/search', storefrontController.searchSuggestions);
 router.get('/become-a-partner', partnerController.getPartnerForm);
 router.post(
     '/become-a-partner',
-    upload.partnerDocs.array('documents', 5),
+    function (req, res, next) {
+        upload.partnerDocs.fields(partnerController.DOCUMENT_FIELDS)(req, res, function (err) {
+            if (!err) return next();
+
+            console.error("Partner document upload error:", err.message);
+
+            partnerController.cleanupPartnerUploads(req);
+
+            let message = err.message || "Upload failed. Please try again.";
+            if (err.code === "LIMIT_FILE_SIZE") {
+                message = "Each file must be 10MB or smaller.";
+            } else if (err.code === "LIMIT_UNEXPECTED_FILE") {
+                message = "Too many files for one document type.";
+            }
+
+            return partnerController.renderPartnerForm(res, 400, {
+                errorMessage: message,
+                form: req.body || {}
+            });
+        });
+    },
     partnerController.postPartnerForm
 );
 

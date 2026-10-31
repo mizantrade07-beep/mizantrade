@@ -10,8 +10,14 @@ const partnerSchema = new mongoose.Schema({
     businessDetails: { type: String, required: true },
 
     documents: [{
+        label: { type: String, default: '' },
         originalName: { type: String, default: '' },
-        filename: { type: String, required: true },
+        filename: { type: String, default: '' },
+        url: { type: String, default: '' },
+        localPath: { type: String, default: '' },
+        mimeType: { type: String, default: '' },
+        size: { type: Number, default: 0 },
+        uploadedAt: { type: Date, default: Date.now },
         _id: false
     }],
 

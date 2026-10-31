@@ -23,7 +23,7 @@
             <a href="/admin/partners" class="secondary-button">← Back to Partners</a>
         </div>
 
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:18px; align-items:start;">
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:18px; align-items:start;">
 
             <!-- আবেদনকারীর তথ্য -->
             <section class="dashboard-card">
@@ -54,17 +54,44 @@
                 <div class="card-body">
 
                     <% if (partner.documents && partner.documents.length > 0) { %>
-                        <ul style="list-style:none; margin-bottom:18px;">
-                            <% partner.documents.forEach(function(doc) { %>
-                                <li style="padding:9px 0; border-bottom:1px solid #f0f0f0;">
-                                    <a href="/admin/partners/document/<%= doc.filename %>" target="_blank"
-                                       style="color:#2b6cb0; font-weight:600; font-size:13px;">
-                                        <i class="fa-solid fa-file-arrow-down"></i>
-                                        <%= doc.originalName || doc.filename %>
-                                    </a>
-                                </li>
+                        <div style="margin-bottom:18px;">
+                            <% partner.documents.forEach(function(doc, docIndex) {
+                                const isPdf = /pdf/i.test(doc.mimeType || doc.originalName || '');
+                                const bytes = Number(doc.size) || 0;
+                                const size = bytes > 0
+                                    ? (bytes < 1024
+                                        ? bytes + ' B'
+                                        : (bytes < 1048576
+                                            ? Math.max(1, Math.round(bytes / 1024)) + ' KB'
+                                            : (bytes / 1048576).toFixed(1) + ' MB'))
+                                    : '';
+                            %>
+                                <div style="display:flex; flex-wrap:wrap; align-items:center; gap:10px 12px; padding:10px 0; border-bottom:1px solid #f0f0f0;">
+                                    <span style="width:34px; height:34px; border-radius:8px; display:inline-flex; align-items:center; justify-content:center; background:<%= isPdf ? '#fdecea' : '#eaf1fb' %>; color:<%= isPdf ? '#c53030' : '#2b6cb0' %>; flex:0 0 auto;">
+                                        <i class="fa-solid <%= isPdf ? 'fa-file-pdf' : 'fa-file-image' %>"></i>
+                                    </span>
+                                    <div style="flex:1 1 150px; min-width:0;">
+                                        <div style="font-size:13px; font-weight:600; color:#22303f; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                                            <%= doc.originalName || 'Document' %>
+                                        </div>
+                                        <div style="font-size:11.5px; color:#8a94a3;">
+                                            <% if (doc.label) { %><%= doc.label %><% } else { %>Document<% } %>
+                                            <% if (size) { %> · <%= size %><% } %>
+                                        </div>
+                                    </div>
+                                    <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                                        <a href="/admin/partners/<%= partner._id %>/document/<%= docIndex %>" target="_blank" rel="noopener"
+                                           class="secondary-button" style="padding:6px 10px; font-size:12px; white-space:nowrap;">
+                                            <i class="fa-solid fa-arrow-up-right-from-square"></i> Open
+                                        </a>
+                                        <a href="/admin/partners/<%= partner._id %>/document/<%= docIndex %>?download=1"
+                                           class="secondary-button" style="padding:6px 10px; font-size:12px; white-space:nowrap;">
+                                            <i class="fa-solid fa-download"></i> Download
+                                        </a>
+                                    </div>
+                                </div>
                             <% }); %>
-                        </ul>
+                        </div>
                     <% } else { %>
                         <p style="color:#999; font-size:13px; margin-bottom:18px;">No documents uploaded.</p>
                     <% } %>
@@ -79,7 +106,7 @@
                                       placeholder="Verification note..."><%= partner.adminNote || '' %></textarea>
                         </div>
 
-                        <div style="display:flex; gap:10px;">
+                        <div style="display:flex; flex-wrap:wrap; gap:10px;">
                             <button type="submit" name="status" value="Approved" class="primary-button"
                                     style="background:#2f855a;">
                                 ✓ Approve

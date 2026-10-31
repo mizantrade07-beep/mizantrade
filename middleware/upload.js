@@ -1,3 +1,6 @@
+const path = require("path");
+const fs = require("fs");
+const crypto = require("crypto");
 const multer = require("multer");
 const cloudinary = require("cloudinary").v2;
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
@@ -205,19 +208,26 @@ const uploadMedia = multer({
    PARTNER DOCUMENT STORAGE
 ====================================================== */
 
-const partnerDocStorage = new CloudinaryStorage({
-    cloudinary,
+/* Partner documents stay on private disk: Cloudinary blocks PDF delivery by
+   default and these are admin-only files that must always open/download. */
+const partnerDocDir = path.join(__dirname, "..", "storage", "private", "partners");
 
-    params: {
-        folder: "mizantrade/partners",
-        resource_type: "auto",
-        allowed_formats: [
-            "jpg",
-            "jpeg",
-            "png",
-            "webp",
-            "pdf"
-        ]
+const PARTNER_DOC_EXTENSIONS = {
+    "image/jpeg": ".jpg",
+    "image/png": ".png",
+    "image/webp": ".webp",
+    "application/pdf": ".pdf"
+};
+
+const partnerDocStorage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        fs.mkdirSync(partnerDocDir, { recursive: true });
+        cb(null, partnerDocDir);
+    },
+
+    filename: function (req, file, cb) {
+        const ext = PARTNER_DOC_EXTENSIONS[file.mimetype] || "";
+        cb(null, Date.now() + "-" + crypto.randomBytes(8).toString("hex") + ext);
     }
 });
 
@@ -255,7 +265,7 @@ const uploadPartnerDocs = multer({
     fileFilter: partnerDocFilter,
 
     limits: {
-        fileSize: 5 * 1024 * 1024
+        fileSize: 10 * 1024 * 1024
     }
 });
 
