@@ -19,9 +19,15 @@
             <% if (heroSlides.length) { %>
             <div class="hero-slider">
                 <% heroSlides.forEach(function (slide, i) { %>
-                    <div class="hero-slide hero-slide-<%= (i % 3) + 1 %> <%= i === 0 ? 'active' : '' %>"
+                    <%
+                        var slideOverlay = (slide.overlay === undefined || slide.overlay === null) ? 75 : Number(slide.overlay);
+                        if (!isFinite(slideOverlay)) slideOverlay = 75;
+                        slideOverlay = Math.min(100, Math.max(0, slideOverlay)) / 100;
+                        var slideBg = slide.image ? String(optimizeImage(slide.image, 1920)).replace(/'/g, "%27").replace(/"/g, "%22") : "";
+                    %>
+                    <div class="hero-slide hero-slide-<%= (i % 3) + 1 %><%= slide.image ? ' hero-slide--photo' : '' %> <%= i === 0 ? 'active' : '' %>"
                          <% if (slide.image) { %>
-                         style="background-image: linear-gradient(rgba(8,22,33,0.75), rgba(8,22,33,0.75)), url('<%= optimizeImage(slide.image, 1920) %>'); background-size: cover; background-position: center; <%= slide.height ? 'min-height:' + slide.height + 'px;' : '' %>"
+                         style="background-image: linear-gradient(rgba(8,22,33,<%= slideOverlay %>), rgba(8,22,33,<%= slideOverlay %>)), url('<%= slideBg %>'); <%= slide.height ? 'min-height:' + slide.height + 'px;' : '' %>"
                          <% } else if (slide.height) { %>
                          style="min-height:<%= slide.height %>px;"
                          <% } %>>
@@ -55,7 +61,11 @@
                         var cardStyle = "";
                         if (card.image) {
                             var bgUrl = String(optimizeImage(card.image, 700)).replace(/'/g, "%27").replace(/"/g, "%22");
-                            cardStyle += "background-image:linear-gradient(rgba(8,22,33,0.62),rgba(8,22,33,0.62)),url('" + bgUrl + "');background-size:cover;background-position:center;";
+                            var cardOverlay = (card.overlay === undefined || card.overlay === null) ? 62 : Number(card.overlay);
+                            if (!isFinite(cardOverlay)) cardOverlay = 62;
+                            cardOverlay = Math.min(100, Math.max(0, cardOverlay)) / 100;
+                            cardStyle += "background-image:linear-gradient(rgba(8,22,33," + cardOverlay + "),rgba(8,22,33," + cardOverlay + ")),url('" + bgUrl + "');";
+                            if (card.bgColor) cardStyle += "background-color:" + card.bgColor + ";";
                         } else if (card.bgColor) {
                             cardStyle += "background:" + card.bgColor + ";";
                         }

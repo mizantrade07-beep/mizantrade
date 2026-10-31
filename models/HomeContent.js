@@ -8,6 +8,8 @@ const slideSchema = new mongoose.Schema(
         buttonText: { type: String, trim: true, default: "" },
         buttonLink: { type: String, trim: true, default: "" },
         image: { type: String, trim: true, default: "" },
+        // dark overlay opacity over the background photo (0 = none, 100 = solid)
+        overlay: { type: Number, default: 75, min: 0, max: 100 },
         // px height of this slide; 0 = theme default
         height: { type: Number, default: 0, min: 0, max: 800 },
         active: { type: Boolean, default: true }
@@ -36,6 +38,8 @@ const sideCardSchema = new mongoose.Schema(
         bgColor: { type: String, trim: true, default: "" },
         // background photo; when set it is shown over the colour
         image: { type: String, trim: true, default: "" },
+        // dark overlay opacity over the background photo (0 = none, 100 = solid)
+        overlay: { type: Number, default: 62, min: 0, max: 100 },
         // px height of this card; 0 = share the hero column height
         height: { type: Number, default: 0, min: 0, max: 800 },
         active: { type: Boolean, default: true }

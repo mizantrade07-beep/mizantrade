@@ -704,7 +704,19 @@ img {
 /* admin-set photo + height */
 .hero-side-card.has-bg {
     background-color: #14222d;
+    /* contain = show the full banner artwork (incl. baked-in text) at every size */
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55);
+}
+
+/* Photo slides: sizing lives here (not inline) so phones can show the full banner */
+.hero-slide--photo {
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-color: #081621;
 }
 
 /* Image-only cards (no icon/title/text) need height on phone, where the
@@ -1616,8 +1628,24 @@ textarea.form-control {
         flex-direction: row;
     }
 
+    /* Tablet: side cards sit in a row under the slider — keep them compact
+       even when the admin set a tall desktop height. */
     .hero-side-card--sized {
         flex: 1 1 0;
+        height: auto;
+        min-height: 120px;
+        max-height: 200px;
+    }
+
+    /* Show the whole banner (including baked-in text) instead of cropping it */
+    .hero-slide--photo,
+    .hero-side-card.has-bg {
+        background-size: contain;
+        background-color: #081621;
+    }
+
+    .hero-side-card.has-bg {
+        background-color: #0b2a3d;
     }
 
     /* ট্যাবলেট/ফোনে hover মেগা-মেনুর বদলে টাচ-ফ্রেন্ডলি হ্যামবার্গার মেনু */
@@ -2082,23 +2110,83 @@ textarea.form-control {
 }
 
 @media (max-width: 560px) {
+    /* Phone: 2 cards per row, compact layout */
     .why-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
     }
 
     .why-head h2 {
         font-size: 22px;
     }
 
+    .why-card {
+        flex-direction: column;
+        gap: 8px;
+        padding: 14px 12px;
+    }
+
+    .why-card > i {
+        font-size: 24px;
+    }
+
+    .why-card h3 {
+        font-size: 13.5px;
+        margin-bottom: 4px;
+    }
+
+    .why-card p {
+        font-size: 12px;
+        line-height: 1.45;
+    }
+
+    /* Phone: 2 featured categories per row */
+    .fc-grid {
+        gap: 10px;
+    }
+
     .fc-card {
-        flex: 0 0 auto;
-        width: calc(25% - 8px);
-        min-width: 104px;
-        padding: 14px 6px 10px;
+        flex: 1 1 calc(50% - 5px);
+        width: auto;
+        min-width: 0;
+        padding: 14px 8px 12px;
     }
 
     .fc-card i {
         font-size: 24px;
+    }
+
+    .fc-card span {
+        font-size: 12px;
+    }
+
+    /* Hero + side banners: compact and fully visible */
+    .hero-slide--photo,
+    .hero-side-card.has-bg {
+        background-size: contain;
+    }
+
+    .hero-side-card {
+        padding: 16px 14px;
+    }
+
+    .hero-side-card h3 {
+        font-size: 16px;
+    }
+
+    .hero-side-card--sized {
+        flex: 0 0 auto;
+        height: auto;
+        min-height: 110px;
+        max-height: 160px;
+    }
+
+    .home-banner {
+        margin: 16px 0;
+    }
+
+    .home-banner img {
+        border-radius: 8px;
     }
 }
 

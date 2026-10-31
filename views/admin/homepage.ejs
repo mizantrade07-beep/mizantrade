@@ -96,6 +96,8 @@
                                     <input type="text" name="heroSlides[<%= i %>][buttonText]" value="<%= s.buttonText %>"></div>
                                 <div class="form-group"><label>Slide height (px, 0 = default)</label>
                                     <input type="number" name="heroSlides[<%= i %>][height]" min="0" max="800" step="10" value="<%= s.height || 0 %>"></div>
+                                <div class="form-group"><label>Image dark overlay (%)</label>
+                                    <input type="number" name="heroSlides[<%= i %>][overlay]" min="0" max="100" step="1" value="<%= s.overlay === undefined ? 75 : s.overlay %>"></div>
                                 <div class="form-group" style="grid-column:1/-1;"><label>Banner / background image (URL)</label>
                                     <div style="display:flex; gap:8px;">
                                         <input type="text" name="heroSlides[<%= i %>][image]" class="img-url" value="<%= s.image %>" placeholder="https://… or upload">
@@ -160,6 +162,8 @@
                                 </div>
                                 <div class="form-group" style="margin:0;"><label>Height (px, 0 = auto)</label>
                                     <input type="number" name="heroSideCards[<%= i %>][height]" min="0" max="800" step="10" value="<%= s.height || 0 %>"></div>
+                                <div class="form-group" style="margin:0;"><label>Image dark overlay (%)</label>
+                                    <input type="number" name="heroSideCards[<%= i %>][overlay]" min="0" max="100" step="1" value="<%= s.overlay === undefined ? 62 : s.overlay %>"></div>
                                 <div class="form-group" style="margin:0; grid-column:1/-1;"><label>Background image (URL)</label>
                                     <div style="display:flex; gap:8px;">
                                         <input type="text" name="heroSideCards[<%= i %>][image]" class="img-url" value="<%= s.image %>" placeholder="https://… or upload">
@@ -622,6 +626,7 @@
                 '<div class="form-group" style="grid-column:1/-1;"><label>Text</label><textarea name="heroSlides[' + i + '][text]" rows="2"></textarea></div>' +
                 '<div class="form-group"><label>Button text</label><input type="text" name="heroSlides[' + i + '][buttonText]"></div>' +
                 '<div class="form-group"><label>Slide height (px, 0 = default)</label><input type="number" name="heroSlides[' + i + '][height]" min="0" max="800" step="10" value="0"></div>' +
+                '<div class="form-group"><label>Image dark overlay (%)</label><input type="number" name="heroSlides[' + i + '][overlay]" min="0" max="100" step="1" value="75"></div>' +
                 '<div class="form-group" style="grid-column:1/-1;"><label>Banner / background image (URL)</label>' + uploadField('heroSlides[' + i + '][image]') + '</div>' +
             '</div>' +
             '<button type="button" class="mini-button danger hc-remove" style="margin-top:6px;"><i class="fa-solid fa-trash"></i> Remove slide</button></div>';
@@ -647,6 +652,7 @@
                         '<input type="color" class="hc-color" value="#0b2a3d" style="width:42px; height:34px; padding:2px; border:1px solid #d5dce4; border-radius:8px;">' +
                         '<input type="text" name="heroSideCards[' + i + '][bgColor]" class="hc-hex" placeholder="#0b2a3d"></div></div>' +
                 '<div class="form-group" style="margin:0;"><label>Height (px, 0 = auto)</label><input type="number" name="heroSideCards[' + i + '][height]" min="0" max="800" step="10" value="0"></div>' +
+                '<div class="form-group" style="margin:0;"><label>Image dark overlay (%)</label><input type="number" name="heroSideCards[' + i + '][overlay]" min="0" max="100" step="1" value="62"></div>' +
                 '<div class="form-group" style="margin:0; grid-column:1/-1;"><label>Background image (URL)</label>' + uploadField('heroSideCards[' + i + '][image]') + '</div>' +
             '</div>' +
             '<button type="button" class="mini-button danger hc-remove" style="margin-top:8px;"><i class="fa-solid fa-trash"></i> Remove card</button></div>';

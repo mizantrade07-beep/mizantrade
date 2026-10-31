@@ -32,6 +32,7 @@ function normSlides(arr) {
                 buttonText: str(r.buttonText),
                 buttonLink: str(r.buttonLink),
                 image: str(r.image),
+                overlay: num(r.overlay, 75, 0, 100),
                 height: num(r.height, 0, 0, 800),
                 active: isActive(r.active)
             };
@@ -50,6 +51,7 @@ function normSideCards(arr) {
                 link: str(r.link),
                 bgColor: color(r.bgColor),
                 image: str(r.image),
+                overlay: num(r.overlay, 62, 0, 100),
                 height: num(r.height, 0, 0, 800),
                 active: isActive(r.active)
             };

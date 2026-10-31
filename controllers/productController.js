@@ -1554,7 +1554,7 @@ exports.getSingleProduct = async (
                           stockRank: 1,
                           createdAt: -1,
                       })
-                      .limit(5)
+                      .limit(6)
                       .lean()
                 : [];
 
@@ -1578,7 +1578,7 @@ exports.getSingleProduct = async (
 
                     if (
                         seen.has(key) ||
-                        similarProducts.length >= 5
+                        similarProducts.length >= 6
                     ) {
                         return;
                     }
