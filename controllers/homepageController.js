@@ -1,4 +1,5 @@
 const Category = require("../models/Category");
+const cache = require("../utils/cache");
 const { getHomeContent, migrateLegacySections } = require("../utils/homeContent");
 
 function str(value) {
@@ -236,6 +237,8 @@ exports.postUpdateHomepage = async (req, res) => {
         content.customSections = [];
 
         await content.save();
+
+        cache.del("store:home");
 
         return res.redirect("/admin/homepage?message=saved");
     } catch (error) {

@@ -1,0 +1,307 @@
+<%- include("partials/head", {
+    title: "Speed & Performance | MizanTrade Admin"
+}) %>
+
+<%- include("partials/sidebar") %>
+
+<div class="admin-main">
+
+    <%- include("partials/topbar", {
+        title: "Speed & Performance"
+    }) %>
+
+    <main class="admin-content">
+
+        <div class="dashboard-header">
+            <div>
+                <h1 class="dashboard-title">Speed &amp; Performance</h1>
+                <p class="dashboard-subtitle">
+                    Live health of the server, database, cache and the real homepage response.
+                </p>
+            </div>
+
+            <div class="product-search">
+                <a href="/admin/speed?check=1" class="filter-select active" style="text-decoration:none;">
+                    <i class="fa-solid fa-bolt"></i> Run speed check
+                </a>
+                <form method="POST" action="/admin/speed/clear-cache" style="display:inline;">
+                    <button type="submit" style="cursor:pointer; display:inline-flex; align-items:center; gap:8px; padding:10px 16px; border-radius:8px; border:1px solid #e2e8f0; background:#fff; color:#0f172a; font-size:13px; font-weight:600; font-family:inherit; line-height:1;">
+                        <i class="fa-solid fa-rotate"></i> Clear cache
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <% if (message === "cleared") { %>
+            <div style="padding:12px 16px; border-radius:10px; margin-bottom:18px; font-weight:600; background:#e8f7ee; color:#1f8a3b; border:1px solid #bfe8cd;">
+                <i class="fa-solid fa-circle-check"></i> Cache cleared. The next page views will rebuild it.
+            </div>
+        <% } %>
+
+        <section class="stats-grid">
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-gauge-high"></i></div>
+                <div class="stat-content">
+                    <span>Performance Score</span>
+                    <strong><%= score %> / 100 · <%= grade %></strong>
+                </div>
+            </article>
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-stopwatch"></i></div>
+                <div class="stat-content">
+                    <span>Homepage TTFB</span>
+                    <strong><%= site ? site.home.ttfb + " ms" : "Not checked" %></strong>
+                </div>
+            </article>
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-download"></i></div>
+                <div class="stat-content">
+                    <span>HTML Transfer</span>
+                    <strong><%= site ? (site.compressedBytes / 1024).toFixed(1) + " KB" : "Not checked" %></strong>
+                </div>
+            </article>
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-database"></i></div>
+                <div class="stat-content">
+                    <span>MongoDB Ping</span>
+                    <strong><%= db.pingMs %> ms</strong>
+                </div>
+            </article>
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-memory"></i></div>
+                <div class="stat-content">
+                    <span>Cache Hit Rate</span>
+                    <strong><%= cache.hitRate %>%</strong>
+                </div>
+            </article>
+            <article class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-microchip"></i></div>
+                <div class="stat-content">
+                    <span>Memory (RSS)</span>
+                    <strong><%= system.rssMb %> MB</strong>
+                </div>
+            </article>
+        </section>
+
+        <section class="dashboard-card">
+            <div class="card-header">
+                <h2 class="card-title"><i class="fa-solid fa-list-check card-icon"></i> Checks</h2>
+            </div>
+            <div class="table-wrapper">
+                <table class="admin-table">
+                    <thead>
+                        <tr><th>Check</th><th>Value</th><th>Status</th><th>What it means</th></tr>
+                    </thead>
+                    <tbody>
+                        <% checks.forEach(function (c) { %>
+                            <tr>
+                                <td><%= c.label %></td>
+                                <td><strong><%= c.value %></strong></td>
+                                <td>
+                                    <% if (c.status === "pass") { %>
+                                        <span class="badge badge-approved">Pass</span>
+                                    <% } else if (c.status === "warn") { %>
+                                        <span class="badge badge-pending">Warn</span>
+                                    <% } else { %>
+                                        <span class="badge badge-rejected">Fail</span>
+                                    <% } %>
+                                </td>
+                                <td style="font-size:12px; color:#64748b;"><%= c.hint %></td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <% if (tips.length) { %>
+            <section class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fa-solid fa-lightbulb card-icon"></i> How to improve</h2>
+                </div>
+                <div style="padding:16px;">
+                    <ul style="margin:0; padding-left:20px; line-height:1.9; font-size:13px; color:#334155;">
+                        <% tips.forEach(function (t) { %><li><%= t %></li><% }); %>
+                    </ul>
+                </div>
+            </section>
+        <% } %>
+
+        <div class="cms-two-col" style="align-items:start;">
+            <section class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fa-solid fa-server card-icon"></i> Server</h2>
+                </div>
+                <div class="table-wrapper">
+                    <table class="admin-table">
+                        <tbody>
+                            <tr><td>Node.js</td><td><%= system.nodeVersion %></td></tr>
+                            <tr><td>Environment</td><td><%= system.env %></td></tr>
+                            <tr><td>Uptime</td><td><%= Math.floor(system.uptimeSeconds / 3600) %>h <%= Math.floor((system.uptimeSeconds % 3600) / 60) %>m</td></tr>
+                            <tr><td>Heap used</td><td><%= system.heapUsedMb %> / <%= system.heapTotalMb %> MB</td></tr>
+                            <tr><td>MongoDB</td><td><%= db.connected ? "Connected" : "Disconnected" %></td></tr>
+                            <tr><td>Products</td><td><%= db.counts.activeProducts %> active / <%= db.counts.products %> total</td></tr>
+                            <tr><td>Categories</td><td><%= db.counts.categories %></td></tr>
+                            <tr><td>Published pages</td><td><%= db.counts.pages %></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fa-solid fa-database card-icon"></i> Database indexes</h2>
+                </div>
+                <div class="table-wrapper">
+                    <table class="admin-table">
+                        <thead><tr><th>Collection</th><th>Index</th></tr></thead>
+                        <tbody>
+                            <% db.indexes.category.forEach(function (name) { %>
+                                <tr><td>categories</td><td><code class="slug-chip"><%= name %></code></td></tr>
+                            <% }); %>
+                            <% db.indexes.product.forEach(function (name) { %>
+                                <tr><td>products</td><td><code class="slug-chip"><%= name %></code></td></tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+
+        <section class="dashboard-card">
+            <div class="card-header">
+                <h2 class="card-title"><i class="fa-solid fa-globe card-icon"></i> Live homepage check</h2>
+                <span style="font-size:12px; color:#64748b;">
+                    <%= site ? site.base + " · " + new Date(site.at).toLocaleString() : "Not run yet" %>
+                </span>
+            </div>
+            <% if (!site) { %>
+                <div style="padding:20px; color:#64748b; font-size:13px;">
+                    Click <strong>Run speed check</strong> to request the live homepage through Apache/Passenger and measure the real response.
+                </div>
+            <% } else { %>
+                <div class="table-wrapper">
+                    <table class="admin-table">
+                        <thead><tr><th>Metric</th><th>Brotli request</th><th>Identity request</th></tr></thead>
+                        <tbody>
+                            <tr>
+                                <td>Status</td>
+                                <td><%= site.home.status || site.home.error %></td>
+                                <td><%= site.raw.status || site.raw.error %></td>
+                            </tr>
+                            <tr>
+                                <td>Time to first byte</td>
+                                <td><%= site.home.ttfb %> ms</td>
+                                <td><%= site.raw.ttfb %> ms</td>
+                            </tr>
+                            <tr>
+                                <td>Full response</td>
+                                <td><%= site.home.total %> ms</td>
+                                <td><%= site.raw.total %> ms</td>
+                            </tr>
+                            <tr>
+                                <td>Transfer size</td>
+                                <td><%= site.compressedBytes.toLocaleString("en-US") %> bytes</td>
+                                <td><%= site.rawBytes.toLocaleString("en-US") %> bytes</td>
+                            </tr>
+                            <tr>
+                                <td>Content-Encoding</td>
+                                <td><%= site.encoding || "none" %></td>
+                                <td><%= site.raw.headers["content-encoding"] || "none" %></td>
+                            </tr>
+                            <tr>
+                                <td>Compression saved</td>
+                                <td colspan="2"><strong><%= site.ratio %>%</strong></td>
+                            </tr>
+                            <tr>
+                                <td>CSS cache header</td>
+                                <td colspan="2"><code class="slug-chip"><%= site.cssCacheControl || "none" %></code> · <%= site.css.status %> · <%= site.css.total %> ms</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            <% } %>
+        </section>
+
+        <div class="cms-two-col" style="align-items:start;">
+            <section class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fa-solid fa-chart-simple card-icon"></i> Slowest routes</h2>
+                </div>
+                <div class="table-wrapper">
+                    <table class="admin-table">
+                        <thead><tr><th>Route</th><th>Hits</th><th>Avg</th><th>p95</th><th>Max</th></tr></thead>
+                        <tbody>
+                            <% if (!perf.routes.length) { %>
+                                <tr><td colspan="5" style="text-align:center; color:#64748b; padding:20px;">No HTML requests recorded yet.</td></tr>
+                            <% } %>
+                            <% perf.routes.slice(0, 12).forEach(function (r) { %>
+                                <tr>
+                                    <td style="font-size:12px;"><code class="slug-chip"><%= r.route %></code></td>
+                                    <td><%= r.count %></td>
+                                    <td><strong><%= r.avg %> ms</strong></td>
+                                    <td><%= r.p95 %> ms</td>
+                                    <td><%= r.max %> ms</td>
+                                </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fa-solid fa-memory card-icon"></i> In-memory cache</h2>
+                    <span style="font-size:12px; color:#64748b;">
+                        <%= cache.size %> keys · <%= cache.hits %> hits · <%= cache.misses %> misses
+                    </span>
+                </div>
+                <div class="table-wrapper">
+                    <table class="admin-table">
+                        <thead><tr><th>Key</th><th>Age</th><th>Expires in</th></tr></thead>
+                        <tbody>
+                            <% if (!cache.entries.length) { %>
+                                <tr><td colspan="3" style="text-align:center; color:#64748b; padding:20px;">Cache is empty.</td></tr>
+                            <% } %>
+                            <% cache.entries.forEach(function (e) { %>
+                                <tr>
+                                    <td style="font-size:12px;"><code class="slug-chip"><%= e.key %></code></td>
+                                    <td><%= Math.round(e.ageMs / 1000) %>s</td>
+                                    <td><%= Math.round(e.remainingMs / 1000) %>s</td>
+                                </tr>
+                            <% }); %>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+
+        <section class="dashboard-card">
+            <div class="card-header">
+                <h2 class="card-title"><i class="fa-solid fa-clock-rotate-left card-icon"></i> Recent HTML responses</h2>
+            </div>
+            <div class="table-wrapper">
+                <table class="admin-table">
+                    <thead><tr><th>Time</th><th>Route</th><th>Status</th><th>Time</th></tr></thead>
+                    <tbody>
+                        <% if (!perf.recent.length) { %>
+                            <tr><td colspan="4" style="text-align:center; color:#64748b; padding:20px;">No requests recorded yet.</td></tr>
+                        <% } %>
+                        <% perf.recent.slice(0, 25).forEach(function (r) { %>
+                            <tr>
+                                <td style="font-size:12px; color:#64748b;"><%= new Date(r.at).toLocaleTimeString() %></td>
+                                <td style="font-size:12px;"><code class="slug-chip"><%= r.route %></code></td>
+                                <td><%= r.status %></td>
+                                <td><strong><%= r.ms %> ms</strong></td>
+                            </tr>
+                        <% }); %>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+</div>
+
+<%- include("partials/footer") %>

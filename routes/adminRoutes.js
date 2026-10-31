@@ -27,6 +27,7 @@ const offerController = require("../controllers/offerController");
 const chatController = require("../controllers/chatController");
 const teamController = require("../controllers/teamController");
 const rewardController = require("../controllers/rewardController");
+const speedController = require("../controllers/speedController");
 
 const upload = require("../middleware/upload");
 
@@ -56,6 +57,23 @@ router.get(
     "/analytics",
     requirePermission("analytics.view"),
     analyticsController.getAnalytics
+);
+
+
+/* ======================================================
+   SPEED & PERFORMANCE
+====================================================== */
+
+router.get(
+    "/speed",
+    requirePermission("analytics.view"),
+    speedController.getSpeed
+);
+
+router.post(
+    "/speed/clear-cache",
+    requirePermission("analytics.view"),
+    speedController.postClearCache
 );
 
 

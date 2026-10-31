@@ -1,4 +1,5 @@
 const Page = require("../models/Page");
+const cache = require("../utils/cache");
 const { createSlug, uniqueSlug } = require("../utils/slug");
 const { can } = require("../middleware/roles");
 const { buildSeo, stripHtml } = require("../utils/seo");
@@ -99,6 +100,8 @@ exports.postAddPage = async (req, res) => {
             seo: cleanSeo(req.body)
         });
 
+        cache.del("site:footerPages");
+
         return res.redirect("/admin/pages");
     } catch (error) {
         console.error("Add page error:", error);
@@ -157,6 +160,8 @@ exports.postEditPage = async (req, res) => {
 
         await page.save();
 
+        cache.del("site:footerPages");
+
         return res.redirect("/admin/pages");
     } catch (error) {
         console.error("Edit page error:", error);
@@ -174,6 +179,7 @@ exports.postEditPage = async (req, res) => {
 exports.deletePage = async (req, res) => {
     try {
         await Page.findByIdAndDelete(req.params.id);
+        cache.del("site:footerPages");
         return res.redirect("/admin/pages");
     } catch (error) {
         console.error("Delete page error:", error);

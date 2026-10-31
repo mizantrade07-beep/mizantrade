@@ -258,6 +258,7 @@ productSchema.pre("save", function (next) {
 productSchema.index({ isActive: 1, mainCategory: 1 });
 productSchema.index({ stockRank: 1, createdAt: -1 });
 productSchema.index({ createdAt: -1 });
+productSchema.index({ isActive: 1, stockRank: 1, createdAt: -1 });
 productSchema.index({ title: "text", brand: "text" });
 
 

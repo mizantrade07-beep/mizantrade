@@ -1,6 +1,7 @@
 const { getFooterContent, normShippingZones } = require("../utils/footerContent");
 const { getSettingsDoc, saveSettings } = require("../utils/siteSettings");
 const { normPaymentAccounts, normPaymentIcons } = require("../utils/paymentForms");
+const cache = require("../utils/cache");
 
 function str(value) {
     return value === undefined || value === null ? "" : String(value).trim();
@@ -140,6 +141,7 @@ exports.postFooter = async (req, res) => {
         content.copyrightText = text(body.copyrightText);
 
         await content.save();
+        cache.del("site:footer");
 
         // SEO defaults are managed in SEO & Marketing; only save when posted.
         if (body.metaTitle !== undefined || body.metaDescription !== undefined) {

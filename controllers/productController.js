@@ -2,6 +2,7 @@ const Product = require("../models/Product");
 const Category = require("../models/Category");
 const Attribute = require("../models/Attribute");
 const mongoose = require("mongoose");
+const cache = require("../utils/cache");
 
 const {
     buildTree,
@@ -636,6 +637,8 @@ exports.bulkUpdateProducts = async (
                 }
             ]);
 
+            cache.del("store:home");
+
             return res.redirect("/admin/products");
         } else {
             return res.status(400).send(
@@ -646,6 +649,8 @@ exports.bulkUpdateProducts = async (
         await Product.updateMany(filter, {
             $set: update
         });
+
+        cache.del("store:home");
 
         return res.redirect("/admin/products");
     } catch (error) {
@@ -833,6 +838,7 @@ exports.postAddProduct = async (
         });
 
         await product.save();
+        cache.del("store:home");
 
         return res.redirect(
             "/admin/products"
@@ -1113,6 +1119,7 @@ exports.postEditProduct = async (
         }
 
         await product.save();
+        cache.del("store:home");
 
         return res.redirect(
             "/admin/products"
@@ -1154,6 +1161,8 @@ exports.deleteProduct = async (
                 "Product not found."
             );
         }
+
+        cache.del("store:home");
 
         if (
             req.headers.accept &&
@@ -1233,6 +1242,7 @@ exports.duplicateProduct = async (
                     );
 
                 await duplicate.save();
+                cache.del("store:home");
 
                 lastError = null;
                 break;

@@ -9,8 +9,11 @@ const { buildSeo, baseUrl } = require("../utils/seo");
 const siteConfig = require("../config/site");
 const { getHomeContent, effective } = require("../utils/homeContent");
 const { setTransform: optimizeImage } = require("../utils/images");
+const cache = require("../utils/cache");
+const siteData = require("../middleware/siteData");
 
 const PRODUCTS_PER_PAGE = 12;
+const HOME_CACHE_MS = 120 * 1000;
 
 /* একটি ক্যাটাগরি (slug/name) + তার সব বংশধরের প্রোডাক্ট মেলানোর ফিল্টার */
 function categoryMatchFilter(paths) {
@@ -137,127 +140,157 @@ exports.searchSuggestions = async (req, res) => {
    HOME PAGE
 ====================================================== */
 
-exports.getHome = async (req, res) => {
-    try {
-        const [allCategories, homeDoc] = await Promise.all([
-            Category.find({}).lean(),
-            getHomeContent()
-        ]);
+/* Builds everything the homepage needs (sections, featured categories and
+   image slots). Product section queries run in parallel and the whole result
+   is cached for HOME_CACHE_MS, so repeated homepage hits cost zero DB work. */
+async function buildHomePayload(allCategories) {
+    const homeDoc = await getHomeContent();
+    const home = effective(homeDoc);
 
-        const home = effective(homeDoc);
+    /* ---------- প্রোডাক্ট সেকশন (সংরক্ষিত ক্রমেই রেন্ডার হয়) ---------- */
+    const KIND_BASE = {
+        latest: {},
+        custom: {},
+        upcoming: { stockStatus: "Coming Soon" },
+        preorder: { stockStatus: "Pre Order" },
+        new: { isNewArrival: true },
+        stockout: { stockStatus: "Out of Stock" }
+    };
+    const KIND_ICON = {
+        latest: "fa-solid fa-bolt",
+        custom: "fa-solid fa-layer-group",
+        upcoming: "fa-solid fa-clock",
+        preorder: "fa-solid fa-clipboard-check",
+        new: "fa-solid fa-bolt",
+        stockout: "fa-solid fa-box-open"
+    };
 
-        /* ---------- প্রোডাক্ট সেকশন (সংরক্ষিত ক্রমেই রেন্ডার হয়) ---------- */
-        const KIND_BASE = {
-            latest: {},
-            custom: {},
-            upcoming: { stockStatus: "Coming Soon" },
-            preorder: { stockStatus: "Pre Order" },
-            new: { isNewArrival: true },
-            stockout: { stockStatus: "Out of Stock" }
-        };
-        const KIND_ICON = {
-            latest: "fa-solid fa-bolt",
-            custom: "fa-solid fa-layer-group",
-            upcoming: "fa-solid fa-clock",
-            preorder: "fa-solid fa-clipboard-check",
-            new: "fa-solid fa-bolt",
-            stockout: "fa-solid fa-box-open"
-        };
+    const sectionPromises = (home.productSections || []).map(function (ps) {
+        const kind = KIND_BASE[ps.kind] !== undefined ? ps.kind : "custom";
+        const limit = Math.min(Math.max(Number(ps.count) || 10, 2), 24);
+        const filter = Object.assign({ isActive: true }, KIND_BASE[kind]);
+        let viewAll = "/shop?sort=latest";
 
-        const productBlocks = [];
-
-        for (const ps of home.productSections || []) {
-            const kind = KIND_BASE[ps.kind] !== undefined ? ps.kind : "custom";
-            const limit = Math.min(Math.max(Number(ps.count) || 10, 2), 24);
-            const filter = Object.assign({ isActive: true }, KIND_BASE[kind]);
-            let viewAll = "/shop?sort=latest";
-
-            if ((ps.scope === "category" || ps.scope === "subcategory" || ps.scope === "childcategory") && ps.categorySlug) {
-                const paths = collectFamilyPaths(allCategories, ps.categorySlug);
-                Object.assign(filter, categoryMatchFilter(paths));
-                viewAll = "/category/" + encodeURIComponent(ps.categorySlug);
-            } else if (ps.scope === "brand" && ps.brand) {
-                const brandFilter = brandMatchFilter(ps.brand);
-                if (brandFilter) {
-                    Object.assign(filter, brandFilter);
-                }
-                viewAll = "/shop?brand=" + encodeURIComponent(brandNames(ps.brand)[0] || "");
-            } else if (ps.scope === "products" && ps.products) {
-                const slugs = String(ps.products)
-                    .split(",")
-                    .map(function (s) { return s.trim().toLowerCase(); })
-                    .filter(Boolean);
-                filter.slug = { $in: slugs };
-                viewAll = "/shop";
+        if ((ps.scope === "category" || ps.scope === "subcategory" || ps.scope === "childcategory") && ps.categorySlug) {
+            const paths = collectFamilyPaths(allCategories, ps.categorySlug);
+            Object.assign(filter, categoryMatchFilter(paths));
+            viewAll = "/category/" + encodeURIComponent(ps.categorySlug);
+        } else if (ps.scope === "brand" && ps.brand) {
+            const brandFilter = brandMatchFilter(ps.brand);
+            if (brandFilter) {
+                Object.assign(filter, brandFilter);
             }
+            viewAll = "/shop?brand=" + encodeURIComponent(brandNames(ps.brand)[0] || "");
+        } else if (ps.scope === "products" && ps.products) {
+            const slugs = String(ps.products)
+                .split(",")
+                .map(function (s) { return s.trim().toLowerCase(); })
+                .filter(Boolean);
+            filter.slug = { $in: slugs };
+            viewAll = "/shop";
+        }
 
-            const products = await Product.find(filter)
-                .sort({ stockRank: 1, createdAt: -1 })
-                .limit(limit)
-                .lean();
+        return Product.find(filter)
+            .sort({ stockRank: 1, createdAt: -1 })
+            .limit(limit)
+            .lean()
+            .then(function (products) {
+                if (!products.length) return null;
 
-            if (products.length > 0) {
-                productBlocks.push({
+                return {
                     kind: kind,
                     title: ps.title || "Products",
                     icon: ps.icon || KIND_ICON[kind] || KIND_ICON.custom,
                     viewAll: viewAll,
                     products: products
-                });
-            }
-        }
+                };
+            });
+    });
 
-        /* ---------- ফিচার্ড ক্যাটাগরি ---------- */
-        let featuredCats = [];
-        if (home.featEnabled) {
-            const slugs = home.featSlugs || [];
-            const query = slugs.length
-                ? { slug: { $in: slugs }, isActive: { $ne: false } }
-                : { parent: "", isActive: { $ne: false } };
+    /* ---------- ফিচার্ড ক্যাটাগরি ---------- */
+    let featuredPromise = Promise.resolve([]);
 
-            featuredCats = await Category.find(query)
-                .sort({ order: 1, name: 1 })
-                .limit(slugs.length ? 60 : 8)
-                .lean();
+    if (home.featEnabled) {
+        const slugs = home.featSlugs || [];
+        const query = slugs.length
+            ? { slug: { $in: slugs }, isActive: { $ne: false } }
+            : { parent: "", isActive: { $ne: false } };
 
-            if (slugs.length) {
+        featuredPromise = Category.find(query)
+            .sort({ order: 1, name: 1 })
+            .limit(slugs.length ? 60 : 8)
+            .lean()
+            .then(function (cats) {
+                if (!slugs.length) return cats;
+
                 const orderMap = {};
                 slugs.forEach(function (s, i) { orderMap[s] = i; });
-                featuredCats.sort(function (a, b) {
+                cats.sort(function (a, b) {
                     return (orderMap[a.slug] || 0) - (orderMap[b.slug] || 0);
                 });
-            }
+                return cats;
+            });
+    }
+
+    const [blocks, featuredCats] = await Promise.all([
+        Promise.all(sectionPromises),
+        featuredPromise
+    ]);
+
+    const productBlocks = blocks.filter(Boolean);
+
+    /* ---------- ইমেজ সেকশন স্লট অনুযায়ী ---------- */
+    const imagesBySlot = {};
+    for (const im of home.imageSections || []) {
+        if (!imagesBySlot[im.slot]) imagesBySlot[im.slot] = [];
+        imagesBySlot[im.slot].push(im);
+    }
+
+    /* "after-<kind>" banners follow the last block of that kind. If no
+       block of that kind exists they move to the end of the product area. */
+    const lastBlockByKind = {};
+    productBlocks.forEach(function (block, i) {
+        lastBlockByKind[block.kind] = i;
+    });
+
+    const imagesAfterBlock = {};
+    const imagesAfterProducts = [];
+
+    Object.keys(imagesBySlot).forEach(function (slot) {
+        const match = /^after-(latest|custom|upcoming|preorder|new|stockout)$/.exec(slot);
+        if (!match) return;
+
+        const idx = lastBlockByKind[match[1]];
+        if (idx === undefined) {
+            imagesAfterProducts.push.apply(imagesAfterProducts, imagesBySlot[slot]);
+        } else {
+            if (!imagesAfterBlock[idx]) imagesAfterBlock[idx] = [];
+            imagesAfterBlock[idx].push.apply(imagesAfterBlock[idx], imagesBySlot[slot]);
         }
+    });
 
-        /* ---------- ইমেজ সেকশন স্লট অনুযায়ী ---------- */
-        const imagesBySlot = {};
-        for (const im of home.imageSections || []) {
-            if (!imagesBySlot[im.slot]) imagesBySlot[im.slot] = [];
-            imagesBySlot[im.slot].push(im);
-        }
+    return {
+        home: home,
+        productBlocks: productBlocks,
+        featuredCats: featuredCats,
+        imagesBySlot: imagesBySlot,
+        imagesAfterBlock: imagesAfterBlock,
+        imagesAfterProducts: imagesAfterProducts
+    };
+}
 
-        /* "after-<kind>" banners follow the last block of that kind. If no
-           block of that kind exists they move to the end of the product area. */
-        const lastBlockByKind = {};
-        productBlocks.forEach(function (block, i) {
-            lastBlockByKind[block.kind] = i;
-        });
+exports.getHome = async (req, res) => {
+    try {
+        /* siteData already loaded and cached the active category tree. */
+        const allCategories = (res.locals.allCategories || []).length
+            ? res.locals.allCategories
+            : await siteData.getCategories().then(function (c) { return c.flat; });
 
-        const imagesAfterBlock = {};
-        const imagesAfterProducts = [];
-
-        Object.keys(imagesBySlot).forEach(function (slot) {
-            const match = /^after-(latest|custom|upcoming|preorder|new|stockout)$/.exec(slot);
-            if (!match) return;
-
-            const idx = lastBlockByKind[match[1]];
-            if (idx === undefined) {
-                imagesAfterProducts.push.apply(imagesAfterProducts, imagesBySlot[slot]);
-            } else {
-                if (!imagesAfterBlock[idx]) imagesAfterBlock[idx] = [];
-                imagesAfterBlock[idx].push.apply(imagesAfterBlock[idx], imagesBySlot[slot]);
-            }
-        });
+        const payload = await cache.wrap(
+            "store:home",
+            HOME_CACHE_MS,
+            function () { return buildHomePayload(allCategories); }
+        );
 
         res.locals.seo = buildSeo({
             title: "Mizan Trade - Computer Components Distributor in Bangladesh",
@@ -280,6 +313,15 @@ exports.getHome = async (req, res) => {
                 }
             }
         });
+
+        const {
+            home,
+            productBlocks,
+            featuredCats,
+            imagesBySlot,
+            imagesAfterBlock,
+            imagesAfterProducts
+        } = payload;
 
         return res.render("index", {
             pageTitle: "Mizan Trade - Computer Components Distributor in Bangladesh",

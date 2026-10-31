@@ -1,5 +1,11 @@
 const Category = require("../models/Category");
 const Product = require("../models/Product");
+const cache = require("../utils/cache");
+
+function invalidateCategoryCache() {
+    cache.del("site:categories");
+    cache.del("store:home");
+}
 
 const {
     buildTree,
@@ -243,6 +249,8 @@ exports.postAddCategory = async (req, res) => {
             isActive: isActive === "on"
         });
 
+        invalidateCategoryCache();
+
         return res.redirect("/admin/categories");
     } catch (error) {
         console.error("Add category error:", error);
@@ -348,6 +356,8 @@ exports.postEditCategory = async (req, res) => {
             isActive: isActive === "on"
         });
 
+        invalidateCategoryCache();
+
         return res.redirect("/admin/categories");
     } catch (error) {
         console.error("Edit category error:", error);
@@ -371,6 +381,8 @@ exports.postEditCategory = async (req, res) => {
 exports.deleteCategory = async (req, res) => {
     try {
         await Category.findByIdAndDelete(req.params.id);
+
+        invalidateCategoryCache();
 
         return res.redirect("/admin/categories");
     } catch (error) {

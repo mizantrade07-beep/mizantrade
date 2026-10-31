@@ -24,6 +24,8 @@ const upload = require("./middleware/upload");
 
 const app = express();
 
+app.disable("x-powered-by");
+
 
 // ======================================================
 // TRUST PROXY
@@ -132,6 +134,15 @@ app.use(
 
 app.use(
     require("./middleware/traffic")
+);
+
+
+// ======================================================
+// RESPONSE TIMING (ADMIN SPEED PAGE)
+// ======================================================
+
+app.use(
+    require("./middleware/perf")
 );
 
 

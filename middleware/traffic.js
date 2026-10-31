@@ -71,6 +71,7 @@ function record(req, res) {
 
 module.exports = function traffic(req, res, next) {
     if (req.method !== "GET") return next();
+    if (req.query.speedcheck) return next();
     if (SKIP.test(req.path)) return next();
     if (!req.accepts("html")) return next();
     if (BOT.test(req.get("user-agent") || "")) return next();

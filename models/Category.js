@@ -52,4 +52,9 @@ const categorySchema = new mongoose.Schema({
     timestamps: true
 });
 
+/* siteData and homepage section scoping read active categories sorted by
+   order/name on every cold cache. Without this it is a full collection scan. */
+categorySchema.index({ isActive: 1, order: 1, name: 1 });
+categorySchema.index({ parent: 1 });
+
 module.exports = mongoose.model("Category", categorySchema);
