@@ -643,6 +643,10 @@ img {
     line-height: 1.6;
 }
 
+.hero-slide .hero-cta {
+    padding: 12px 26px;
+}
+
 .hero-dots {
     position: absolute;
     bottom: 16px;
@@ -711,9 +715,10 @@ img {
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55);
 }
 
-/* Photo slides: sizing lives here (not inline) so phones can show the full banner */
+/* Photo slides: sizing lives here (not inline) so every screen shows the whole
+   uploaded banner at its own aspect ratio — no stretching, no cropping. */
 .hero-slide--photo {
-    background-size: cover;
+    background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
     background-color: #081621;
@@ -1700,6 +1705,45 @@ textarea.form-control {
         min-width: 0;
         max-width: none;
     }
+
+    /* Tablet: compact hero copy + lighter section headings */
+    .hero-slide {
+        padding: 40px 32px;
+        min-height: 300px;
+    }
+
+    .hero-slider {
+        min-height: 300px;
+    }
+
+    .hero-slide h1 {
+        font-size: 27px;
+    }
+
+    .hero-slide p {
+        font-size: 13.5px;
+    }
+
+    .section-header {
+        padding: 11px 14px;
+    }
+
+    .section-header h2 {
+        font-size: 15.5px;
+        gap: 8px;
+    }
+
+    .section-header .view-all {
+        font-size: 12px;
+    }
+
+    .pc-title {
+        font-size: 12.5px;
+    }
+
+    .breadcrumb {
+        font-size: 12px;
+    }
 }
 
 @media (max-width: 900px) {
@@ -1819,21 +1863,79 @@ textarea.form-control {
         padding: 0 3px;
     }
 
-    .hero-slide h1 {
-        font-size: 24px;
-    }
-
+    /* Phone: shorter hero with compact copy so the banner fits the screen */
     .hero-slide {
-        padding: 35px 24px;
-        min-height: 280px;
+        padding: 26px 20px 30px;
+        min-height: 210px;
     }
 
     .hero-slider {
-        min-height: 280px;
+        min-height: 210px;
+    }
+
+    .hero-slide .hero-tag {
+        font-size: 9.5px;
+        letter-spacing: 1.5px;
+        margin-bottom: 7px;
+    }
+
+    .hero-slide h1 {
+        font-size: 19px;
+        line-height: 1.25;
+        margin-bottom: 8px;
+    }
+
+    .hero-slide p {
+        font-size: 11.5px;
+        line-height: 1.5;
+        margin-bottom: 14px;
+    }
+
+    .hero-slide .hero-cta {
+        padding: 9px 16px;
+        font-size: 12px;
+    }
+
+    .hero-dots {
+        bottom: 10px;
+        left: 20px;
+        gap: 6px;
+    }
+
+    .hero-dot {
+        width: 8px;
+        height: 8px;
     }
 
     .top-contact .email-link {
         display: none;
+    }
+
+    /* Phone: slimmer section bar, smaller title + View All */
+    .section-header {
+        padding: 9px 11px;
+        margin-bottom: 10px;
+        border-left-width: 3px;
+    }
+
+    .section-header h2 {
+        font-size: 13.5px;
+        gap: 6px;
+        line-height: 1.35;
+    }
+
+    .section-header h2 i {
+        font-size: 13px;
+    }
+
+    .section-header .view-all {
+        font-size: 11px;
+    }
+
+    .breadcrumb {
+        font-size: 11.5px;
+        line-height: 1.5;
+        padding: 10px 0;
     }
 
     .product-grid {
@@ -1852,9 +1954,10 @@ textarea.form-control {
     }
 
     .pc-title {
-        font-size: 12.5px;
-        min-height: 36px;
-        margin-bottom: 6px;
+        font-size: 11.5px;
+        line-height: 1.4;
+        min-height: 32px;
+        margin-bottom: 5px;
     }
 
     .pc-price {
@@ -2097,6 +2200,23 @@ textarea.form-control {
     }
 }
 
+/* Tablet: lighter heading block above Why choose us / Featured Category */
+@media (max-width: 1024px) {
+    .why-head h2 {
+        font-size: 23px;
+    }
+
+    .why-head p {
+        font-size: 13px;
+        line-height: 1.55;
+    }
+
+    .why-head .why-desc {
+        font-size: 12.5px;
+        line-height: 1.65;
+    }
+}
+
 @media (max-width: 1023px) {
     .fc-grid {
         flex-wrap: wrap;
@@ -2116,8 +2236,25 @@ textarea.form-control {
         gap: 10px;
     }
 
+    .why-head {
+        margin-bottom: 16px;
+        padding: 0 6px;
+    }
+
     .why-head h2 {
-        font-size: 22px;
+        font-size: 19px;
+        margin-bottom: 5px;
+    }
+
+    .why-head p {
+        font-size: 12px;
+        line-height: 1.5;
+    }
+
+    .why-head .why-desc {
+        font-size: 11.5px;
+        line-height: 1.6;
+        margin-top: 6px;
     }
 
     .why-card {

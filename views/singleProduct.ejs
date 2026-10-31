@@ -12,9 +12,12 @@
         .container { max-width: 1600px; margin: 20px auto; padding: 0 20px; }
 
         /* Breadcrumb */
-        .breadcrumb { font-size: 13px; color: #666; margin-bottom: 15px; display: flex; align-items: center; gap: 6px; }
+        .breadcrumb { font-size: 13px; color: #666; margin-bottom: 15px; display: flex; align-items: center; flex-wrap: wrap; gap: 6px; line-height: 1.5; }
         .breadcrumb a { color: #333; text-decoration: none; }
         .breadcrumb a:hover { color: #ef4a23; }
+        .breadcrumb .bc-crumb { display: inline-flex; align-items: center; gap: 6px; }
+        .breadcrumb .bc-sep { color: #b3bec8; }
+        .breadcrumb .bc-title { min-width: 0; overflow-wrap: break-word; }
 
         /* Full Width Layout */
         .single-product-layout { display: flex; flex-direction: column; gap: 20px; }
@@ -137,6 +140,8 @@
         }
 
         @media(max-width: 992px) {
+            .breadcrumb { font-size: 12px; gap: 5px; }
+            .breadcrumb .bc-crumb { gap: 5px; }
             .product-top-card { flex-direction: column; }
             .gallery-container { flex-direction: column-reverse; }
             .thumbnail-list { flex-direction: row; max-height: none; overflow-x: auto; }
@@ -146,6 +151,10 @@
         }
 
         @media(max-width: 767px) {
+            .breadcrumb { font-size: 11.5px; gap: 4px; margin-bottom: 12px; color: #7a8794; }
+            .breadcrumb a { color: #4a5a68; }
+            .breadcrumb .bc-crumb { gap: 4px; }
+            .breadcrumb .bc-title { flex: 1 1 100%; margin-top: 2px; color: #5b6b7b; line-height: 1.5; }
             .product-top-card { padding: 14px; gap: 14px; }
             .main-display-img { padding: 2px; }
             .main-display-img img { height: 240px; }
@@ -179,17 +188,17 @@
     <div class="container">
         <!-- Breadcrumb -->
         <div class="breadcrumb">
-            <a href="/"><i class="fa-solid fa-house"></i></a> / 
+            <span class="bc-crumb"><a href="/"><i class="fa-solid fa-house"></i></a><span class="bc-sep">/</span></span>
             <% if (typeof categoryTrail !== 'undefined' && categoryTrail && categoryTrail.length) { %>
                 <% categoryTrail.forEach(function (node) { %>
-                    <a href="/category/<%= node.slug %>"><%= node.name %></a> /
+                    <span class="bc-crumb"><a href="/category/<%= node.slug %>"><%= node.name %></a><span class="bc-sep">/</span></span>
                 <% }); %>
             <% } else if (typeof categorySlug !== 'undefined' && categorySlug) { %>
-                <a href="/category/<%= categorySlug %>"><%= product.mainCategory || 'Accessories' %></a> / 
+                <span class="bc-crumb"><a href="/category/<%= categorySlug %>"><%= product.mainCategory || 'Accessories' %></a><span class="bc-sep">/</span></span>
             <% } else { %>
-                <a href="/shop"><%= product.mainCategory || 'Accessories' %></a> / 
+                <span class="bc-crumb"><a href="/shop"><%= product.mainCategory || 'Accessories' %></a><span class="bc-sep">/</span></span>
             <% } %>
-            <span><%= product.title %></span>
+            <span class="bc-title"><%= product.title %></span>
         </div>
 
         <div class="single-product-layout">
